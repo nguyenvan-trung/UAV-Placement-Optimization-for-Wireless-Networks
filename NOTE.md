@@ -50,10 +50,10 @@ $$\text{Fitness} = w_1 \cdot f_1 - w_2 \cdot f_2 - w_3 \cdot f_3 \quad (\text{v�
 2. **Hàm Năng Lượng ($f_2$ - Minimize Energy Consumption):**
    $$f_2 = \sum_{i=1}^{N} \left( P_{\text{hover}}(z_i) + P_{\text{transmit}, i} \right)$$
 
-   _(trong đó công suất nâng $P_{\text{hover}}(z*i)$ tăng dần theo độ cao $z_i$)*.
+   _(trong đó công suất nâng $P_{\text{hover}}(z_i)$ tăng dần theo độ cao $z_i$)_.
 
 3. **Hàm Nhiễu Chồng Lấp ($f_3$ - Minimize Interference):**
-   $$f_3 = \sum_{i=1}^{N} \sum_{k=i+1}^{N} \text{Area\_Overlap}(U_i, U_k)$$
+   $$f_3 = \sum_{i=1}^{N} \sum_{k=i+1}^{N} \operatorname{AreaOverlap}(U_i, U_k)$$
 
    _(diện tích giao nhau của vùng phủ mặt đất giữa UAV $i$ và UAV $k$)_.
 
