@@ -17,6 +17,7 @@ Nhóm sử dụng GA, PSO và WOA để tối ưu vị trí UAV, sau đó so sá
 - [project_ideas.md](project_ideas.md): ý tưởng, phạm vi và hướng triển khai dự kiến.
 - [team_assignment.md](team_assignment.md): vai trò và trách nhiệm của từng thành viên.
 - [weekly_plan.md](weekly_plan.md): kế hoạch và sản phẩm bàn giao trong 10 tuần.
+- [team_weekly_progress.xlsx](team_weekly_progress.xlsx): biểu mẫu Excel để nhóm cập nhật tiến độ hằng tuần.
 
 ## Nguyên tắc làm việc
 

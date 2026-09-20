@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-IMPLEMENTATION_ROOT = Path(__file__).resolve().parents[2]
-DATASET_DIR = IMPLEMENTATION_ROOT / "datasets"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+IMPLEMENTATION_ROOT = PROJECT_ROOT / "implementation"
+DATASET_DIR = PROJECT_ROOT / "data"
 RAW_DATA_DIR = DATASET_DIR / "raw"
-PROCESSED_DATA_DIR = DATASET_DIR / "processed"
+DATASET_STORES_DIR = DATASET_DIR / "stores"
+DATASET_VIEWS_DIR = DATASET_DIR / "views"
 RESULTS_DIR = IMPLEMENTATION_ROOT / "results"

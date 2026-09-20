@@ -12,7 +12,7 @@ Tuần 1–9 dành cho nghiên cứu, thiết kế, triển khai và thí nghi�
 | 4 | Dữ liệu và mô hình dùng chung | Cài search space, encoding, interface | Cài loader, validator, preprocessor, dữ liệu giả | Cài user/UAV model, phối hợp channel model | Pipeline đầu vào và bài toán mẫu chạy được |
 | 5 | Triển khai thuật toán phần 1 | Cài particle, initialization, velocity của PSO | Cài chromosome, initialization, selection của GA | Cài whale, initialization, coefficients của WOA | Các thành phần nền của ba thuật toán và test cơ bản |
 | 6 | Triển khai thuật toán phần 2 | Hoàn thiện PSO, pbest/gbest, xử lý biên | Hoàn thiện crossover, mutation, replacement, GA optimizer | Hoàn thiện encircling, spiral, exploration, WOA optimizer | GA, PSO, WOA chạy độc lập trên hàm benchmark |
-| 7 | Tích hợp bài toán UAV | Tích hợp `main.py`, PSO với objective UAV | Tích hợp GA và kiểm tra dữ liệu đầu vào | Tích hợp WOA, metric và visualization | Ba thuật toán chạy được trên cùng bài toán UAV |
+| 7 | Tích hợp bài toán UAV | Tích hợp `scripts/run_optimizer.py`, PSO với objective UAV | Tích hợp GA và kiểm tra dữ liệu đầu vào | Tích hợp WOA, metric và visualization | Ba thuật toán chạy được trên cùng bài toán UAV |
 | 8 | Thử nghiệm và sửa lỗi | Thiết kế kịch bản, giám sát tính công bằng | Chạy GA, ghi log, kiểm tra bất thường | Chạy WOA/PSO đối chứng, tạo bảng và biểu đồ | Kết quả thô cho mọi kịch bản, danh sách lỗi đã xử lý |
 | 9 | Thí nghiệm cuối và phân tích | Tổng hợp, kiểm chứng và kết luận | Phân tích GA, viết phần dữ liệu/phương pháp | Phân tích WOA/PSO, hoàn thiện notebook/biểu đồ | Bộ kết quả cuối, bảng, hình và nội dung phân tích hoàn chỉnh |
 | 10 | Hoàn thành báo cáo | Ghép báo cáo, kiểm tra cấu trúc và định dạng | Rà soát lý thuyết, trích dẫn và tài liệu tham khảo | Rà soát kết quả, bảng, hình và phụ lục | Báo cáo hoàn chỉnh và bộ tài liệu sẵn sàng nộp |
@@ -66,7 +66,7 @@ Tuần 1–9 dành cho nghiên cứu, thiết kế, triển khai và thí nghi�
 
 - Thay benchmark bằng hàm mục tiêu UAV đã thống nhất.
 - Kết nối dataset, channel model, constraints và optimizer.
-- Hoàn thiện `main.py` để chọn `GA`, `PSO`, `WOA` hoặc `all`.
+- Hoàn thiện `scripts/run_optimizer.py` để chọn `GA`, `PSO`, `WOA` hoặc `all`.
 - Kiểm tra nghiệm đầu ra có hợp lệ và coverage có hợp lý hay không.
 
 ### Tuần 8 — Chạy thử nghiệm

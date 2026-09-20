@@ -7,7 +7,7 @@ Phụ trách chính:
 - Quản lý tiến độ, thống nhất phạm vi và tích hợp toàn bộ dự án.
 - Thiết kế kiến trúc code, interface chung và hàm mục tiêu.
 - Phụ trách cài đặt PSO.
-- Xây dựng luồng chạy chính trong `main.py`.
+- Xây dựng luồng chạy chính trong `implementation/scripts/run_optimizer.py`.
 - Kiểm tra tính công bằng của thí nghiệm và tổng hợp kết quả.
 - Điều phối, ghép và hoàn thiện báo cáo cuối kỳ.
 
