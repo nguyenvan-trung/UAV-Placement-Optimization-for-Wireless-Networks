@@ -1,7 +1,7 @@
 # Công thức và ranh giới triển khai
 
 File này trả lời “công thức nằm ở đâu”, còn mã Python tương ứng nằm trong
-`src/`. Mỗi tầng chỉ nhận đầu vào của tầng trước và không tự đọc CSV.
+`src/`. Mỗi tầng chỉ nhận đầu vào của tầng trước và không tự đọc CSV. mmm
 
 ## Pipeline
 
