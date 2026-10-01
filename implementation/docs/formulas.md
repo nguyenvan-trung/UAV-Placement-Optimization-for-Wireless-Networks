@@ -65,6 +65,14 @@ Chỉ chứa cơ chế tìm kiếm:
 Thuật toán nhận problem/objective qua interface, không đọc file và không vẽ
 biểu đồ.
 
+### 📚 Tài liệu chi tiết & Công thức từng thuật toán (Defense Guides):
+- [DWGA.md](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWGA.md): Chi tiết toán học & mã nguồn Thuật toán Di truyền (GA).
+- [DWPSO.md](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWPSO.md): Chi tiết toán học & mã nguồn Tối ưu hóa bầy đàn (PSO).
+- [DWWOA.md](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWWOA.md): Chi tiết toán học & mã nguồn Bầy cá voi gốc (WOA).
+- [DWI_WOA.md](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWI_WOA.md): Chi tiết công thức đề xuất I-WOA (K-Means, OBL, Levy Flight).
+- [DWH_PSO_GA.md](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWH_PSO_GA.md): Chi tiết thuật toán lai Hybrid PSO-GA.
+- [DWH_WOA_PSO.md](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWH_WOA_PSO.md): Chi tiết thuật toán lai Hybrid WOA-PSO.
+
 ## Quy tắc thêm module
 
 1. Hàm đọc/kiểm tra dữ liệu vào `input/`.
@@ -73,3 +81,4 @@ biểu đồ.
 4. Vòng lặp tìm kiếm vào `algorithms/`.
 5. Tổng hợp nhiều lần chạy và Wilcoxon vào `evaluation/`.
 6. File CSV/JSON/PNG sinh ra chỉ vào `results/` hoặc `data/views/`.
+
