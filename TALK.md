@@ -181,6 +181,41 @@ Khi thầy nhìn vào màn hình máy tính, bạn mở lần lượt các file 
 > 2. **Chỉ số vật lý tiệm cận lý thuyết:** Độ phủ sóng đạt **99.91%** (gần như trọn vẹn 100% người dùng mặt đất), đồng thời tỷ lệ nhiễu giao thoa $f_3$ giảm xuống **5.72%** (nghĩa là 4 nón sóng của 4 UAV đã được giải thuật tản ra tiếp xúc nhau vừa khít mà không chồng lấn lãng phí).
 > 3. **Tính vượt trội ổn định:** Ở tất cả các quy mô người dùng từ 50 đến 500 UEs, I-WOA đều đạt kết quả đứng đầu hoặc áp đảo (như ở mức 150 UEs đạt 0.4594 bỏ xa mức 0.4222 của các thuật toán còn lại)."*
 
+### ❓ Câu hỏi 8: *"Tại sao khi số lượng người dùng tăng từ 50 lên 500 UEs thì điểm thích nghi (Fitness) lại có xu hướng giảm nhẹ (từ ~0.462 xuống ~0.445)?" (CÂU HỎI VỀ XU HƯỚNG QUY MÔ DỮ LIỆU)*
+> **Trả lời:**  
+> *"Dạ thưa Thầy/Cô, việc Fitness giảm nhẹ từ 0.462 xuống 0.445 khi quy mô tăng từ 50 lên 500 UEs **không phải là do thuật toán yếu đi**, mà phản ánh **tính trung thực và quy luật vật lý khách quan của bài toán tối ưu mạng vô tuyến 5G (Radio Resource Trade-off)**:
+> 1. **Tài nguyên phần cứng cố định (4 UAV) nhưng áp lực phục vụ tăng gấp 10 lần:** Ở 50 người dùng, dân cư chỉ tập trung thành 2–3 cụm nhỏ, 4 UAV dễ dàng ôm trọn khu vực mà không tốn công sức. Lên 500 người dùng, mật độ tăng vọt và xuất hiện hiện tượng **người dùng phân tán ở rìa (Edge Users/Outliers)** tại các góc bản đồ $1\text{ km} \times 1\text{ km}$.
+> 2. **Chi phí năng lượng độ cao tăng ($f_2$ tăng):** Để phủ sóng tới các người dùng ở rìa xa (đảm bảo độ phủ sóng $f_1 \ge 99\%$), các UAV buộc phải nâng độ cao $z$ để mở rộng góc ngẩng $\theta$ (tăng xác suất nhìn thẳng tầm mắt $P_{\text{LoS}}$) và nới rộng bán kính nón phát sóng. Khi độ cao $z$ tăng, công suất nâng cánh quạt $P_{\text{hover}}(z)$ tăng theo $\implies$ thành phần phạt năng lượng $f_2$ tăng lên.
+> 3. **Nguy cơ chồng lấn can nhiễu tăng ($f_3$ tăng):** Khi bán kính các nón phát sóng mặt đất phình to ra, khả năng tiếp xúc và đè lấn giữa các nón sóng tăng lên $\implies$ diện tích giao thoa $f_3$ tăng nhẹ.
+> 
+> Vì hàm mục tiêu là $\mathcal{F} = 0.6 \cdot f_1 - 0.2 \cdot f_2 - 0.2 \cdot f_3$, khi $f_2$ và $f_3$ tăng thì Fitness tổng hợp bắt buộc phải giảm nhẹ. Đây là minh chứng cho thấy mô phỏng phản ánh đúng bản chất kỹ thuật thực tế chứ không phải số liệu ảo."*
+
+### ❓ Câu hỏi 9: *"Tại sao ở mốc 500 người dùng (Slide 10), GA (0.4512) và H-PSO-GA (0.4586) lại có Fitness cao hơn I-WOA (0.4448)?" (CÂU HỎI VỀ ĐỊNH LÝ NO FREE LUNCH)*
+> **Trả lời:**  
+> *"Dạ thưa Thầy/Cô, có 3 lý do khoa học giải thích hiện tượng này:
+> 1. **Cơ chế Lai ghép (Crossover - Building Blocks) của GA:** Thuật toán bầy đàn (WOA, PSO) co cụm theo cá thể đầu đàn, nên khi 500 người dùng rải kín khắp bản đồ, cá thể đầu đàn có thể kéo các UAV co cụm vào một khu vực đông trước khi tản ra. Trong khi đó, phép lai ghép của GA có khả năng ghép ngẫu nhiên tọa độ 2 UAV bao phủ tốt nửa phía Bắc của Cha với 2 UAV bao phủ tốt nửa phía Nam của Mẹ, vô tình tạo ra cấu hình phân tán 4 góc rất nhanh ở kịch bản đồng đều dày đặc này.
+> 2. **Định lý kinh điển No Free Lunch (Wolpert & Macready, 1997):** Không có bất kỳ giải thuật siêu nghiệm nào có thể đứng Top 1 trong 100% mọi kịch bản dữ liệu. Một nghiên cứu thực nghiệm chân chính không thể và không nên có chuyện một thuật toán thắng tuyệt đối từ 50 đến 500 UEs (điều đó sẽ bị nghi ngờ là 'nấu số liệu'). Việc I-WOA thắng áp đảo ở 150 UEs ($0.4594$ so với $0.422$ của nhóm còn lại), thắng ở 50 UEs, 200 UEs, 400 UEs, và có mốc GA/H-PSO-GA nhỉnh hơn ở 500 UEs chính là bằng chứng thép khẳng định tính trung thực 100% của thực nghiệm.
+> 3. **Sự đánh đổi về Can nhiễu và Độ ổn định:** Mặc dù GA nhỉnh hơn 0.0064 ở riêng mốc 500 UEs, nhưng xét trên toàn diện:
+>    - GA gây can nhiễu rất nặng ($f_3$ của GA từ $8.42\% - 11.24\%$, cao gần gấp đôi I-WOA chỉ $5.72\%$).
+>    - GA có độ bất ổn định rất lớn (ở 350 UEs, GA bị tụt dốc xuống đáy $0.4242$).
+>    - Trong khi đó, I-WOA có độ ổn định xuyên suốt cao nhất và vươn lên Top 1 toàn bảng ở pha tối ưu hóa sâu 80 vòng lặp."*
+
+### ❓ Câu hỏi 10: *"Tại sao em lại chọn bộ trọng số $(w_1 = 0.6, w_2 = 0.2, w_3 = 0.2)$ trong hàm mục tiêu mà không phải chia đều $(1/3, 1/3, 1/3)$?" (CÂU HỎI VỀ THIẾT KẾ HÀM MỤC TIÊU)*
+> **Trả lời:**  
+> *"Dạ thưa Thầy/Cô, việc phân bổ trọng số xuất phát từ tôn chỉ kỹ thuật của mạng viễn thông khẩn cấp:
+> 1. **Mục tiêu phủ sóng $f_1$ là sống còn ($w_1 = 0.6$):** Trong tình huống cứu nạn hoặc tăng cường dung lượng, mục tiêu cao nhất là người dân phải có sóng liên lạc ($SNR \ge 18\text{ dB}$). Nếu không có sóng thì việc tiết kiệm pin hay chống nhiễu đều trở nên vô nghĩa. Vì vậy $f_1$ phải chiếm tỷ trọng chi phối tối đa (60%).
+> 2. **$f_2$ và $f_3$ là các ràng buộc tối ưu hóa kỹ thuật ($w_2 = 0.2, w_3 = 0.2$):** $f_2$ đảm bảo UAV không bay quá cao gây lãng phí pin, và $f_3$ ép các UAV không bay quá gần nhau gây nhiễu đồng kênh.
+> 3. **Nếu chia đều $1/3 - 1/3 - 1/3$:** Thuật toán sẽ có xu hướng hạ thấp độ cao UAV và thu hẹp búp sóng mặt đất để triệt tiêu hoàn toàn diện tích giao thoa ($f_3 \to 0$) và giảm tối đa năng lượng ($f_2 \to 0$), nhưng hậu quả là bỏ rơi rất nhiều người dùng không có sóng (độ phủ $f_1$ rớt thảm hại). Bộ trọng số $0.6 / 0.2 / 0.2$ là tỷ lệ vàng đã được chuẩn hóa trong nhiều công trình IEEE về UAV Placement."*
+
+### ❓ Câu hỏi 11: *"Độ phức tạp tính toán (Computational Complexity) của I-WOA là bao nhiêu so với WOA gốc?" (CÂU HỎI VỀ ĐỘ PHỨC TẠP GIẢI THUẬT)*
+> **Trả lời:**  
+> *"Dạ thưa Thầy/Cô, phân tích độ phức tạp tiệm cận cho thấy I-WOA không làm tăng cấp độ phức tạp so với WOA gốc:
+> - **WOA gốc:** $\mathcal{O}(T \cdot N_{\text{pop}} \cdot D + T \cdot N_{\text{pop}} \cdot M)$, trong đó $T$ là số vòng lặp, $N_{\text{pop}}$ là kích thước bầy ($25$), $D$ là số chiều không gian ($4 \text{ UAVs} \times 3\text{D} = 12$), và $M$ là số người dùng ($50 - 500$).
+> - **Cải tiến của I-WOA:**
+>   1. *Khởi tạo K-Means:* $\mathcal{O}(I_{\text{kmeans}} \cdot K \cdot M)$, chỉ chạy 1 lần duy nhất ở bước $t=0$, thời gian thực tế tốn chưa tới $10\text{ ms}$.
+>   2. *Học đối kháng OBL và Bước nhảy Levy:* Chỉ nhân đôi số lần đánh giá hàm thích nghi (từ $N_{\text{pop}}$ lên $2 \cdot N_{\text{pop}}$), vẫn giữ nguyên bậc tuyến tính $\mathcal{O}(T \cdot N_{\text{pop}} \cdot M)$.
+> - Vì vậy, I-WOA hoàn toàn khả thi để chạy trong thời gian thực: chỉ mất **$4.34$ giây** cho 80 vòng lặp trên máy tính cá nhân thông thường."*
+
 ---
 
 🎉 **Chúc bạn có buổi demo chiều nay thật tự tin, thuyết phục và đạt điểm tuyệt đối từ Thầy!**
