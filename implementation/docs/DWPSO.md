@@ -63,13 +63,13 @@ $$x_{i,d}(t+1) = \max(LB_d, \min(UB_d, x_{i,d}(t+1)))$$
 
 | Thành phần thuật toán | File mã nguồn tương ứng | Hàm / Class chính |
 | :--- | :--- | :--- |
-| Cấu trúc hạt (Hạt & Vận tốc) | [`particle.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/particle.py) | `class Particle` |
-| Khởi tạo bầy hạt ngẫu nhiên | [`initialization.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/initialization.py) | `initialize_swarm()` |
-| Cập nhật vận tốc $v(t+1)$ | [`velocity_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/velocity_update.py) | `update_velocity()` |
-| Cập nhật vị trí $x(t+1)$ | [`position_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/position_update.py) | `update_position()` |
-| Cập nhật $P_{\text{best}}, G_{\text{best}}$ | [`best_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/best_update.py) | `update_bests()` |
-| Xử lý va chạm biên | [`boundary_handler.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/boundary_handler.py) | `handle_boundaries()` |
-| Bộ điều khiển tối ưu hóa | [`optimizer.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/optimizer.py) | `class PSOOptimizer.optimize()` |
+| Cấu trúc hạt (Hạt & Vận tốc) | [`particle.py`](..\src\algorithms\PSO\particle.py) | `class Particle` |
+| Khởi tạo bầy hạt ngẫu nhiên | [`initialization.py`](..\src\algorithms\PSO\initialization.py) | `initialize_swarm()` |
+| Cập nhật vận tốc $v(t+1)$ | [`velocity_update.py`](..\src\algorithms\PSO\velocity_update.py) | `update_velocity()` |
+| Cập nhật vị trí $x(t+1)$ | [`position_update.py`](..\src\algorithms\PSO\position_update.py) | `update_position()` |
+| Cập nhật $P_{\text{best}}, G_{\text{best}}$ | [`best_update.py`](..\src\algorithms\PSO\best_update.py) | `update_bests()` |
+| Xử lý va chạm biên | [`boundary_handler.py`](..\src\algorithms\PSO\boundary_handler.py) | `handle_boundaries()` |
+| Bộ điều khiển tối ưu hóa | [`optimizer.py`](..\src\algorithms\PSO\optimizer.py) | `class PSOOptimizer.optimize()` |
 
 ---
 

@@ -72,14 +72,14 @@ $$\mathbf{X}_i(t+1) = \mathbf{X}_{\text{rand}} - \mathbf{A} \odot \mathbf{D}$$
 
 | Thành phần thuật toán | File mã nguồn tương ứng | Hàm / Class chính |
 | :--- | :--- | :--- |
-| Cấu trúc cá thể cá voi | [`whale.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/whale.py) | `class Whale` |
-| Khởi tạo bầy cá voi | [`initialization.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/initialization.py) | `initialize_whales()` |
-| Cập nhật hệ số $a, A, C, l$ | [`coefficient_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/coefficient_update.py) | `update_coefficients()` |
-| Bao vây con mồi | [`encircling.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/encircling.py) | `encircle_prey()` |
-| Bơi xoắn ốc bọt khí | [`spiral_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/spiral_update.py) | `spiral_update()` |
-| Thám hiểm tìm mồi | [`exploration.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/exploration.py) | `search_for_prey()` |
-| Xử lý giới hạn biên | [`boundary_handler.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/boundary_handler.py) | `handle_boundaries()` |
-| Bộ điều khiển tối ưu hóa | [`optimizer.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/optimizer.py) | `class WOAOptimizer.optimize()` |
+| Cấu trúc cá thể cá voi | [`whale.py`](..\src\algorithms\WOA\whale.py) | `class Whale` |
+| Khởi tạo bầy cá voi | [`initialization.py`](..\src\algorithms\WOA\initialization.py) | `initialize_whales()` |
+| Cập nhật hệ số $a, A, C, l$ | [`coefficient_update.py`](..\src\algorithms\WOA\coefficient_update.py) | `update_coefficients()` |
+| Bao vây con mồi | [`encircling.py`](..\src\algorithms\WOA\encircling.py) | `encircle_prey()` |
+| Bơi xoắn ốc bọt khí | [`spiral_update.py`](..\src\algorithms\WOA\spiral_update.py) | `spiral_update()` |
+| Thám hiểm tìm mồi | [`exploration.py`](..\src\algorithms\WOA\exploration.py) | `search_for_prey()` |
+| Xử lý giới hạn biên | [`boundary_handler.py`](..\src\algorithms\WOA\boundary_handler.py) | `handle_boundaries()` |
+| Bộ điều khiển tối ưu hóa | [`optimizer.py`](..\src\algorithms\WOA\optimizer.py) | `class WOAOptimizer.optimize()` |
 
 ---
 

@@ -12,8 +12,8 @@
 - **Kiến trúc hệ thống:** Thiết kế cấu trúc phân tầng sạch (`input/` $\to$ `preprocessing/` $\to$ `physics/` $\to$ `objectives/` $\to$ `problem/` $\to$ `algorithms/` $\to$ `results/`).
 - **Thuật toán đề xuất cốt lõi (I-WOA):** Chủ trì nghiên cứu và cài đặt thuật toán **Improved Whale Optimization Algorithm (I-WOA)** tích hợp phân cụm K-Means, học đối kháng (OBL) và bước nhảy Levy Flight.
 - **Hạ tầng thực thi:** Xây dựng script batch run đa tiến trình (`run_batch.py`), giám sát quá trình chạy 3.000 lượt mô phỏng trên 500 datasets.
-- **Thực nghiệm Part 2 & Phân tích:** Phân tích thực nghiệm chuyên sâu 80 vòng lặp, chứng minh bước nhảy vọt Top 1 của I-WOA và viết báo cáo đối chiếu [`DEMO_REPORT.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/results/DEMO_REPORT.md).
-- **Thuyết trình:** Soạn thảo kịch bản bảo vệ [`TALK.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/TALK.md) và tài liệu kỹ thuật [`DWI_WOA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWI_WOA.md).
+- **Thực nghiệm Part 2 & Phân tích:** Phân tích thực nghiệm chuyên sâu 80 vòng lặp, chứng minh bước nhảy vọt Top 1 của I-WOA và viết báo cáo đối chiếu [`DEMO_REPORT.md`](..\implementation\results\DEMO_REPORT.md).
+- **Thuyết trình:** Soạn thảo kịch bản bảo vệ [`TALK.md`](..\TALK.md) và tài liệu kỹ thuật [`DWI_WOA.md`](..\implementation\docs\DWI_WOA.md).
 
 ---
 
@@ -23,7 +23,7 @@
 - **Thuật toán Di truyền (GA):** Nghiên cứu lý thuyết GA liên tục, cài đặt chọn lọc Tournament, lai ghép số học (Arithmetic Crossover), đột biến Gaussian và chiến lược Elitism.
 - **Thuật toán lai Hybrid PSO-GA (H-PSO-GA):** Kết hợp động lực học hạt PSO với các toán tử di truyền GA để duy trì đa dạng quần thể và giải cứu hạt khỏi bẫy cực trị.
 - **Hạ tầng dữ liệu:** Xây dựng quy trình quản lý và kiểm tra tính toàn vẹn của **500 file CSV dữ liệu người dùng** (từ 50 đến 500 UEs) trong `data/stores/`.
-- **Tài liệu kỹ thuật:** Biên soạn tài liệu chi tiết [`DWGA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWGA.md), [`DWH_PSO_GA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWH_PSO_GA.md), rà soát cơ sở lý thuyết toán học và trích dẫn chuẩn IEEE.
+- **Tài liệu kỹ thuật:** Biên soạn tài liệu chi tiết [`DWGA.md`](..\implementation\docs\DWGA.md), [`DWH_PSO_GA.md`](..\implementation\docs\DWH_PSO_GA.md), rà soát cơ sở lý thuyết toán học và trích dẫn chuẩn IEEE.
 
 ---
 
@@ -33,7 +33,7 @@
 - **Thuật toán bầy đàn (PSO & WOA gốc):** Cài đặt PSO chuẩn (vận tốc, quán tính, $V_{\max}$) và WOA gốc (bao vây, bơi xoắn ốc bọt khí, thám hiểm toàn cục).
 - **Thuật toán lai Hybrid WOA-PSO (H-WOA-PSO):** Kết hợp đường bơi xoắn ốc của WOA với vector gia tốc của PSO, phân tích vì sao giải thuật này đạt Quán quân ở Part 1 (35 vòng lặp).
 - **Trực quan hóa & Đồ họa:** Phát triển các công cụ vẽ biểu đồ 2D/3D (`uav_3d_placement_demo.png`), biểu đồ cột bứt phá (`part1_vs_part2_breakthrough_comparison.png`), các đồ thị hội tụ và bảng thông số ảnh (`parameter_and_metrics_table.png`).
-- **Tài liệu kỹ thuật:** Biên soạn tài liệu chi tiết [`DWPSO.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWPSO.md), [`DWWOA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWWOA.md), [`DWH_WOA_PSO.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWH_WOA_PSO.md).
+- **Tài liệu kỹ thuật:** Biên soạn tài liệu chi tiết [`DWPSO.md`](..\implementation\docs\DWPSO.md), [`DWWOA.md`](..\implementation\docs\DWWOA.md), [`DWH_WOA_PSO.md`](..\implementation\docs\DWH_WOA_PSO.md).
 
 ---
 

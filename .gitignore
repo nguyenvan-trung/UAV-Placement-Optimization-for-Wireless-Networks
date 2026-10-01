@@ -1,6 +1,3 @@
 __pycache__/
 *.py[cod]
 .venv/
-implementation/results/*
-!implementation/results/.gitkeep
-!implementation/results/README.md

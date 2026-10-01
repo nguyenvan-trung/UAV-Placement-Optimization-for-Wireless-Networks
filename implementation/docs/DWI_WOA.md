@@ -88,11 +88,11 @@ Theo lý thuyết của Tizhoosh (2005), nếu một giải pháp đang hướng
 
 | Module cải tiến | File mã nguồn tương ứng | Hàm / Class chính |
 | :--- | :--- | :--- |
-| Phân cụm K-Means khởi tạo | [`kmeans.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/preprocessing/kmeans.py) | `run_kmeans_clustering()` |
-| Cơ chế học đối kháng (OBL) | [`obl.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/I_WOA/obl.py) | `generate_opposite_position()`, `apply_obl_population()` |
-| Bước nhảy Levy Flight | [`levy_flight.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/I_WOA/levy_flight.py) | `compute_levy_sigma()`, `apply_levy_flight()` |
-| Tham số I-WOA | [`parameters.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/I_WOA/parameters.py) | `class IWOAParameters` |
-| Bộ điều khiển I-WOA | [`optimizer.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/I_WOA/optimizer.py) | `class IWOAOptimizer.optimize()` |
+| Phân cụm K-Means khởi tạo | [`kmeans.py`](..\src\preprocessing\kmeans.py) | `run_kmeans_clustering()` |
+| Cơ chế học đối kháng (OBL) | [`obl.py`](..\src\algorithms\I_WOA\obl.py) | `generate_opposite_position()`, `apply_obl_population()` |
+| Bước nhảy Levy Flight | [`levy_flight.py`](..\src\algorithms\I_WOA\levy_flight.py) | `compute_levy_sigma()`, `apply_levy_flight()` |
+| Tham số I-WOA | [`parameters.py`](..\src\algorithms\I_WOA\parameters.py) | `class IWOAParameters` |
+| Bộ điều khiển I-WOA | [`optimizer.py`](..\src\algorithms\I_WOA\optimizer.py) | `class IWOAOptimizer.optimize()` |
 
 ---
 
