@@ -58,13 +58,13 @@ Khác với GA nhị phân cắt điểm, bài toán tọa độ liên tục s�
 
 | Thành phần thuật toán | File mã nguồn tương ứng | Hàm / Class chính |
 | :--- | :--- | :--- |
-| Cấu trúc cá thể | [`chromosome.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/chromosome.py) | `class Chromosome` |
-| Khởi tạo quần thể | [`initialization.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/initialization.py) | `initialize_population()` |
-| Chọn lọc cha mẹ | [`selection.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/selection.py) | `tournament_selection()` |
-| Lai ghép số học | [`crossover.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/crossover.py) | `arithmetic_crossover()` |
-| Đột biến Gaussian | [`mutation.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/mutation.py) | `gaussian_mutation()` |
-| Chiến lược Elitism | [`replacement.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/replacement.py) | `elitism_replacement()` |
-| Bộ điều khiển vòng lặp | [`optimizer.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/optimizer.py) | `class GAOptimizer.optimize()` |
+| Cấu trúc cá thể | [`chromosome.py`](..\src\algorithms\GA\chromosome.py) | `class Chromosome` |
+| Khởi tạo quần thể | [`initialization.py`](..\src\algorithms\GA\initialization.py) | `initialize_population()` |
+| Chọn lọc cha mẹ | [`selection.py`](..\src\algorithms\GA\selection.py) | `tournament_selection()` |
+| Lai ghép số học | [`crossover.py`](..\src\algorithms\GA\crossover.py) | `arithmetic_crossover()` |
+| Đột biến Gaussian | [`mutation.py`](..\src\algorithms\GA\mutation.py) | `gaussian_mutation()` |
+| Chiến lược Elitism | [`replacement.py`](..\src\algorithms\GA\replacement.py) | `elitism_replacement()` |
+| Bộ điều khiển vòng lặp | [`optimizer.py`](..\src\algorithms\GA\optimizer.py) | `class GAOptimizer.optimize()` |
 
 ---
 

@@ -70,10 +70,10 @@ Tại mỗi vòng lặp $t$:
 
 ## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
 
-- **File triển khai chính:** [`hybrid_pso_ga.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/hybrid/hybrid_pso_ga.py)
+- **File triển khai chính:** [`hybrid_pso_ga.py`](..\src\algorithms\hybrid\hybrid_pso_ga.py)
 - **Tái sử dụng các module:**
-  - Vận tốc & Vị trí PSO: [`velocity_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/velocity_update.py), [`position_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/position_update.py).
-  - Lai ghép & Đột biến GA: [`crossover.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/crossover.py), [`mutation.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/GA/mutation.py).
+  - Vận tốc & Vị trí PSO: [`velocity_update.py`](..\src\algorithms\PSO\velocity_update.py), [`position_update.py`](..\src\algorithms\PSO\position_update.py).
+  - Lai ghép & Đột biến GA: [`crossover.py`](..\src\algorithms\GA\crossover.py), [`mutation.py`](..\src\algorithms\GA\mutation.py).
 
 ---
 

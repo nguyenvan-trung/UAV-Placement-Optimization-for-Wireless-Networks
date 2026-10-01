@@ -86,11 +86,11 @@
 - Hoàn thiện báo cáo đối chiếu 2 giai đoạn `DEMO_REPORT.md`, biểu đồ so sánh bứt phá `part1_vs_part2_breakthrough_comparison.png` và các bảng thông số ảnh `parameter_and_metrics_table.png`.
 
 ### Tuần 10 — Hoàn thiện tài liệu, Báo cáo kỹ thuật & Chuẩn bị bảo vệ
-- Soạn thảo kịch bản bảo vệ đồ án và hướng dẫn thuyết trình chi tiết trong [`TALK.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/TALK.md).
-- Soạn thảo bộ 6 tài liệu kỹ thuật chuyên sâu giải thích công thức và mã nguồn từng thuật toán trong thư mục [`docs/`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/):
-  - [`DWGA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWGA.md), [`DWPSO.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWPSO.md), [`DWWOA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWWOA.md).
-  - [`DWI_WOA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWI_WOA.md) (Thuật toán đề xuất).
-  - [`DWH_PSO_GA.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWH_PSO_GA.md), [`DWH_WOA_PSO.md`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/docs/DWH_WOA_PSO.md).
+- Soạn thảo kịch bản bảo vệ đồ án và hướng dẫn thuyết trình chi tiết trong [`TALK.md`](..\TALK.md).
+- Soạn thảo bộ 6 tài liệu kỹ thuật chuyên sâu giải thích công thức và mã nguồn từng thuật toán trong thư mục [`docs/`](..\implementation\docs):
+  - [`DWGA.md`](..\implementation\docs\DWGA.md), [`DWPSO.md`](..\implementation\docs\DWPSO.md), [`DWWOA.md`](..\implementation\docs\DWWOA.md).
+  - [`DWI_WOA.md`](..\implementation\docs\DWI_WOA.md) (Thuật toán đề xuất).
+  - [`DWH_PSO_GA.md`](..\implementation\docs\DWH_PSO_GA.md), [`DWH_WOA_PSO.md`](..\implementation\docs\DWH_WOA_PSO.md).
 - Bổ sung bộ câu hỏi phản biện trọng điểm (tại sao chọn khu vực $1\text{ km}^2$, độ tin cậy của 500 file kịch bản, ý nghĩa vật lý của việc giảm 45% nhiễu giao thoa).
 - Đóng gói toàn bộ sản phẩm mã nguồn, hình ảnh và báo cáo sẵn sàng cho buổi bảo vệ nghiệm thu.
 

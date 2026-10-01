@@ -71,10 +71,10 @@ $$\mathbf{X}_i(t+1) = \text{clip}\left(\mathbf{X}_{i}^{\text{woa}} + \beta \cdot
 
 ## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
 
-- **File triển khai chính:** [`hybrid_woa_pso.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/hybrid/hybrid_woa_pso.py)
+- **File triển khai chính:** [`hybrid_woa_pso.py`](..\src\algorithms\hybrid\hybrid_woa_pso.py)
 - **Tái sử dụng các module:**
-  - Toán tử WOA: [`spiral_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/spiral_update.py), [`encircling.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/encircling.py), [`exploration.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/exploration.py).
-  - Khởi tạo & Vận tốc: [`initialization.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/WOA/initialization.py), [`velocity_update.py`](file:///d:/Personal%20Base/UAV-Placement-Optimization-for-Wireless-Networks/implementation/src/algorithms/PSO/velocity_update.py).
+  - Toán tử WOA: [`spiral_update.py`](..\src\algorithms\WOA\spiral_update.py), [`encircling.py`](..\src\algorithms\WOA\encircling.py), [`exploration.py`](..\src\algorithms\WOA\exploration.py).
+  - Khởi tạo & Vận tốc: [`initialization.py`](..\src\algorithms\WOA\initialization.py), [`velocity_update.py`](..\src\algorithms\PSO\velocity_update.py).
 
 ---
 
