@@ -1,1 +1,7 @@
-"""Các thành phần được ghép lại để tạo Whale Optimization Algorithm."""
+"""Package Whale Optimization Algorithm (WOA)."""
+
+from .optimizer import WOAOptimizer
+from .parameters import WOAParameters
+from .whale import Whale
+
+__all__ = ["WOAOptimizer", "WOAParameters", "Whale"]
