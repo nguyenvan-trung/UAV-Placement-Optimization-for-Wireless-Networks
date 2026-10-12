@@ -1,3 +1,4 @@
+
 """Chọn chromosome bố mẹ."""
 """Toán tử chọn lọc Tournament Selection cho GA."""
 
@@ -15,4 +16,5 @@ def tournament_selection(
     indices = rng.choice(len(population), size=tournament_size, replace=False)
     candidates = [population[i] for i in indices]
     best = max(candidates, key=lambda ind: ind.fitness)
+
     return best.copy()

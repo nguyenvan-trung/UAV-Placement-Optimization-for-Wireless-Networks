@@ -1,8 +1,8 @@
-"""Ghép initialization, fitness, selection, crossover, mutation và replacement."""
+"""Vòng lặp chính thuật toán Genetic Algorithm (GA)."""
+
 
 # TODO: Cài đặt vòng lặp GA và trả về OptimizationResult.
 """Vòng lặp chính thuật toán Genetic Algorithm (GA)."""
-
 import time
 
 import numpy as np
@@ -111,3 +111,4 @@ class GAOptimizer:
             runtime_seconds=runtime,
             seed=self.seed,
         )
+

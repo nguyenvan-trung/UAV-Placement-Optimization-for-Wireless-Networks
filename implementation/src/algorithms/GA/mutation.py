@@ -1,5 +1,5 @@
+
 """Đột biến gene và đưa nghiệm về miền hợp lệ."""
-"""Toán tử đột biến Gaussian Mutation cho GA liên tục."""
 
 import numpy as np
 
@@ -25,4 +25,5 @@ def gaussian_mutation(
             mutated_genes[i] += step
 
     mutated_genes = np.clip(mutated_genes, lower_bounds, upper_bounds)
+
     return Chromosome(genes=mutated_genes)

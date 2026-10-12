@@ -1,6 +1,5 @@
-"""Khởi tạo quần thể chromosome trong miền hợp lệ."""
-"""Khởi tạo quần thể ban đầu cho GA."""
 
+"""Khởi tạo quần thể chromosome trong miền hợp lệ."""
 import numpy as np
 
 from .chromosome import Chromosome
@@ -18,4 +17,5 @@ def initialize_population(
     for _ in range(pop_size):
         genes = rng.uniform(lower_bounds, upper_bounds, size=dim)
         population.append(Chromosome(genes=genes))
+
     return population
