@@ -97,7 +97,7 @@ Script `run_batch.py` tự động kích hoạt chế độ đa tiến trình (M
 
 ```powershell
 # Chạy cả 2 phần thực nghiệm và tự động xuất biểu đồ, bảng báo cáo
-python implementation\scripts\run_batch.py --phase all
+python implementation\scripts\run_batch.py --mode all
 ```
 
 ---
