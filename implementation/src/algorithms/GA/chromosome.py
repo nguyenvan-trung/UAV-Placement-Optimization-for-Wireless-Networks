@@ -1,3 +1,5 @@
+
+"""Cấu trúc chromosome và gene biểu diễn vị trí UAV."""
 """Biểu diễn cá thể (Chromosome) trong GA cho bài toán liên tục."""
 
 from dataclasses import dataclass
@@ -12,3 +14,4 @@ class Chromosome:
 
     def copy(self) -> "Chromosome":
         return Chromosome(genes=self.genes.copy(), fitness=self.fitness)
+
