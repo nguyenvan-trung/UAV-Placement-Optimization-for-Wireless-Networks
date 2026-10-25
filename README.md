@@ -1,59 +1,136 @@
 # Tối ưu vị trí UAV cho mạng không dây
 
-Dự án mô phỏng việc đặt trạm phát sóng UAV trong không gian ba chiều để phục vụ user có tọa độ cho trước. GA, PSO, WOA, hai thuật toán lai và I-WOA tìm tọa độ UAV theo cùng hàm đánh giá phủ sóng, công suất chuẩn hóa và chồng lấn kết nối.
+Tìm vị trí ba chiều cho các UAV phát sóng để phục vụ một tập người dùng cố định. Người đọc có thể theo dõi dự án theo thứ tự: **bài toán → mô hình → thuật toán → thiết kế thí nghiệm → kết quả có nguồn**.
 
-**Trạng thái ngày 25/10/2026:** đã có mã thuật toán, bộ 500 CSV, runner FE và notebook thiết kế 30 trường hợp chạy 100 vòng. Notebook chưa chạy thí nghiệm; danh sách seed chưa chốt. Chưa có kết quả mới để kết luận thuật toán nào tốt nhất. Đầu ra smoke và batch dở trong `implementation/results/` đã được dọn.
+**Trạng thái:** study mới 500 CSV / 30 trường hợp / 100 vòng chưa chạy; seed chưa chốt. Đọc [rà soát trước chạy](implementation/docs/PRE_RUN_REVIEW.md) để biết các phần cần xử lý. Không có thứ hạng thực nghiệm mới trong trang này.
 
-## Bắt đầu đọc
+## Mục lục
 
-| Bạn cần hiểu gì?                       | Đọc ở đâu?                                                  |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Toàn bộ tài liệu liên kết thế nào      | [Mục lục và lộ trình đọc](implementation/docs/README.md)    |
-| Bài toán, kiến trúc và luồng dữ liệu   | [Hướng dẫn người mới](implementation/docs/PROJECT_GUIDE.md) |
-| UE, seed, FE, ablation, fitness        | [Thuật ngữ](implementation/docs/GLOSSARY.md)                |
-| Mô hình và giới hạn kết luận           | [Báo cáo phương pháp](implementation/docs/REPORT.md)        |
-| Thiết kế 30 trường hợp, 100 vòng       | [Hướng dẫn notebook](implementation/docs/NOTEBOOK_STUDY.md) |
-| Chuẩn bị môi trường và chọn luồng chạy | [Hướng dẫn tái lập](REPRODUCE.md)                           |
-| Trình bày và trả lời câu hỏi           | [Kịch bản thuyết trình](TALK.md)                            |
+1. [Mô hình tổng quan](#tong-quan)
+2. [Đầu vào, đầu ra và một ví dụ](#dau-vao)
+3. [Cách chấm một phương án](#fitness)
+4. [Sáu thuật toán và 30 trường hợp](#thuat-toan)
+5. [Ba luồng thực thi](#luong-chay)
+6. [Bản đồ thư mục](#thu-muc)
+7. [Lộ trình đọc tài liệu](#lo-trinh)
+8. [Nguồn và trạng thái kiểm chứng](#nguon)
 
-Người mới nên đọc README này → PROJECT_GUIDE → GLOSSARY → REPORT → NOTEBOOK_STUDY. Sau đó chọn tài liệu thuật toán hoặc thống kê trong mục lục.
+<a id="tong-quan"></a>
 
-## Bài toán được giải
+## 1. Mô hình tổng quan
 
-Với N UAV, một nghiệm chứa 3N số: `[x1, y1, z1, ..., xN, yN, zN]`. Với 4 UAV, đó là vector 12 chiều. User là đầu vào cố định trong một dataset; UAV là vị trí thuật toán tìm.
+![Mô hình tổng quan: dữ liệu user, bài toán, thuật toán, fitness, lưu task và tổng hợp](implementation/docs/assets/overview.svg)
 
-Hàm mục tiêu mặc định cần cực đại hóa: `F = 0,6C − 0,2E − 0,2I`.
+**Cách đọc sơ đồ:** bắt đầu từ tọa độ user; tạo bài toán đặt UAV; thuật toán liên tục đề xuất cấu hình và nhận điểm fitness; cuối cùng lưu lịch sử để tổng hợp. Khối “đánh giá” được gọi nhiều lần trong tìm kiếm, không phải chỉ một lần sau khi thuật toán kết thúc.
 
-- C: tỷ lệ user được ít nhất một UAV phủ theo ngưỡng SNR.
-- E: proxy công suất trung bình chuẩn hóa; không phải năng lượng Joule.
-- I: tỷ lệ user được từ hai UAV trở lên phủ theo cùng ngưỡng; không phải công suất nhiễu hoặc diện tích giao nhau.
+| Khối | Giải thích |
+|---|---|
+| Dữ liệu user | Cùng một CSV được dùng cho mọi case và seed; thuật toán không di chuyển user |
+| Bài toán | Xác định nghiệm hợp lệ và dùng chung cách chấm |
+| Thuật toán | Khác nhau ở cách tạo/cập nhật ứng viên |
+| Fitness | Cùng mô hình để đối chứng có ý nghĩa |
+| Task | Một bộ dataset–case–seed; là đơn vị lưu/tiếp tục |
+| Báo cáo | Đọc artifact; không lấy ảnh minh họa làm số đo thuật toán |
 
-Trọng số và ngưỡng là lựa chọn mô phỏng. Mô hình chưa mô tả đầy đủ dung lượng, backhaul hoặc điều khiển bay. Xem [REPORT](implementation/docs/REPORT.md).
+Sơ đồ do dự án biên soạn từ [runner notebook](implementation/src/notebook_study.py) và [bài toán](implementation/src/problem/objective.py), không phải hình lấy từ bài báo.
 
-## Ba luồng chạy
+<a id="dau-vao"></a>
 
-| Luồng                  | Đầu vào                                | Ngân sách                     | Mục đích                                   |
-| ---------------------- | -------------------------------------- | ----------------------------- | ------------------------------------------ |
-| Notebook               | 500 CSV có sẵn                         | 100 vòng, quần thể 25, 4 UAV  | 30 trường hợp, bảng và ảnh cùng chỗ        |
-| Benchmark FE           | Kịch bản sinh từ YAML và seed manifest | Mặc định 3030 FE, quần thể 30 | Đối chứng cùng FE, ablation và sensitivity |
-| Script đơn lẻ/batch cũ | CSV có sẵn                             | Số vòng qua CLI               | Một dataset hoặc batch sáu thuật toán      |
+## 2. Đầu vào, đầu ra và một ví dụ
 
-Không gộp kết quả ba luồng như cùng thí nghiệm. Cùng 100 vòng không có nghĩa cùng FE. Analyzer FE không nhận trực tiếp schema notebook.
+**Đầu vào:** một CSV có cột user_id, x_m, y_m, z_m, demand. Tọa độ dùng mét. Bộ hiện có gồm 500 file, 10 mức từ 50 đến 500 user, mỗi mức 50 file. User có độ cao 0–132 m theo rà soát, nên không gọi toàn bộ bộ dữ liệu là user mặt đất.
 
-## Cấu trúc thư mục
+**Một nghiệm:** vector ghép tọa độ N UAV. Với N=4, nghiệm có D=12 số:
 
-| Thư mục                                                | Vai trò                                                          |
-| ------------------------------------------------------ | ---------------------------------------------------------------- |
-| `configs/`                                             | Cấu hình notebook và benchmark FE                                |
-| `data/stores/`, `data/views/`                          | CSV user và hình đầu vào                                         |
-| `implementation/src/`                                  | Mô hình, thuật toán, bộ chạy, tổng hợp                           |
-| `implementation/notebooks/`, `implementation/scripts/` | Giao diện notebook và điểm vào CLI                               |
-| `implementation/docs/`                                 | Tài liệu phương pháp và thiết kế                                 |
-| `implementation/tests/`                                | Kiểm tra mã, không phải kết quả nghiên cứu                       |
-| `implementation/results/`                              | Đầu ra khi chạy thực nghiệm                                      |
-| `documents/`, `plan/`                                  | Danh mục tham khảo và kế hoạch                                   |
-| `figures/`, `reports/`, `tmp_audit/`                   | Minh họa, kiểm toán hoặc kiểm tra; xác minh nguồn trước khi dùng |
+`X = [x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4]`.
 
-Đọc tài liệu không cần chạy mã. Khi có yêu cầu thực thi, theo [REPRODUCE](REPRODUCE.md). Notebook mặc định `CONFIRM_RUN = False`, seed để trống. Không điền kết luận bằng số liệu lịch sử thiếu log.
+**Ví dụ minh họa:** dataset 100 user, một ứng viên chứa vị trí của cả bốn UAV. Quần thể P=25 nghĩa là có 25 cấu hình bốn UAV, không phải 25 UAV. Sau 100 vòng, lưu best đã đánh giá và các mốc lịch sử. Đây là diễn giải cấu trúc, không phải số đo của một lần chạy.
 
-Nhóm thực hiện: Nguyễn Văn Trung, Hoàng Văn Trường, Nguyễn Minh Hiếu.
+Định dạng đầy đủ: [DATA_FORMAT](implementation/docs/DATA_FORMAT.md).
+
+<a id="fitness"></a>
+
+## 3. Cách chấm một phương án
+
+`F = 0,6 × C − 0,2 × E − 0,2 × I`, cực đại hóa.
+
+| Thành phần | Định nghĩa dễ đọc | Chiều mong muốn |
+|---|---|---|
+| C | Tỷ lệ user được ít nhất một UAV phủ theo ngưỡng SNR | Cao |
+| E | Proxy công suất trung bình chuẩn hóa theo độ cao | Thấp |
+| I | Tỷ lệ user có từ hai liên kết SNR đạt ngưỡng | Thấp |
+
+E chưa phải năng lượng Joule; I chưa phải công suất nhiễu. Trọng số là lựa chọn thiết kế, không phải tỷ lệ chuẩn của ngành. Công thức có bảng ký hiệu, đơn vị và nguồn tại [REPORT](implementation/docs/REPORT.md); bảng truy nguồn tại [SOURCES](implementation/docs/SOURCES.md).
+
+<a id="thuat-toan"></a>
+
+## 4. Sáu thuật toán và 30 trường hợp
+
+| Thuật toán chính | Ý tưởng | Giải thích chi tiết |
+|---|---|---|
+| GA | Chọn cha mẹ, lai ghép, đột biến và giữ elite | [DWGA](implementation/docs/DWGA.md) |
+| PSO | Di chuyển theo vận tốc, pbest và gbest | [DWPSO](implementation/docs/DWPSO.md) |
+| WOA | Bao vây, khám phá hoặc xoắn ốc quanh best | [DWWOA](implementation/docs/DWWOA.md) |
+| H-PSO-GA | Bước PSO rồi crossover/mutation | [DWH_PSO_GA](implementation/docs/DWH_PSO_GA.md) |
+| H-WOA-PSO | Trộn hai đề xuất trên mỗi cá thể | [DWH_WOA_PSO](implementation/docs/DWH_WOA_PSO.md) |
+| I-WOA | WOA thêm K-Means, OBL và Lévy | [DWI_WOA](implementation/docs/DWI_WOA.md) |
+
+Study mở rộng thành 24 case của ba họ WOA/PSO/GA, hai bản lai đầy đủ và bốn case ablation bản lai: **30 case duy nhất**. Một case có thể xuất hiện trong nhiều bảng nhưng không phải chạy lại. Xem bảng bật/tắt trong [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md).
+
+<a id="luong-chay"></a>
+
+## 5. Ba luồng thực thi
+
+| Luồng | Đầu vào | Ngân sách và phạm vi |
+|---|---|---|
+| Notebook hiện tại | 500 CSV có sẵn | 30 case, 100 vòng, P=25, N=4 |
+| Benchmark FE | Dữ liệu sinh từ YAML/manifest | Mặc định 3030 FE, P=30; schema riêng |
+| Script CSV legacy | CSV có sẵn | Một dataset hoặc batch sáu thuật toán theo vòng |
+
+FE là một lần đánh giá fitness. Cùng vòng không bảo đảm cùng FE, đặc biệt khi có OBL/Lévy. Không gộp ba luồng như cùng giao thức. Hướng dẫn môi trường và thực thi: [REPRODUCE](REPRODUCE.md).
+
+<a id="thu-muc"></a>
+
+## 6. Bản đồ thư mục
+
+| Đường dẫn từ gốc repository | Chứa gì? |
+|---|---|
+| configs/ | Cấu hình notebook và FE |
+| data/stores/ | Tọa độ user đầu vào |
+| data/views/ | Ảnh quan sát input |
+| implementation/src/ | Mô hình và thuật toán |
+| implementation/notebooks/ | Notebook study và trình bày |
+| implementation/scripts/ | Điểm vào CLI/analyzer |
+| implementation/docs/ | Phương pháp, thiết kế, nguồn và hướng dẫn |
+| implementation/docs/assets/ | Sơ đồ SVG nhúng vào Markdown |
+| implementation/tests/ | Kiểm tra mã |
+| implementation/results/ | Đầu ra khi được thực thi |
+| documents/ | Danh mục tài liệu học thuật |
+| plan/ | Kế hoạch/phân công |
+| figures/, reports/, tmp_audit/ | Minh họa, kiểm toán, kiểm tra; xác minh nguồn trước khi dùng |
+
+<a id="lo-trinh"></a>
+
+## 7. Lộ trình đọc tài liệu
+
+| Thứ tự | Tài liệu | Sau khi đọc cần hiểu |
+|---|---|---|
+| 1 | README hiện tại | Dự án làm gì và đang ở đâu |
+| 2 | [NOTE](NOTE.md) | Câu hỏi nghiên cứu, logic thiết kế |
+| 3 | [REPORT](implementation/docs/REPORT.md) | Cách tính điểm và giới hạn |
+| 4 | Các chương thuật toán ở mục 4 | Vì sao mỗi phương pháp tạo ứng viên khác nhau |
+| 5 | [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md) | Đối chứng và các bảng sẽ được tạo |
+| 6 | [REPRODUCE](REPRODUCE.md) | Cách chuẩn bị và thực thi khi được duyệt |
+| 7 | [TALK](TALK.md) | Cách kể lại toàn bộ dự án và trả lời phản biện |
+
+[Mục lục toàn bộ tài liệu](implementation/docs/README.md) có các nhánh chuyên sâu về thuật ngữ, thống kê, độ nhạy và bằng chứng.
+
+<a id="nguon"></a>
+
+## 8. Nguồn và trạng thái kiểm chứng
+
+[SOURCES](implementation/docs/SOURCES.md) tách nguồn học thuật, lựa chọn riêng của nhóm và mã triển khai. Mỗi chương công thức dẫn về phần tương ứng; không quy toàn bộ phương pháp cho một bài báo.
+
+Hiện có mã và thiết kế, chưa có study mới hoàn tất. Notebook còn mục cần xử lý trong PRE_RUN_REVIEW; chưa bật ô chạy và chưa tự chọn seed. Người đọc có thể xem toàn bộ tài liệu mà không thực thi Python.
+
+Nhóm: Nguyễn Văn Trung, Hoàng Văn Trường, Nguyễn Minh Hiếu.

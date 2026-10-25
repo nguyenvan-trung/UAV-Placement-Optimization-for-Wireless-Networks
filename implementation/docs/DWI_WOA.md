@@ -1,100 +1,143 @@
-# 🚀 DWI_WOA: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN I-WOA (ĐỀ XUẤT)
+# I-WOA: WOA kết hợp K-Means, OBL và Lévy
 
-[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+[Mục lục](README.md) · [WOA gốc](DWWOA.md) · [Mô hình chung](REPORT.md) · [Nguồn toán tử](SOURCES.md#operators)
 
-Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+Trang này mô tả bản I-WOA của repository. Không đồng nhất tên I-WOA với mọi thuật toán cùng tên trong các bài báo.
 
+## Mục lục
 
-> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+1. [Mô hình hoạt động](#mo-hinh)
+2. [K: nghiệm mầm K-Means](#kmeans)
+3. [O: nghiệm đối lập](#obl)
+4. [L: bước nhảy Lévy](#levy)
+5. [Trình tự, FE và ablation](#ablation)
+6. [Nguồn và mã triển khai](#nguon)
 
-> **Mục đích:** Hướng dẫn toàn diện công thức toán học, cấu trúc mã nguồn, cơ chế cải tiến và kịch bản trả lời phản biện xuất sắc dành cho thuật toán **Improved Whale Optimization Algorithm (I-WOA)** — đóng góp khoa học cốt lõi của đề tài tối ưu hóa vị trí 3D trạm phát sóng UAV.
+<a id="mo-hinh"></a>
 
----
+## 1. Mô hình hoạt động
 
-## 1. 💡 ĐỘNG LỰC NGHIÊN CỨU & 3 TRỤ CỘT CẢI TIẾN
-I-WOA kết hợp K-Means, OBL và Lévy trên lõi WOA. Mục tiêu thiết kế là khảo sát ảnh hưởng của khởi tạo và đề xuất nghiệm bổ sung. Chưa có ablation theo FE để kết luận từng thành phần có lợi hoặc hiệu quả cộng dồn.
+![I-WOA: K-Means, OBL khởi tạo, WOA, Lévy, OBL động và lưu best](assets/iwoa.svg)
 
-## 2. 🎯 BIỂU DIỄN NGHIỆM TRONG BÀI TOÁN UAV
-Mỗi cá thể cá voi $\mathbf{X}_i$ mã hóa tọa độ 3D của $N = 4$ trạm phát sóng UAV:
+**Giải thích:** K hoạt động lúc khởi tạo; O có cả lúc khởi tạo và trong vòng; L đề xuất bước thêm sau cập nhật WOA. Mỗi thành phần có thể tắt để đo đóng góp. Lặp tìm kiếm không phải chuỗi xử lý user một lần rồi kết thúc.
 
-$$\mathbf{X}_i = [x_1, y_1, z_1, \; x_2, y_2, z_2, \; x_3, y_3, z_3, \; x_4, y_4, z_4]^T \in \mathbb{R}^{12}$$
+Hình theo [optimizer.py](../src/algorithms/I_WOA/optimizer.py). Tắt cả ba cho phép đối chiếu với lõi WOA, nhưng registry notebook dùng WOAOptimizer gốc cho case WOA.
 
-- Giới hạn không gian: $x_k, y_k \in [0, 1000]\text{ m}$, $z_k \in [50, 300]\text{ m}$.
-- Hàm mục tiêu đánh giá chất lượng vị trí:
-  $$\text{Fitness}(\mathbf{X}) = 0.6 \cdot f_1(\mathbf{X}) - 0.2 \cdot f_2(\mathbf{X}) - 0.2 \cdot f_3(\mathbf{X})$$
+<a id="kmeans"></a>
 
----
+## 2. K: tạo một nghiệm mầm theo cụm user
 
-## 3. 📐 CÔNG THỨC TOÁN HỌC CÁC CƠ CHẾ CẢI TIẾN
+K-Means phân cụm XY của M user thành N cụm. Ghép N tâm cụm với độ cao gợi ý để tạo **một cấu hình N UAV**, thay cá thể đầu trong quần thể ngẫu nhiên. Không tạo toàn bộ P cá thể bằng K-Means.
 
-### 3.1. Trụ cột 1: Khởi tạo định hướng theo phân cụm K-Means
-Thay vì thả rơi 4 UAV ngẫu nhiên khắp khu vực $1\text{ km}^2$, I-WOA phân tích tọa độ của toàn bộ $M$ người dùng mặt đất $\mathcal{U} = \{(x_m, y_m)\}_{m=1}^M$ bằng thuật toán K-Means ($K = 4$ cụm):
+$$
+X_{\mathrm{seed}}=(\mu_{1,x},\mu_{1,y},z_0,\ldots,\mu_{N,x},\mu_{N,y},z_0).
+$$
 
-- Phân hoạch người dùng thành 4 cụm $\mathcal{S}_1, \mathcal{S}_2, \mathcal{S}_3, \mathcal{S}_4$ tối thiểu hóa tổng bình phương khoảng cách:
-  $$\arg\min_{\mathcal{S}} \sum_{k=1}^K \sum_{\mathbf{u} \in \mathcal{S}_k} \|\mathbf{u} - \mathbf{c}_k\|^2$$
-- Tọa độ trọng tâm cụm thứ $k$:
-  $$\mathbf{c}_k = (c_{x,k}, c_{y,k}) = \frac{1}{|\mathcal{S}_k|} \sum_{\mathbf{u} \in \mathcal{S}_k} \mathbf{u}$$
-- Cá thể "hạt giống" đầu tiên $\mathbf{X}_{\text{seed}}$ được gán vào tâm cụm với độ cao gợi ý mặc định ($z_0 = 100\text{ m}$), rồi clip theo miền. Đây là lựa chọn khởi tạo, không phải độ cao đã chứng minh an toàn hoặc tối ưu:
-  $$\mathbf{X}_{\text{seed}} = [c_{x,1}, c_{y,1}, 100, \; \dots, \; c_{x,4}, c_{y,4}, 100]^T$$
-- Code khởi tạo cả quần thể ngẫu nhiên đều; chỉ thay cá thể đầu bằng gợi ý K-Means. Không sinh Gaussian quanh tâm cụm. Độ cao gợi ý được clip vào miền bài toán. Nguồn: `../src/preprocessing/kmeans_init.py` và `../src/algorithms/I_WOA/optimizer.py`.
+| Thành phần | Ý nghĩa |
+|---|---|
+| mu_k,x / mu_k,y | Tâm cụm thứ k theo XY, mét |
+| N | Số cụm bằng số UAV |
+| z_0 | Gợi ý mặc định 100 m, rồi clip vào miền |
+| random_state | Seed tái lập bước K-Means |
+| n_init | Code đặt 10, không phụ thuộc mặc định thư viện |
 
----
+**Nguồn:** [K-1, tài liệu KMeans chính thức](SOURCES.md#operators); cách chuyển tâm cụm thành một nghiệm là quy tắc dự án tại [kmeans_init.py](../src/preprocessing/kmeans_init.py). z_0 không phải độ cao đã chứng minh tối ưu/an toàn.
 
-### 3.2. Trụ cột 2: Cơ chế học đối kháng đa chiều (Opposition-Based Learning - OBL)
-OBL tạo nghiệm đối xứng để đánh giá bổ sung; không bảo đảm nghiệm đối lập có chất lượng cao hơn:
+<a id="obl"></a>
 
-- Với mỗi cá thể $\mathbf{X}_i = [x_{i,1}, \dots, x_{i,D}]^T$, vector đối lập $\mathbf{X}_i^{\text{op}}$ được định nghĩa:
-  $$x_{i,d}^{\text{op}} = LB_d + UB_d - x_{i,d}, \quad \forall d \in \{1, \dots, D\}$$
-- **Quy trình chọn lọc OBL:**
-  1. Từ quần thể hiện tại $\mathcal{P} = \{\mathbf{X}_1, \dots, \mathbf{X}_{PopSize}\}$, sinh quần thể đối lập $\mathcal{P}^{\text{op}} = \{\mathbf{X}_1^{\text{op}}, \dots, \mathbf{X}_{PopSize}^{\text{op}}\}$.
-  2. Giữ Fitness của quần thể gốc đã tính, chỉ đánh giá thêm $PopSize$ nghiệm đối lập rồi ghép $\mathcal{P}_{\text{all}} = \mathcal{P} \cup \mathcal{P}^{\text{op}}$.
-  3. Sắp xếp giảm dần theo Fitness và chọn ra $PopSize$ cá thể ưu tú nhất:
-     $$\mathcal{P}_{\text{new}} = \text{Top}_{PopSize}(\mathcal{P} \cup \mathcal{P}^{\text{op}})$$
-- **Ý nghĩa hình học:** Với biên toàn miền [0,1000] m, tọa độ [0,200] m được phản chiếu sang [800,1000] m. Ví dụ chỉ mô tả phép đối xứng, không bảo đảm phủ toàn bộ miền. OBL động dùng biên quần thể nên không nhất thiết phản chiếu quanh tâm toàn miền.
+## 3. O: học đối lập
 
----
+### Công thức
 
-### 3.3. Trụ cột 3: Đột biến bước nhảy phân phối đuôi nặng Levy Flight
-Để khảo sát việc bổ sung đề xuất bước nhảy, I-WOA áp dụng toán tử đột biến **Levy Flight** (dựa trên thuật toán Mantegna):
+$$
+X^{\mathrm{opp}}=L+U-X.
+$$
 
-- **Độ lệch chuẩn Mantegna $\sigma_u$:**
-  $$\sigma_u = \left( \frac{\Gamma(1 + \beta) \cdot \sin\left(\frac{\pi \beta}{2}\right)}{\Gamma\left(\frac{1 + \beta}{2}\right) \cdot \beta \cdot 2^{\frac{\beta - 1}{2}}} \right)^{\frac{1}{\beta}}, \quad \text{với } \beta = 1.5$$
-- **Sinh bước nhảy ngẫu nhiên $s$:**
-  $$u \sim \mathcal{N}(0, \sigma_u^2), \quad v \sim \mathcal{N}(0, 1)$$
-  $$s = \frac{u}{|v|^{1/\beta}}$$
-- **Cập nhật vị trí đột biến bứt phá:**
-  $$\mathbf{X}_i^{\text{new}} = \mathbf{X}_i + \alpha \cdot \mathbf{s} \odot \boldsymbol{\Delta}_i$$
-  Trong đó:
-  - $\alpha = 0.05$: Hệ số kích thước bước nhảy (Step size scaling).
-  - $\boldsymbol{\Delta}_i$: Vector độ lệch định hướng:
-    $$\boldsymbol{\Delta}_i = \begin{cases} \mathbf{X}_i - \mathbf{X}^* & \text{nếu từng tọa độ có } |X_{i,d}-X^*_d| > 10^{-3} \\ 0.1 \times (\mathbf{UB} - \mathbf{LB}) & \text{nếu bầy đã quá gần hội tụ (kích hoạt nhảy vùng)} \end{cases}$$
-- **Đặc trưng:** Phân phối Lévy có đuôi nặng, cho phép có bước nhảy dài; không bảo đảm thoát mọi cực trị. Code kích hoạt theo xác suất levy_rate=0,3, không có bộ phát hiện chắc chắn “đang kẹt”; chỉ nhận đề xuất nếu cải thiện ứng viên. Dynamic OBL có xác suất 0,2 mỗi vòng khi bật.
+| Thành phần | Ý nghĩa |
+|---|---|
+| X | Vector cấu hình cần phản chiếu |
+| L, U | Vector biên đối xứng |
+| X_opp | Cấu hình đối lập, tiếp tục clip theo miền bài toán |
 
----
+**Ví dụ minh họa:** một tọa độ X=200 trong miền [0,1000] cho X_opp=800. Không suy ra nghiệm đối lập tốt hơn.
 
-## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
+### Khởi tạo và OBL động
 
-| Module cải tiến | File mã nguồn tương ứng | Hàm / Class chính |
-| :--- | :--- | :--- |
-| Phân cụm K-Means khởi tạo | [`kmeans_init.py`](../src/preprocessing/kmeans_init.py) | `generate_kmeans_uav_initial_guess()` |
-| Cơ chế học đối kháng (OBL) | [`obl.py`](../src/algorithms/I_WOA/obl.py) | `generate_opposite_position()`, `apply_obl_population()` |
-| Bước nhảy Levy Flight | [`levy_flight.py`](../src/algorithms/I_WOA/levy_flight.py) | `compute_levy_sigma()`, `apply_levy_flight()` |
-| Tham số I-WOA | [`parameters.py`](../src/algorithms/I_WOA/parameters.py) | `class IWOAParameters` |
-| Bộ điều khiển I-WOA | [`optimizer.py`](../src/algorithms/I_WOA/optimizer.py) | `class IWOAOptimizer.optimize()` |
+Khởi tạo dùng L/U của toàn miền, đánh giá P đối lập, chọn P tốt nhất từ 2P. Dynamic OBL dùng min/max của quần thể hiện tại và xác suất obl_rate=0,2 mỗi vòng.
 
----
+Code chỉ đánh giá thêm đối lập, không tính lại fitness gốc chỉ vì ghép quần thể. Tắt use_obl tắt cả hai pha.
 
-## 5. Trạng thái thực nghiệm và diễn giải
+**Nguồn:** nguyên lý [O-1](SOURCES.md#operators); biểu thức và cách chọn theo [obl.py](../src/algorithms/I_WOA/obl.py). L/U động và xác suất là lựa chọn triển khai, không phải bảo đảm bao phủ mọi miền.
 
-Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
+<a id="levy"></a>
 
-## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
+## 4. L: đề xuất Lévy
 
-Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
-1. **Mirjalili, S., & Lewis, A. (2016).** "The Whale Optimization Algorithm". *Advances in Engineering Software*, vol. 95, pp. 51–67. DOI: [`10.1016/j.advengsoft.2016.01.008`](https://doi.org/10.1016/j.advengsoft.2016.01.008). *(Thuật toán nền tảng WOA)*.
-2. **Tizhoosh, H. R. (2005).** "Opposition-Based Learning: A New Scheme for Machine Intelligence". *IEEE CIMCA Proceedings*, pp. 695–701. DOI: [`10.1109/CIMCA.2005.1631345`](https://doi.org/10.1109/CIMCA.2005.1631345). *(Cơ sở toán học cho toán tử OBL trong `obl.py`)*.
-3. **Mantegna, R. N. (1994).** "Fast, accurate algorithm for numerical simulation of Lévy stable stochastic processes". *Physical Review E*, vol. 49, no. 5, pp. 4677–4683. DOI: [`10.1103/PhysRevE.49.4677`](https://doi.org/10.1103/PhysRevE.49.4677). *(Thuật toán Mantegna tính $\sigma_u$ cho bước nhảy Levy trong `levy_flight.py`)*.
-4. **Yang, X. S., & Deb, S. (2009).** "Cuckoo Search via Lévy Flights". *IEEE NaBIC Proceedings*, pp. 210–214. DOI: [`10.1109/NABIC.2009.5393690`](https://doi.org/10.1109/NABIC.2009.5393690). *(Ứng dụng bước nhảy Levy trong tối ưu hóa metaheuristics)*.
-5. **Ling, Y., Zhou, Y., & Luo, Q. (2017).** "Lévy Flight Trajectory-Based Whale Optimization Algorithm for Global Optimization". *IEEE Access*, vol. 5, pp. 6168–6186. DOI: [`10.1109/ACCESS.2017.2695498`](https://doi.org/10.1109/ACCESS.2017.2695498). *(Chứng minh Levy Flight giải quyết bài toán kẹt cực trị của WOA)*.
-6. **Lyu, J., Zeng, Y., Zhang, R., & Lim, T. J. (2017).** "Placement optimization of UAV-mounted mobile base stations". *IEEE Communications Letters*, vol. 21, no. 3, pp. 604–607. DOI: [`10.1109/LCOMM.2016.2633342`](https://doi.org/10.1109/LCOMM.2016.2633342). *(K-Means định hướng vị trí trạm bay UAV)*.
+### Bước ngẫu nhiên theo code
 
+$$
+\sigma_u=
+\left[
+\frac{\Gamma(1+\beta)\sin(\pi\beta/2)}
+{\Gamma((1+\beta)/2)\,\beta\,2^{(\beta-1)/2}}
+\right]^{1/\beta}.
+$$
+
+$$
+u_d\sim\mathcal{N}(0,\sigma_u^2),\qquad
+v_d\sim\mathcal{N}(0,1),\qquad
+s_d=\frac{u_d}{|v_d|^{1/\beta}}.
+$$
+
+| Ký hiệu | Ý nghĩa | Mặc định |
+|---|---|---|
+| beta | Tham số bước đuôi nặng | 1,5 |
+| Gamma | Hàm gamma toán học | Không phải ngưỡng SNR |
+| sigma_u | Độ lệch chuẩn dùng sinh u | Tính từ beta |
+| u_d, v_d | Hai số Gaussian mỗi chiều | Không phải vận tốc PSO |
+| s_d | Bước ngẫu nhiên mỗi chiều | Không đơn vị |
+
+Nguồn chính xác biểu thức: [levy_flight.py](../src/algorithms/I_WOA/levy_flight.py). [L-1](SOURCES.md#operators) là nguồn ý tưởng Lévy trong metaheuristic; không gán mọi chi tiết sigma cho bài đó khi chưa xác minh bài sơ cấp.
+
+### Chuyển bước thành đề xuất vị trí
+
+Đặt delta_d bằng X_d−X*_d nếu độ lớn chênh lệch lớn hơn 10^-3; ngược lại dùng 0,1(U_d−L_d). Sau đó:
+
+$$
+X'_d=\operatorname{clip}(X_d+\alpha s_d\delta_d,L_d,U_d).
+$$
+
+alpha=0,05; X ở đây là ứng viên sau bước WOA. Delta dùng mét; alpha và s không có đơn vị.
+
+Kích hoạt với xác suất levy_rate=0,3 mỗi cá thể, không có kiểm tra chắc chắn “đang kẹt”. Chấm X' và chỉ nhận nếu tốt hơn ứng viên WOA vừa có. Đây là bước bổ sung, không bảo đảm thoát mọi cực trị.
+
+<a id="ablation"></a>
+
+## 5. Trình tự, chi phí và ablation
+
+| Pha | FE bổ sung |
+|---|---|
+| K-Means | Không gọi fitness trực tiếp, nhưng tốn thời gian |
+| Khởi tạo P cá thể | P |
+| OBL khởi tạo | P nếu bật |
+| WOA | Một đánh giá cho mỗi ứng viên mới |
+| Lévy | Một đánh giá cho mỗi đề xuất được thử, kể cả bị loại |
+| OBL động | P mỗi lần kích hoạt |
+| Tính metric báo cáo | Ngoài FE tìm kiếm theo giao thức |
+
+Các cặp so K/O/L và 8 tổ hợp nằm trong [ABLATION](ABLATION.md). Notebook áp dụng tương tự trên GA/PSO nhưng vị trí chèn theo lõi riêng; xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md). Không mặc định KOL luôn tốt hơn K hoặc O.
+
+<a id="nguon"></a>
+
+## 6. Nguồn và mã triển khai
+
+| Phần | Nguồn |
+|---|---|
+| Ba nhánh WOA | [DWWOA](DWWOA.md), WOA-1 |
+| K-Means thư viện | K-1 và kmeans_init.py |
+| Đối lập | O-1; code obl.py |
+| Lévy | L-1 cho ý tưởng; code levy_flight.py cho biểu thức hiện tại |
+| Thứ tự, xác suất, một nghiệm mầm | Thiết kế dự án; optimizer.py/parameters.py |
+| Fitness và ràng buộc | [REPORT](REPORT.md), không lấy từ một bài I-WOA khác |
+
+Trạng thái nguồn: [SOURCES](SOURCES.md). Chưa có study hoàn tất để kết luận I-WOA tốt nhất hoặc thời gian thực. Đọc tiếp [hai thuật toán lai](DWH_WOA_PSO.md).

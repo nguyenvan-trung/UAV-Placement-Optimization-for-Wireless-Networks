@@ -1,50 +1,138 @@
-# Chuẩn bị môi trường và tái lập đúng luồng
+# Hướng dẫn chuẩn bị, thực thi và đọc lại kết quả
 
-[Trang đầu](README.md) · [Mục lục](implementation/docs/README.md) · [Trạng thái](implementation/docs/PROJECT_GUIDE.md)
+[Trang đầu](README.md) · [Thiết kế nghiên cứu](NOTE.md) · [Mục lục kỹ thuật](implementation/docs/README.md)
 
-Các lệnh là hướng dẫn dành cho lần thực thi sau khi có yêu cầu. Việc có lệnh trong tài liệu không có nghĩa lệnh đã được chạy. Study notebook hiện chưa chạy và chưa chốt seed.
+**Chưa chạy benchmark.** Đây là hướng dẫn cho lần thực thi được duyệt. Không chạy lệnh chỉ vì đọc trang này. Danh sách seed trống và các vấn đề trong [PRE_RUN_REVIEW](implementation/docs/PRE_RUN_REVIEW.md) cần được xử lý trước.
 
-## 1. Chọn luồng trước khi thực thi
+## Mục lục
 
-| Nhu cầu | Luồng | Tài liệu |
+1. [Mô hình quy trình](#quy-trinh)
+2. [Chọn đúng luồng](#chon-luong)
+3. [Môi trường và kernel](#moi-truong)
+4. [Cấu hình notebook 100 vòng](#cau-hinh)
+5. [Thực thi sau khi được duyệt](#thuc-thi)
+6. [Dừng và tiếp tục](#resume)
+7. [Đọc bảng và truy nguồn](#doc-ket-qua)
+8. [Luồng FE riêng](#fe)
+9. [Lỗi thường gặp và giới hạn](#loi)
+
+<a id="quy-trinh"></a>
+
+## 1. Mô hình quy trình
+
+![Các bước từ thiết kế, duyệt, task tới bảng và nhận xét](implementation/docs/assets/study.svg)
+
+**Giải thích:** chuẩn bị môi trường không đồng nghĩa chạy tối ưu. Tạo task không đồng nghĩa study đã đủ. Vẽ lại từ artifact không phải chạy optimizer lại. Chỉ viết kết quả sau khi kiểm tra đầy đủ.
+
+<a id="chon-luong"></a>
+
+## 2. Chọn đúng luồng
+
+| Bạn muốn làm gì? | Dùng gì? | Input |
 |---|---|---|
-| 500 CSV, 30 case, 100 vòng, bảng/ảnh trong notebook | Notebook | [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md) |
-| So sánh cùng FE trên các phân bố sinh mới | Benchmark FE | [EXPERIMENT_DESIGN](implementation/docs/EXPERIMENT_DESIGN.md) |
-| Chạy một CSV hoặc batch sáu thuật toán | Script legacy | [scripts/README](implementation/scripts/README.md) |
+| 30 case, 100 vòng, code và kết quả cùng trang | [Notebook study](implementation/notebooks/full_study_100_iterations.ipynb) | 500 CSV hiện có |
+| Đối chứng cùng FE | [Runner FE](run_benchmark.py) | Kịch bản sinh từ YAML và seed manifest |
+| Chạy một CSV hoặc batch sáu phương pháp | [Script CSV](implementation/scripts/README.md) | CSV hiện có |
 
-Không lấy output của luồng này làm input analyzer luồng kia nếu chưa có chuyển đổi schema đúng và giao thức phù hợp.
+Các luồng khác schema và cách đo thời gian. Không đổi tên cột rồi coi chúng là cùng thí nghiệm.
 
-## 2. Môi trường
+<a id="moi-truong"></a>
 
-Dùng Python hỗ trợ cú pháp hiện tại (từ 3.10). Phiên trước dùng Python 3.13.9 và thư viện đã có sẵn; đó không phải cam kết cài sạch từ lock trên mọi máy.
+## 3. Môi trường và kernel
 
-Chạy lệnh dưới từ gốc repository chỉ khi muốn chuẩn bị môi trường. Không ghi đè môi trường đang dùng; ví dụ dùng tên riêng .venv-study:
+Code dùng cú pháp Python từ 3.10. Môi trường phiên trước là Python 3.13.9; cài sạch từ lock chưa được xác minh.
+
+| Thành phần | Dùng cho |
+|---|---|
+| numpy, pandas | Mảng số và bảng |
+| matplotlib | Hình từ kết quả |
+| scikit-learn | K-Means |
+| scipy | Phân tích thống kê của luồng FE |
+| tabulate | Xuất bảng Markdown |
+| threadpoolctl | Giới hạn luồng tính toán |
+| Jupyter / ipykernel | Mở notebook và chạy bằng kernel phù hợp |
+| PyYAML | Cấu hình FE/sensitivity |
+
+**Chú ý trước cài:** requirements.txt hiện có dòng sai đã ghi trong PRE_RUN_REVIEW. Cần sửa sau khi được duyệt; không chạy cài đặt từ một file biết đang sai.
+
+Ví dụ chuẩn bị môi trường riêng sau khi xử lý file phụ thuộc:
 
 ```powershell
 python -m venv .venv-study
 .\.venv-study\Scripts\python.exe -m pip install -r implementation\requirements.txt
 ```
 
-Hoặc cài requirements.lock.txt nếu muốn thử đúng snapshot phiên bản. Cài sạch từ lock chưa được xác minh. Thư mục .venv cũ có bố cục bin/lib và không có executable Windows tại Scripts/python.exe trong phiên trước; chỉ chọn một interpreter thực sự tồn tại.
+Chọn kernel trỏ đúng interpreter này trong VS Code/Jupyter. .venv cũ có bố cục bin/lib và từng không có Scripts/python.exe dùng được trên Windows; không suy ra môi trường hoạt động chỉ vì thấy thư mục.
 
-Mở Jupyter/VS Code rồi chọn đúng kernel của môi trường có dependencies. Không cần Activate.ps1 nếu gọi trực tiếp interpreter.
+<a id="cau-hinh"></a>
 
-## 3. Notebook 100 vòng
+## 4. Cấu hình notebook 100 vòng
 
-1. Đọc [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md) và [cấu hình](configs/notebook_study.json).
-2. Chốt danh sách seed đánh giá, ít nhất hai seed khác nhau; ghi lựa chọn trước khi nhìn kết quả.
-3. Mở [notebook](implementation/notebooks/full_study_100_iterations.ipynb), chọn kernel và chạy ô thiết lập/thiết kế khi được yêu cầu thực thi.
-4. Kiểm tra số task = 500 × 30 × số seed; output riêng cho thiết kế.
-5. Chỉ đặt CONFIRM_RUN=True khi đã có xác nhận chạy. Sau đó chạy ô thí nghiệm.
-6. Sau completion, chạy các ô đọc bảng và vẽ ảnh. Những ô này không chạy lại optimizer.
+Nguồn: [configs/notebook_study.json](configs/notebook_study.json).
 
-Giữ bản gốc mặc định False và seeds=[] trong repository. Không chỉnh cấu hình hoặc source giữa chừng rồi resume vào cùng output. Không mở hai runner cùng output. Nếu cần dừng, ngắt kernel; task JSON đã hoàn tất được giữ. Hướng dẫn khóa/resume trong NOTEBOOK_STUDY.
+| Khóa | Giá trị hiện tại | Ý nghĩa |
+|---|---|---|
+| iterations | 100 | Số vòng/generation |
+| population | 25 | Số cấu hình UAV trong quần thể |
+| num_uavs | 4 | Số UAV trong mỗi cấu hình |
+| seeds | [] | Chưa chốt; bộ chạy yêu cầu ít nhất hai |
+| output | implementation/results/study_100_iterations | Thư mục riêng cho một thiết kế |
 
-## 4. Benchmark FE riêng
+500 × 30 × số seed = số task. Hai seed chỉ là tối thiểu kỹ thuật, không tự bảo đảm độ tin cậy thống kê. Chốt danh sách trước khi xem kết quả.
 
-Nguồn thiết kế: [benchmark.yaml](configs/benchmark.yaml); manifest: [seeds.csv](seeds/seeds.csv). Runner sinh tọa độ từ data_seed; không đọc trực tiếp 500 CSV. Chốt số instance, số run và ngân sách trước chạy. Target hiện null; không báo hit-rate như tỷ lệ thất bại.
+seeds/seeds.csv phục vụ runner FE, không tự điền danh sách seed notebook. Không dùng nhầm hai nguồn.
 
-Ví dụ lệnh, chỉ thực thi khi được yêu cầu:
+<a id="thuc-thi"></a>
+
+## 5. Thực thi sau khi được duyệt
+
+1. Xử lý các mục trong PRE_RUN_REVIEW; lưu phiên bản code/config.
+2. Chốt seed; kiểm tra đúng 500 CSV và output riêng.
+3. Mở notebook, chọn kernel, nạp cấu hình và xem bảng 30 case.
+4. Kiểm tra số task và thông số.
+5. Chỉ khi được duyệt benchmark mới đặt CONFIRM_RUN=True và thực thi ô chạy.
+6. Đủ task và completion rồi mới đọc bảng/ảnh.
+
+Bản lưu trong repo hiện mặc định False, không có output thực nghiệm. Đừng commit một notebook đang bật chạy như bản mặc định dùng chung.
+
+<a id="resume"></a>
+
+## 6. Dừng và tiếp tục
+
+| Tình huống | Hành vi / cách xử lý |
+|---|---|
+| Task hoàn tất | Lưu một JSON nguyên tử |
+| Ngắt trước khi lưu task | Task đó cần chạy lại |
+| Chạy lại cùng thiết kế | Runner bỏ qua file task đã có |
+| Source/config/data đổi | Chữ ký đổi; dùng output khác |
+| Hai kernel cùng output | Khóa .running ngăn ghi đồng thời |
+| Kernel bị kill | Khóa có thể còn; xác minh tiến trình cũ đã dừng trước khi xử lý |
+| Artifact cũ hỏng | Cần validator đầy đủ; đây là mục chưa hoàn thiện trong rà soát |
+
+Không xóa output chỉ để vượt lỗi resume. Không coi file tồn tại là bằng chứng nội dung đúng.
+
+<a id="doc-ket-qua"></a>
+
+## 7. Đọc bảng và truy nguồn
+
+| Artifact | Dùng để |
+|---|---|
+| manifest.json | Kiểm tra thiết kế và chữ ký |
+| tasks/*.json | Truy một dataset–case–seed và history |
+| runs.csv | Xem các result sau khi đủ task |
+| completion.json | Đối chiếu expected/actual |
+| tables/*.csv và *.md | Đọc phép gộp mô tả |
+| figures/*.png | Hình được các ô phân tích xuất từ artifact |
+
+Một ô bảng phải truy ngược được về trường result/history và phép gộp. Xem [DATA_FORMAT](implementation/docs/DATA_FORMAT.md) và [REPORT_EVIDENCE](implementation/docs/REPORT_EVIDENCE.md). Notebook chưa lưu metadata môi trường đầy đủ như runner FE và chưa có kiểm định cho 30 case.
+
+<a id="fe"></a>
+
+## 8. Luồng FE riêng
+
+[benchmark.yaml](configs/benchmark.yaml) và [seeds.csv](seeds/seeds.csv) khai báo dữ liệu/seed. Runner sinh tọa độ mới, mặc định P=30 và max_fe=3030. Mức này không bảo đảm mọi phương pháp có đúng 100 vòng.
+
+Ví dụ lệnh để tham khảo, chưa thực hiện trong đợt tài liệu:
 
 ```powershell
 python run_benchmark.py --smoke --output tmp_audit/my_fe_smoke --workers 1
@@ -52,14 +140,20 @@ python run_benchmark.py --output results/benchmark_fe_01 --workers 1
 python run_benchmark.py --output results/benchmark_fe_01 --workers 1 --resume
 ```
 
-Smoke dùng ngân sách nhỏ và không đại diện study. Runner có mode ablation/sensitivity riêng. Chữ ký resume gồm source/config/seed/mode/workers; không đổi các phần đó trong một output.
+Smoke là kiểm tra nhỏ, không thay nghiên cứu. Xem [EXPERIMENT_DESIGN](implementation/docs/EXPERIMENT_DESIGN.md). Analyzer FE sáu phương pháp không nhận trực tiếp log 30 case notebook.
 
-Đầu ra FE có runs.csv, convergence, solutions, env.json, config/seed/lock và completion. Đọc [DATA_FORMAT](implementation/docs/DATA_FORMAT.md) trước khi phân tích. analyze.py dành cho sáu thuật toán chính, không tự hỗ trợ 30 case.
+<a id="loi"></a>
 
-## 5. Kiểm tra và nguồn bằng chứng
+## 9. Lỗi thường gặp và giới hạn
 
-Đọc mã hoặc tài liệu không cần chạy test. Khi thực hiện kiểm tra sau này, tách output test khỏi kết quả thật và ghi rõ phạm vi. Một số test có thể tạo artifact; không đưa các bảng đó vào báo cáo nghiên cứu.
+| Biểu hiện | Cần kiểm tra |
+|---|---|
+| Thiếu module | Kernel/interpreter và requirements |
+| Không chạy vì seeds | Danh sách seed chưa chốt hoặc không hợp lệ |
+| WinError 5 khi tạo process | Môi trường từng chặn multiprocessing; notebook hiện chạy tuần tự |
+| Signature không khớp | Source/config/data đã đổi |
+| Không có bảng | Study chưa đủ task hoặc artifact chưa hợp lệ |
+| Công thức hiện như văn bản | Mở GitHub Preview/Markdown có math; xem cách đọc bằng lời cạnh công thức |
+| Hình không mở trên GitHub | Commit cả SVG ở docs/assets và giữ đúng đường dẫn tương đối |
 
-Để gọi một kết quả là tái lập được, cần giữ input, source/config, seed, môi trường, log, phép gộp và artifact. Notebook hiện có manifest/hash/task checkpoint nhưng chưa thu đủ metadata môi trường như env.json của runner FE. Không tuyên bố hai luồng có cùng mức ghi nhận môi trường.
-
-Xem [REPORT_EVIDENCE](implementation/docs/REPORT_EVIDENCE.md) trước khi bổ sung số liệu vào báo cáo.
+Không cần chạy test hoặc optimizer để đọc tài liệu. Khi thực thi kiểm tra về sau, ghi nguồn và phạm vi; dữ liệu test không dùng làm kết quả nghiên cứu.

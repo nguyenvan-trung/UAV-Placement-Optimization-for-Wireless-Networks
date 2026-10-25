@@ -1,9 +1,23 @@
 # Định dạng dữ liệu: CSV đầu vào, notebook, batch và FE
 
+## Mục lục
+
+1. [1. CSV user đầu vào](#doc-section-01)
+2. [2. Artifact notebook 100 vòng](#doc-section-02)
+3. [3. CSV batch legacy](#doc-section-03)
+4. [4. Luồng FE](#doc-section-04)
+5. [seeds/seeds.csv](#doc-section-05)
+6. [runs.csv](#doc-section-06)
+7. [convergence và solutions](#doc-section-07)
+8. [env.json và lock](#doc-section-08)
+
+
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Thuật ngữ](GLOSSARY.md) · [Study notebook](NOTEBOOK_STUDY.md)
 
 
 Mục đích: nhận diện đúng schema trước khi đọc hoặc phân tích. Các tên trường dưới đây là hợp đồng dữ liệu, không phải số liệu nghiên cứu. Notebook và FE đều có tên runs.csv nhưng không cùng cấu trúc.
+
+<a id="doc-section-01"></a>
 
 ## 1. CSV user đầu vào
 
@@ -14,6 +28,8 @@ Mục đích: nhận diện đúng schema trước khi đọc hoặc phân tích
 | demand | Nhu cầu dịch vụ đầu vào; fitness hiện tại không cân coverage theo demand |
 
 Loader/validator yêu cầu các cột, dữ liệu không thiếu và số hữu hạn. Tiền xử lý bỏ user_id trùng; số user báo cáo là số sau tiền xử lý. Không tự ép z_m về 0. Notebook đọc data/stores; hình data/views chỉ minh họa.
+
+<a id="doc-section-02"></a>
 
 ## 2. Artifact notebook 100 vòng
 
@@ -32,15 +48,21 @@ Khóa task là dataset–case–seed. position là vector phẳng 3N tọa độ
 
 Không có scenario_id, distribution, purpose hoặc batch CPU trong schema notebook. Không tự bịa các cột này để đưa vào analyzer FE.
 
+<a id="doc-section-03"></a>
+
 ## 3. CSV batch legacy
 
 run_batch.py ghi các tên cột dạng Dataset, Total_Users, Num_UAVs, Algorithm, Population_Size, Iterations, Seed, Fitness, Coverage_Rate, Covered_Users, Energy_Normalized, Interference_Rate, Runtime_Seconds.
 
 Đó là kết quả cuối, không phải history từng vòng. Summary theo user/UAV là các bảng gộp, không được coi mỗi dòng summary là một run độc lập. Schema này không dùng trực tiếp cho notebook study hoặc analyzer FE.
 
+<a id="doc-section-04"></a>
+
 ## 4. Luồng FE
 
 Các mục còn lại mô tả seed manifest và log của runner FE. Luồng này sinh dataset từ seed/config thay vì đọc trực tiếp CSV user của notebook. Xem [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md).
+
+<a id="doc-section-05"></a>
 
 ## seeds/seeds.csv
 
@@ -56,6 +78,8 @@ Các mục còn lại mô tả seed manifest và log của runner FE. Luồng n�
 | purpose | tuning/eval | Hai tập không dùng chung data/algo seed |
 
 Được sinh bởi generate_seeds.py từ benchmark.yaml. Không chỉnh tay giữa batch.
+
+<a id="doc-section-06"></a>
 
 ## runs.csv
 
@@ -85,11 +109,15 @@ Các mục còn lại mô tả seed manifest và log của runner FE. Luồng n�
 Không cộng batch metadata lặp trên nhiều dòng. Thời gian/PID không kỳ vọng
 giống hệt khi chạy lại; so Fitness, nghiệm và convergence theo task ID.
 
+<a id="doc-section-07"></a>
+
 ## convergence và solutions
 
 convergence/*.csv có fe và best_fitness (maximize), lấy mẫu mỗi chu kỳ FE
 và tại ngân sách cuối. solutions/*.json lưu identity, tọa độ UAV, quần thể
 nền, hash UE, FE theo phase, khả thi và final metrics.
+
+<a id="doc-section-08"></a>
 
 ## env.json và lock
 

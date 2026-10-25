@@ -1,6 +1,14 @@
 # Notebook: code, bảng và biểu đồ cùng nơi
 
+## Mục lục
+
+1. [Notebook dùng cho thiết kế hiện tại](#doc-section-01)
+2. [Notebook khác](#doc-section-02)
+
+
 [Trang đầu](../../README.md) · [Mục lục](../docs/README.md)
+
+<a id="doc-section-01"></a>
 
 ## Notebook dùng cho thiết kế hiện tại
 
@@ -11,6 +19,8 @@ Thứ tự ô: thiết lập → bảng thiết kế → ô chạy có khóa →
 **Chưa chạy study.** Ô chạy mặc định CONFIRM_RUN=False; seed trong config để trống. Mở file hoặc đọc Markdown không khởi chạy. Chỉ thực thi khi được yêu cầu.
 
 Hướng dẫn đầy đủ và bảng case: [NOTEBOOK_STUDY](../docs/NOTEBOOK_STUDY.md). Schema đầu ra: [DATA_FORMAT](../docs/DATA_FORMAT.md). Môi trường/kernel: [REPRODUCE](../../REPRODUCE.md).
+
+<a id="doc-section-02"></a>
 
 ## Notebook khác
 

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1023" viewBox="0 0 1000 1023" role="img" aria-labelledby="title desc">
+<title id="title">GA — TIẾN HÓA MỘT QUẦN THỂ PHƯƠNG ÁN</title>
+<desc id="desc">1. KHỞI TẠO VÀ CHẤM ĐIỂM: Tạo P vector nghiệm; tính fitness; giữ best ban đầu. 2. CHỌN HAI CHA MẸ: Tournament: lấy 3 ứng viên, chọn ứng viên có fitness cao nhất. 3. LAI GHÉP SỐ HỌC: Trộn từng tọa độ của hai cha mẹ để tạo hai con. 4. ĐỘT BIẾN VÀ ĐÁNH GIÁ: Thêm nhiễu Gaussian theo xác suất; clip biên; chấm fitness con. 5. THAY THẾ CÓ GIỮ ELITE: Giữ 2 cá thể cha tốt; bổ sung con tốt để đủ P cá thể. 6. CẬP NHẬT BEST VÀ LƯU MỐC: Lặp bước chọn cha mẹ cho đến hết 100 thế hệ.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#64748b"/></marker></defs>
+<rect width="1000" height="1023" rx="18" fill="#f1f5f9"/>
+<rect width="1000" height="112" rx="18" fill="#0f2942"/>
+<text x="42" y="47" fill="#fff" font-family="Arial, sans-serif" font-size="25" font-weight="700">GA — TIẾN HÓA MỘT QUẦN THỂ PHƯƠNG ÁN</text>
+<text x="42" y="81" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="18">Mỗi cá thể chứa cả cấu hình UAV; không phải một UAV riêng lẻ</text>
+<rect x="42" y="140" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="175" r="20" fill="#0e7490"/>
+<text x="79" y="182" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">1</text>
+<text x="116" y="179" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">KHỞI TẠO VÀ CHẤM ĐIỂM</text>
+<text x="64" y="218" fill="#334155" font-family="Arial, sans-serif" font-size="18">Tạo P vector nghiệm; tính fitness; giữ best ban đầu.</text>
+<path d="M484 248 V273" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="283" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="318" r="20" fill="#0e7490"/>
+<text x="79" y="325" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">2</text>
+<text x="116" y="322" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">CHỌN HAI CHA MẸ</text>
+<text x="64" y="361" fill="#334155" font-family="Arial, sans-serif" font-size="18">Tournament: lấy 3 ứng viên, chọn ứng viên có fitness cao nhất.</text>
+<path d="M484 391 V416" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="426" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="461" r="20" fill="#0e7490"/>
+<text x="79" y="468" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">3</text>
+<text x="116" y="465" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">LAI GHÉP SỐ HỌC</text>
+<text x="64" y="504" fill="#334155" font-family="Arial, sans-serif" font-size="18">Trộn từng tọa độ của hai cha mẹ để tạo hai con.</text>
+<path d="M484 534 V559" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="569" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="604" r="20" fill="#0e7490"/>
+<text x="79" y="611" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">4</text>
+<text x="116" y="608" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">ĐỘT BIẾN VÀ ĐÁNH GIÁ</text>
+<text x="64" y="647" fill="#334155" font-family="Arial, sans-serif" font-size="18">Thêm nhiễu Gaussian theo xác suất; clip biên; chấm fitness con.</text>
+<path d="M484 677 V702" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="712" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="747" r="20" fill="#0e7490"/>
+<text x="79" y="754" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">5</text>
+<text x="116" y="751" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">THAY THẾ CÓ GIỮ ELITE</text>
+<text x="64" y="790" fill="#334155" font-family="Arial, sans-serif" font-size="18">Giữ 2 cá thể cha tốt; bổ sung con tốt để đủ P cá thể.</text>
+<path d="M484 820 V845" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="855" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="890" r="20" fill="#0e7490"/>
+<text x="79" y="897" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">6</text>
+<text x="116" y="894" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">CẬP NHẬT BEST VÀ LƯU MỐC</text>
+<text x="64" y="933" fill="#334155" font-family="Arial, sans-serif" font-size="18">Lặp bước chọn cha mẹ cho đến hết 100 thế hệ.</text>
+<path d="M930 905 H965 V333 H934" fill="none" stroke="#0e7490" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+</svg>

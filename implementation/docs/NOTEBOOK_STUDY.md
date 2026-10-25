@@ -1,8 +1,27 @@
 # Study notebook: 30 trường hợp, 100 vòng, 500 CSV
 
+## Mục lục
+
+1. [1. Tệp và điều kiện chung](#doc-section-01)
+2. [2. Sáu thuật toán chính](#doc-section-02)
+3. [3. Hai mươi bốn case của WOA, PSO và GA](#doc-section-03)
+4. [4. Sáu case của hai bản lai](#doc-section-04)
+5. [5. Quy tắc toán tử](#doc-section-05)
+6. [6. Định nghĩa kết quả và thời gian](#doc-section-06)
+7. [7. Bảng đầu ra](#doc-section-07)
+8. [8. Chạy, lưu và tiếp tục](#doc-section-08)
+9. [9. Đánh giá và giới hạn](#doc-section-09)
+
+
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Mô hình](REPORT.md) · [Schema](DATA_FORMAT.md)
 
 Ngày 25/10/2026: **đã triển khai, chưa chạy thí nghiệm**. Notebook chưa có output; danh sách seed chưa chốt. Tài liệu này mô tả hành vi mã hiện tại và các giới hạn, không phải kết quả nghiên cứu.
+
+![Thiết kế, duyệt chạy, thực thi task, kiểm tra và tổng hợp](assets/study.svg)
+
+**Cách đọc:** chốt thiết kế trước; chỉ thực thi khi được duyệt; lưu task rồi kiểm tra đủ cặp mới tổng hợp. Đây là quy trình, không xác nhận study đã chạy. Hình theo notebook_study.py; validator đầy đủ vẫn cần củng cố theo PRE_RUN_REVIEW.
+
+<a id="doc-section-01"></a>
 
 ## 1. Tệp và điều kiện chung
 
@@ -20,11 +39,15 @@ Cùng dataset, seed, quần thể nền và hàm fitness giữa các đối ch�
 
 Khối lượng: 500 × 30 = **15.000 task mỗi seed**. Nếu chọn 30 seed sẽ là 450.000 task; đây là phép tính thiết kế, không phải số task đã chạy.
 
+<a id="doc-section-02"></a>
+
 ## 2. Sáu thuật toán chính
 
 GA, PSO, WOA, H-PSO-GA, H-WOA-PSO và I-WOA là nhóm main. Các hàng dùng chung kết quả với nhóm ablation khi case trùng, không chạy lặp chỉ vì xuất nhiều bảng.
 
 Cơ chế baseline nằm trong [các chương DW](README.md). Số case duy nhất của toàn study là 30, không phải tổng số hàng của mọi bảng.
+
+<a id="doc-section-03"></a>
 
 ## 3. Hai mươi bốn case của WOA, PSO và GA
 
@@ -41,6 +64,8 @@ Cơ chế baseline nằm trong [các chương DW](README.md). Số case duy nh�
 
 WOA gốc dùng WOAOptimizer. Các case WOA có toán tử dùng IWOAOptimizer với cờ tương ứng. PSO và GA giữ lõi riêng, bật thêm toán tử, không được đổi tên rồi dùng lõi WOA thay thế.
 
+<a id="doc-section-04"></a>
+
 ## 4. Sáu case của hai bản lai
 
 | Case | Crossover | Mutation | Lực hút pbest trong vận tốc | Lực hút gbest trong vận tốc |
@@ -53,6 +78,8 @@ WOA gốc dùng WOAOptimizer. Các case WOA có toán tử dùng IWOAOptimizer v
 | H-WOA-PSO-no-gbest-velocity | Không | Không | Có | Không |
 
 Không thêm K/O/L vào các bản lai trong thiết kế hiện tại. PSO gốc và WOA gốc từ bảng trước làm đối chứng bổ sung. H-WOA-PSO trộn hai đề xuất trên từng cá thể, không chia quần thể thành hai nửa. Bỏ gbest trong vận tốc vẫn giữ ảnh hưởng best ở nhánh WOA.
+
+<a id="doc-section-05"></a>
 
 ## 5. Quy tắc toán tử
 
@@ -70,6 +97,8 @@ WOA chèn Lévy sau cập nhật từng cá thể; PSO chèn sau lượt cập n
 
 Các case H-PSO-GA dùng crossover 0,8 và mutation 0,15 khi bật. Baseline GA có tham số riêng, xem parameter class. Tắt toán tử có thể thay đổi tiêu thụ RNG, nên cùng seed không đồng nghĩa cùng quỹ đạo sau mọi bước.
 
+<a id="doc-section-06"></a>
+
 ## 6. Định nghĩa kết quả và thời gian
 
 Fitness là tốt nhất **đã được đánh giá** đến mốc, kể cả ứng viên bị loại. optimizer_fitness lưu thêm kết quả optimizer trả về để truy vết.
@@ -81,6 +110,8 @@ FE tính cả khởi tạo, OBL, Lévy, ứng viên không khả thi và ứng v
 Thời gian tính từ khi tạo observer tới mốc ghi: gồm khởi tạo, K-Means, tối ưu và chi phí quan sát các mốc trước. Không gồm đọc/tiền xử lý CSV, tạo ma trận quần thể nền, ghi JSON; có thể gồm thời gian tạo optimizer. Mốc thời gian được chụp trước khi tính metric cho chính mốc đó. Không so trực tiếp với thời gian FE runner có phạm vi khác.
 
 Cùng 100 vòng không bảo đảm cùng FE. Study này là so sánh theo vòng; đối chứng theo FE nằm trong [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md).
+
+<a id="doc-section-07"></a>
 
 ## 7. Bảng đầu ra
 
@@ -101,6 +132,8 @@ Mỗi bảng xuất CSV/MD dưới tables và hiển thị trong notebook. Summa
 
 Mỗi nhóm có ảnh hội tụ median/IQR và ảnh sáu chỉ số theo quy mô. IQR là phân tán mô tả, không phải CI. Ảnh 3D lấy nghiệm I-WOA đã lưu trên dataset 200 user đầu tiên theo tên, seed nhỏ nhất, vòng 100; không tối ưu lại và không chọn hình theo thắng/thua.
 
+<a id="doc-section-08"></a>
+
 ## 8. Chạy, lưu và tiếp tục
 
 Notebook mặc định CONFIRM_RUN=False. Danh sách seed để trống. Đọc [REPRODUCE](../../REPRODUCE.md) trước khi được yêu cầu chạy; trong lượt chỉnh tài liệu này không thực thi notebook.
@@ -110,6 +143,8 @@ Mỗi task ghi JSON nguyên tử. Manifest lưu config, case, dataset, hash sour
 Khóa .running ngăn hai kernel ghi cùng output. Kill kernel có thể để lại khóa; xác minh tiến trình cũ đã dừng trước khi xử lý. Không xóa kết quả để chữa lỗi resume.
 
 Chỉ đủ task mới ghi runs.csv/completion.json và cho phép tổng hợp. Thư mục mặc định là implementation/results/study_100_iterations. Bộ chạy tuần tự một worker; đọc bảng không gọi optimizer. Tổng hợp đọc từng artifact để tránh nạp toàn bộ tọa độ lịch sử vào RAM, nhưng vẫn cần bộ nhớ cho chuỗi fitness.
+
+<a id="doc-section-09"></a>
 
 ## 9. Đánh giá và giới hạn
 

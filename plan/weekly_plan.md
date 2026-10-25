@@ -1,5 +1,10 @@
 # Lộ trình triển khai và đánh giá
 
+## Mục lục
+
+1. [Trạng thái hiện tại](#doc-section-01)
+
+
 [Kế hoạch](README.md) · [Phân công](team_assignment.md) · [Thiết kế study](../implementation/docs/NOTEBOOK_STUDY.md)
 
 Các tuần dưới đây là khung công việc, không khẳng định đã thực hiện đúng lịch hoặc hoàn tất nghiên cứu.
@@ -13,6 +18,8 @@ Các tuần dưới đây là khung công việc, không khẳng định đã th
 | Tuần 8 | Chốt seed và kiểm tra giao thức khi được yêu cầu | Cấu hình trước chạy; nguồn/môi trường được lưu |
 | Tuần 9 | Thực thi study khi được xác nhận | Đủ task, manifest/completion, bảng truy nguồn |
 | Tuần 10 | Đánh giá, giới hạn, báo cáo và trình bày | Báo cáo dựa trên dữ liệu thật |
+
+<a id="doc-section-01"></a>
 
 ## Trạng thái hiện tại
 

@@ -1,5 +1,10 @@
 # Phân công và quy tắc review
 
+## Mục lục
+
+1. [Công việc chung](#doc-section-01)
+
+
 [Kế hoạch](README.md) · [Lộ trình](weekly_plan.md) · [Mục lục kỹ thuật](../implementation/docs/README.md)
 
 Bảng là phạm vi trách nhiệm của nhóm, không phải xác nhận các thành viên đã hoàn tất hoặc duyệt mọi thay đổi.
@@ -9,6 +14,8 @@ Bảng là phạm vi trách nhiệm của nhóm, không phải xác nhận các 
 | Nguyễn Văn Trung | Tích hợp, I-WOA, giao thức thí nghiệm, báo cáo | [DWI_WOA](../implementation/docs/DWI_WOA.md), [NOTEBOOK_STUDY](../implementation/docs/NOTEBOOK_STUDY.md) |
 | Hoàng Văn Trường | GA, H-PSO-GA, quản lý/kiểm tra dataset | [DWGA](../implementation/docs/DWGA.md), [DWH_PSO_GA](../implementation/docs/DWH_PSO_GA.md) |
 | Nguyễn Minh Hiếu | PSO, WOA, H-WOA-PSO, trực quan hóa | [DWPSO](../implementation/docs/DWPSO.md), [DWWOA](../implementation/docs/DWWOA.md), [DWH_WOA_PSO](../implementation/docs/DWH_WOA_PSO.md) |
+
+<a id="doc-section-01"></a>
 
 ## Công việc chung
 

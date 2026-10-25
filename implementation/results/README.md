@@ -1,8 +1,16 @@
 # Kết quả được sinh khi thực thi
 
+## Mục lục
+
+1. [Notebook hiện tại](#doc-section-01)
+2. [Các luồng khác](#doc-section-02)
+
+
 [Trang đầu](../../README.md) · [Mục lục](../docs/README.md) · [Schema](../docs/DATA_FORMAT.md)
 
 Thư mục này dành cho đầu ra, không chứa dataset gốc hoặc mã thuật toán. Đầu ra smoke và batch dở trước đây đã được dọn. Hiện chưa có study notebook hoàn tất.
+
+<a id="doc-section-01"></a>
 
 ## Notebook hiện tại
 
@@ -19,6 +27,8 @@ Output mặc định: study_100_iterations, chỉ được tạo khi thực thi 
 | .running | Khóa trong lúc chạy; không phải kết quả |
 
 Đọc bảng chỉ khi đủ task và manifest khớp. Không dùng checkpoint dở để xếp hạng toàn thiết kế. Xem [NOTEBOOK_STUDY](../docs/NOTEBOOK_STUDY.md).
+
+<a id="doc-section-02"></a>
 
 ## Các luồng khác
 

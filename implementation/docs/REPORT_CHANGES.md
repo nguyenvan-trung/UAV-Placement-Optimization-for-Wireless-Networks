@@ -1,5 +1,11 @@
 # Phạm vi sửa báo cáo
 
+## Mục lục
+
+1. [Bố cục phục vụ đọc trên GitHub](#doc-section-01)
+2. [Đồng bộ tài liệu ngày 25/10/2026](#doc-section-02)
+
+
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Thuật ngữ](GLOSSARY.md) · [Study notebook](NOTEBOOK_STUDY.md)
 
 
@@ -20,6 +26,18 @@ Trang ghi lịch sử biên tập, không phải log chạy thí nghiệm. Bản
 
 Các heading trong file là mốc nội dung; dòng cụ thể xem diff của workspace.
 Các số đo mới phải chờ kết quả đúng giao thức (notebook hoặc FE), không gộp hai loại ngân sách. Kiểm định cho 30 case notebook chưa có.
+
+<a id="doc-section-01"></a>
+
+## Bố cục phục vụ đọc trên GitHub
+
+Viết lại bốn file gốc, REPORT và sáu chương thuật toán theo cấu trúc: SVG lớn → cách đọc → bước xử lý → công thức ngắn → ký hiệu/đơn vị → nguồn/code. Thêm SOURCES và DOCUMENTATION_GUIDE. Math block đặt riêng ngoài danh sách/bảng; ảnh cần commit cùng Markdown. Không thay code, seed hoặc chạy optimizer.
+
+Nguồn được đối chiếu trong phạm vi truy cập được, không tuyên bố đã đọc mọi toàn văn. E/I/F riêng, quy tắc hybrid và tham số được ghi theo code thay vì gán cho bài báo.
+
+Kiểm tra tài liệu cục bộ: 38 Markdown, 628 tham chiếu nội bộ, 201 anchor, 40 khối toán và 9 SVG. Parse/link/anchor/cột bảng/UTF-8/XML và đo chiều rộng chữ SVG không phát hiện lỗi trong phạm vi kiểm tra. Chưa preview một commit trên GitHub, chưa commit/push; cần đưa cả ảnh SVG và các file Markdown mới lên cùng nhánh. Không chạy test thuật toán hoặc benchmark.
+
+<a id="doc-section-02"></a>
 
 ## Đồng bộ tài liệu ngày 25/10/2026
 

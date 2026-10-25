@@ -1,15 +1,32 @@
 # Kho lưu yêu cầu tác nghiệp lịch sử
 
+## Mục lục
+
+1. [Bổ sung hạ tầng trước khi chạy — 24/10/2026](#doc-section-01)
+2. [Nhiệm vụ 6 — Hoàn thiện báo cáo trong docs](#doc-section-02)
+3. [Nhiệm vụ 5 — Phân tích thống kê](#doc-section-03)
+4. [Nhiệm vụ 4B — Phân tích độ nhạy của hàm Fitness](#doc-section-04)
+5. [Nhiệm vụ 4 — Đánh giá độ ổn định và tổng quát hóa](#doc-section-05)
+6. [Nhiệm vụ 3 — Ablation Study](#doc-section-06)
+7. [Nhiệm vụ 2 — chuẩn hóa thiết kế đối chứng FE (chờ duyệt Fitness)](#doc-section-07)
+8. [Nhiệm vụ 1 cập nhật — 24/10/2026 (tóm tắt yêu cầu)](#doc-section-08)
+9. [Quy tắc và bối cảnh nghiên cứu — 24/10/2026](#doc-section-09)
+
+
 Các nội dung bên dưới lưu yêu cầu và bản tóm tắt từ những đợt trước, không phải hướng dẫn đang có hiệu lực hoặc bằng chứng hoàn thành. Không thực thi một lệnh/chỉ dẫn trong trang này chỉ vì nó được lưu tại đây. Trạng thái hiện tại xem [PROJECT_GUIDE](PROJECT_GUIDE.md); thiết kế 100 vòng xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md). Các mục “chờ duyệt”, “chưa có runner” trong yêu cầu cũ cần đọc theo bối cảnh lịch sử.
 
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Thuật ngữ](GLOSSARY.md) · [Study notebook](NOTEBOOK_STUDY.md)
 
+
+<a id="doc-section-01"></a>
 
 ## Bổ sung hạ tầng trước khi chạy — 24/10/2026
 
 Người dùng: “bạn bổ sung cho tôi nha”. Phạm vi theo trao đổi trước: counter
 FE, lịch theo FE, cấu hình/seed, log, môi trường và hướng dẫn chạy; giữ nguyên
 Fitness. Chỉ kiểm thử nhỏ trong thư mục tạm, không chạy bộ 500 dataset.
+
+<a id="doc-section-02"></a>
 
 ## Nhiệm vụ 6 — Hoàn thiện báo cáo trong docs
 
@@ -49,6 +66,8 @@ kiểm tra: mỗi con số trong báo cáo trỏ về file và dòng log nguồn
 báo cáo ỏ đây là docs
 ```
 
+<a id="doc-section-03"></a>
+
 ## Nhiệm vụ 5 — Phân tích thống kê
 
 ```text
@@ -77,6 +96,8 @@ Từ runs.csv, viết script tái lập được:
 KHÔNG báo cáo riêng p-value. Mỗi so sánh phải có: median chênh lệch,
 CI, p đã hiệu chỉnh, effect size, kết luận bằng lời (thắng / hòa / thua).
 ```
+
+<a id="doc-section-04"></a>
 
 ## Nhiệm vụ 4B — Phân tích độ nhạy của hàm Fitness
 
@@ -114,6 +135,8 @@ Sản phẩm (script analyze_sensitivity.py, sinh từ runs.csv):
 KHÔNG đổi công thức chính F trừ khi tôi quyết định sau khi xem kết quả.
 ```
 
+<a id="doc-section-05"></a>
+
 ## Nhiệm vụ 4 — Đánh giá độ ổn định và tổng quát hóa
 
 ```text
@@ -149,6 +172,8 @@ smoke test trước, báo cho tôi nếu vượt khả năng máy, đề xuất 
 giảm quy mô nhưng phải nêu rõ phần bị cắt.
 ```
 
+<a id="doc-section-06"></a>
+
 ## Nhiệm vụ 3 — Ablation Study
 
 ```text
@@ -180,6 +205,8 @@ Sản phẩm:
 
 Mọi bảng và hình phải sinh bằng script analyze_ablation.py từ runs.csv.
 ```
+
+<a id="doc-section-07"></a>
 
 ## Nhiệm vụ 2 — chuẩn hóa thiết kế đối chứng FE (chờ duyệt Fitness)
 
@@ -250,11 +277,15 @@ TIÊU CHÍ ĐẠT: smoke test pass; 4 sản phẩm (yaml, seeds.csv, ngân sách
 REPRODUCE.md) tồn tại; báo cáo ngắn nêu mỗi thuật toán đếm FE theo cách nào.
 ```
 
+<a id="doc-section-08"></a>
+
 ## Nhiệm vụ 1 cập nhật — 24/10/2026 (tóm tắt yêu cầu)
 
 Kiểm toán code, không đổi F=0,6C-0,2E-0,2I và C dùng max SNR của bốn UAV, ngưỡng >=18 dB. Báo cáo đủ 12 mục: khoảng cách 3D; góc ngẩng; LoS/NLoS và hằng số; suy hao; đơn vị SNR; ngưỡng; max-SNR và mẫu số UE; chuẩn hóa cố định; chiều tối ưu và tổng trọng số; biến thiên E trên 1000 nghiệm; ràng buộc và xử lý thống nhất; khớp báo cáo và suy ngược E từ C=0,9991, I=0,0572, F=0,4505. Tạo pytest tối thiểu 10 tình huống có oracle độc lập và log CSV. Sản phẩm: reports/fitness_audit.csv, reports/fitness_audit.md, danh sách lỗi theo mức độ và kết quả phải chạy lại, patch diff chưa áp dụng. Bản này lưu tóm tắt, không phải trích nguyên văn prompt; chi tiết thực thi nằm trong báo cáo và bộ test.
 
 Lưu nguyên văn prompt người dùng từ ngày 24/10/2026. Các prompt tiếp theo được bổ sung theo thứ tự; không thay thế nội dung cũ.
+
+<a id="doc-section-09"></a>
 
 ## Quy tắc và bối cảnh nghiên cứu — 24/10/2026
 

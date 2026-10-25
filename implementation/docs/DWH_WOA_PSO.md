@@ -1,101 +1,105 @@
-# 🐋🦅 DWH_WOA_PSO: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN LAI H-WOA-PSO
+# H-WOA-PSO: trộn đề xuất WOA và PSO trên từng cá thể
 
-[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+[Mục lục](README.md) · [WOA](DWWOA.md) · [PSO](DWPSO.md) · [Nguồn bản lai](SOURCES.md#hybrid)
 
-Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+Mỗi cá thể tạo hai đề xuất từ cùng trạng thái, sau đó trộn chúng. **Không chia quần thể thành nửa WOA, nửa PSO.**
 
+## Mục lục
 
-> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+1. [Mô hình hoạt động](#mo-hinh)
+2. [Trạng thái và hai nhánh](#trang-thai)
+3. [Phương trình trộn](#tron)
+4. [Cập nhật best và ablation](#ablation)
+5. [Nguồn, mã và giới hạn](#nguon)
 
-> **Mục đích:** Hướng dẫn chi tiết công thức toán học, cơ chế lai ghép và kịch bản trả lời phản biện dành cho thuật toán lai **Hybrid WOA-PSO (H-WOA-PSO)** trong bài toán tối ưu hóa vị trí 3D trạm phát sóng UAV.
+<a id="mo-hinh"></a>
 
----
+## 1. Mô hình hoạt động
 
-## 1. 💡 Ý TƯỞNG CỐT LÕI & TRIẾT LÝ LAI GHÉP
-- **Vấn đề đặt ra:**
-  - **WOA thuần túy:** Bơi xoắn ốc phân tán giúp giảm nhiễu rất tốt nhưng tốc độ hội tụ ban đầu chậm vì không lưu lại lịch sử kinh nghiệm cá nhân ($P_{\text{best}}$).
-  - **PSO thuần túy:** Tốc độ kéo đàn cực nhanh nhờ $P_{\text{best}}$ và $G_{\text{best}}$ nhưng các hạt dễ đâm sầm vào nhau gây nhiễu giao thoa cao.
-- **Triết lý lai ghép H-WOA-PSO:**
-  - Tích hợp vector vận tốc và bộ nhớ $P_{\text{best}}$ của PSO trực tiếp vào quỹ đạo bơi xoắn ốc và bao vây của WOA.
-  - Vừa tận dụng khả năng định hướng gia tốc tốc độ cao của PSO, vừa tận dụng quỹ đạo quét xoắn ốc 3D của cá voi để phân tán không gian.
+![H-WOA-PSO: một trạng thái, đề xuất WOA và PSO, trộn 0,5/0,5 rồi đánh giá](assets/hybrid-woa-pso.svg)
 
----
+**Giải thích:** bước 2 và 3 trong hình tạo hai đề xuất trước khi thay X. Vị trí cuối là tổ hợp có trọng số của đề xuất WOA và đề xuất PSO; chỉ vị trí sau trộn được chấm trong mỗi cập nhật.
 
-## 2. 🎯 QUY TRÌNH LAI GHÉP TỪNG THẾ HỆ (PIPELINE)
+Hình theo [hybrid_woa_pso.py](../src/algorithms/hybrid/hybrid_woa_pso.py).
 
-Tại mỗi vòng lặp $t$, cá thể vừa được cập nhật vận tốc theo PSO, vừa được dịch chuyển theo toán tử săn mồi của WOA:
+<a id="trang-thai"></a>
 
-```text
- ┌────────────────────────────────────────────────────────┐
- │ 1. CẬP NHẬT VẬN TỐC THEO PSO                           │
- │    v(t+1) = w*v + c1*r1*(pbest - x) + c2*r2*(gbest - x) │
- └──────────────────────────┬─────────────────────────────┘
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │ 2. XÁC ĐỊNH BƯỚC CHUYỂN DỊCH THEO TOÁN TỬ WOA          │
- │    - Nếu p >= 0.5: Bơi xoắn ốc logarithmic            │
- │      x_woa = D' * exp(b*l) * cos(2*pi*l) + gbest       │
- │    - Nếu p < 0.5:                                      │
- │        + Nếu |A| < 1: Bao vây con mồi gbest            │
- │        + Nếu |A| >= 1: Thám hiểm theo x_rand          │
- └──────────────────────────┬─────────────────────────────┘
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │ 3. TỔNG HỢP VỊ TRÍ MỚI & CẮT BIÊN AN TOÀN              │
- │    x_new = clip(0.5*x_woa + 0.5*(x+v), LB, UB)          │
- └──────────────────────────┬─────────────────────────────┘
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │ 4. ĐÁNH GIÁ FITNESS & CẬP NHẬT pbest, gbest            │
- └────────────────────────────────────────────────────────┘
-```
+## 2. Trạng thái và hai nhánh
 
----
+| Ký hiệu | Ý nghĩa | Đơn vị |
+|---|---|---|
+| X_i | Cấu hình hiện tại của cá thể | Mét |
+| V_i | Bước vận tốc trong không gian nghiệm | Mét/vòng |
+| p_i | Best lịch sử của cá thể | Mét |
+| g | Best toàn cục | Mét |
+| X_WOA | Đề xuất từ nhánh WOA | Mét |
+| X_PSO | Đề xuất từ nhánh PSO | Mét |
+| lambda | Trọng số trộn | 0,5 |
 
-## 3. 📐 CÔNG THỨC TOÁN HỌC CỐT LÕI
+**Nhánh WOA:** chọn bao vây, khám phá hoặc xoắn ốc theo [DWWOA](DWWOA.md). Điều kiện hệ số là norm(A)/sqrt(D); không hiểu |A| như kiểm tra riêng mỗi chiều.
 
-Mỗi cá thể thực hiện cả đề xuất WOA và bước vận tốc PSO trước khi trộn, không chia đôi quần thể. Điều kiện |A| trong nhánh WOA được code tính bằng norm(A)/sqrt(D). Các case bỏ pbest/gbest chỉ tắt lực hút tương ứng trong vận tốc; nhánh WOA vẫn giữ best. Xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md).
+**Nhánh PSO:**
 
-### 3.1. Cập nhật gia tốc bầy đàn PSO
-Mỗi cá thể duy trì kỷ lục cá nhân $P_{\text{best}, i}$ và kỷ lục toàn đàn $G_{\text{best}}$:
-$$v_{i,d}(t+1) = w \cdot v_{i,d}(t) + c_1 r_1 \cdot (p_{i,d} - x_{i,d}(t)) + c_2 r_2 \cdot (g^*_d - x_{i,d}(t))$$
-- Trong đó: $c_1 = 1.2, c_2 = 1.2$, $v_{\max} = 0.2 \times (UB - LB)$.
+$$
+V_i'=wV_i+c_1r_1\odot(p_i-X_i)+c_2r_2\odot(g-X_i).
+$$
 
-### 3.2. Cập nhật quỹ đạo săn mồi WOA
-- Nếu $p \ge 0.5$ (Quỹ đạo xoắn ốc bọt khí):
-  $$\mathbf{D}' = |\mathbf{G}^* - \mathbf{X}_i(t)|$$
-  $$\mathbf{X}_{i}^{\text{woa}} = \mathbf{D}' \odot e^{b l} \cos(2\pi l) + \mathbf{G}^*$$
-- Nếu $p < 0.5$ và $|A| < 1$ (Bao vây thu hẹp):
-  $$\mathbf{D} = |\mathbf{C} \odot \mathbf{G}^* - \mathbf{X}_i(t)|$$
-  $$\mathbf{X}_{i}^{\text{woa}} = \mathbf{G}^* - \mathbf{A} \odot \mathbf{D}$$
-- Nếu $p < 0.5$ và $|A| \ge 1$ (Thám hiểm toàn cục):
-  $$\mathbf{D} = |\mathbf{C} \odot \mathbf{X}_{\text{rand}} - \mathbf{X}_i(t)|$$
-  $$\mathbf{X}_{i}^{\text{woa}} = \mathbf{X}_{\text{rand}} - \mathbf{A} \odot \mathbf{D}$$
+$$
+X_{\mathrm{PSO}}=X_i+V_i'.
+$$
 
-### 3.3. Phối hợp tổng hợp vị trí
-Vị trí mới là sự kết hợp giữa vị trí dẫn đường của WOA và xung lực gia tốc của PSO:
-$$\mathbf{X}_i(t+1) = \text{clip}\left((1-\beta) \mathbf{X}_{i}^{\text{woa}} + \beta (\mathbf{X}_i(t)+\mathbf{V}_i(t+1)), \; \mathbf{LB}, \; \mathbf{UB}\right)$$
-*(với $\beta = 0.5$ là hệ số điều phối)*.
+Code dùng c1=c2=1,2; giới hạn vận tốc ±0,2(U−L). w giảm theo vòng hoặc FE như giao thức tương ứng. Các giá trị này là tham số của bản lai, khác PSO gốc c1=c2=1,5.
 
----
+Nguồn nguyên lý: [SOURCES — WOA](SOURCES.md#woa), [SOURCES — PSO](SOURCES.md#pso). Nguồn biểu thức thực thi: hybrid_woa_pso.py.
 
-## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
+<a id="tron"></a>
 
-- **File triển khai chính:** [`hybrid_woa_pso.py`](../src/algorithms/hybrid/hybrid_woa_pso.py)
-- **Tái sử dụng các module:**
-  - Toán tử WOA: [`spiral_update.py`](../src/algorithms/WOA/spiral_update.py), [`encircling.py`](../src/algorithms/WOA/encircling.py), [`exploration.py`](../src/algorithms/WOA/exploration.py).
-  - Khởi tạo & Vận tốc: [`initialization.py`](../src/algorithms/WOA/initialization.py), [`velocity_update.py`](../src/algorithms/PSO/velocity_update.py).
+## 3. Phương trình trộn
 
----
+$$
+X_i'=\operatorname{clip}\left(\lambda X_{\mathrm{WOA}}+(1-\lambda)X_{\mathrm{PSO}},L,U\right).
+$$
 
-## 5. Trạng thái thực nghiệm và diễn giải
+Với lambda=0,5:
 
-Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
+$$
+X_i'=\operatorname{clip}\left(0.5X_{\mathrm{WOA}}+0.5(X_i+V_i'),L,U\right).
+$$
 
-## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
+| Thành phần | Giải thích |
+|---|---|
+| Hai đề xuất | Cùng biểu diễn một cấu hình UAV, cùng đơn vị mét |
+| lambda | Chọn tỷ trọng mỗi đề xuất; code cố định 0,5 |
+| Clip | Chặn tọa độ trước đánh giá; chưa thay kiểm tra khoảng cách UAV |
+| F(X_i') | Điểm của vị trí sau trộn, không phải trung bình hai fitness |
 
-Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
-1. **Elhosseini, M. A., et al. (2019).** "A novel hybrid whale optimization algorithm with particle swarm optimization for global optimization". *Journal of Computational Science*, vol. 37, p. 101031. *(Nguyên lý lai ghép đường bơi xoắn ốc WOA với vận tốc PSO)*.
-2. **Kaur, G., & Arora, S. (2018).** "Chaotic whale optimization algorithm with particle swarm optimization for global numerical optimization". *International Journal of Computer Applications*, vol. 180, no. 31, pp. 24–31.
-3. **Mozaffari, M., et al. (2016).** "Efficient deployment of multiple unmanned aerial vehicles for optimal wireless coverage". *IEEE Communications Letters*, vol. 20, no. 8, pp. 1647–1650. DOI: [`10.1109/LCOMM.2016.2578312`](https://doi.org/10.1109/LCOMM.2016.2578312).
+**Ví dụ minh họa:** một tọa độ WOA là 100 m, PSO là 300 m thì trước clip tọa độ trộn là 200 m. Fitness không nhất thiết bằng trung bình điểm hai ứng viên vì hàm chấm phi tuyến/rời rạc.
 
+**Nguồn:** công thức kết hợp của code dự án; không gán lambda=0,5 hoặc biểu thức này cho một bài báo chỉ có tên hybrid tương tự.
+
+<a id="ablation"></a>
+
+## 4. Cập nhật best và ablation
+
+Sau đánh giá, thay pbest nếu điểm cải thiện, rồi cập nhật global best. Mỗi cá thể giữ vận tốc và bộ nhớ qua vòng.
+
+| Case | Lực hút pbest trong V | Lực hút gbest trong V | Nhánh WOA |
+|---|:---:|:---:|---|
+| H-WOA-PSO | Có | Có | Giữ |
+| H-WOA-PSO-no-pbest | Không | Có | Giữ |
+| H-WOA-PSO-no-gbest-velocity | Có | Không | Giữ |
+
+Bỏ lực hút gbest trong vận tốc **không bỏ mọi ảnh hưởng global best**: nhánh WOA vẫn dùng best. Hai đối chứng bổ sung là WOA gốc và PSO gốc; tất cả dùng kết quả case duy nhất trong registry.
+
+Các cờ không phải phép thử tất cả tỷ lệ lambda. Khảo sát lambda là một thiết kế khác, chưa có trong 30 case.
+
+<a id="nguon"></a>
+
+## 5. Nguồn, mã và giới hạn
+
+- [hybrid_woa_pso.py](../src/algorithms/hybrid/hybrid_woa_pso.py): nguồn chính xác cho bản lai.
+- [SOURCES — hybrid](SOURCES.md#hybrid): phân biệt nguyên lý kế thừa với kết hợp riêng.
+- [REPORT](REPORT.md): cùng C/E/I/F và ràng buộc.
+- [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md): 100 vòng, seed và bảng đánh giá.
+
+Không khẳng định phép trộn luôn cân bằng khám phá/khai thác tốt hơn. Cần kết quả chất lượng, FE/thời gian và ablation trên cùng dataset/seed. Study hiện chưa chạy.
