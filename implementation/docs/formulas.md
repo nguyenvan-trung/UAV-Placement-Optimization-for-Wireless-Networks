@@ -1,84 +1,47 @@
-# Công thức và ranh giới triển khai
-
-File này trả lời “công thức nằm ở đâu”, còn mã Python tương ứng nằm trong
-`src/`. Mỗi tầng chỉ nhận đầu vào của tầng trước và không tự đọc CSV. mmm
-
-## Pipeline
-
-```text
-data/stores/*.csv
-  -> input/
-  -> preprocessing/ (K-Means)
-  -> physics/
-  -> objectives/
-  -> problem/
-  -> algorithms/
-  -> evaluation/
-  -> results/
-```
-
-## Phân chia công thức
-
-### 1. `src/physics/`
-
-Đặt các hàm vật lý dùng chung:
-
-- khoảng cách 3D `d_ij`;
-- góc ngẩng `theta_ij`;
-- xác suất LoS;
-- pathloss LoS/NLoS và pathloss kỳ vọng;
-- SNR.
-
-Tầng này không biết GA, PSO, WOA hay cách lưu CSV.
-
-### 2. `src/objectives/`
-
-Đặt các hàm mục tiêu:
-
-- `f1`: tỷ lệ phủ sóng;
-- `f2`: năng lượng;
-- `f3`: diện tích giao thoa;
-- fitness có trọng số `w1*f1 - w2*f2 - w3*f3`.
-
-Tầng này gọi `physics/` nhưng không tự tạo quần thể.
-
-### 3. `src/problem/`
-
-Đặt biểu diễn nghiệm, giới hạn `x/y/z`, kiểm tra ràng buộc và hàm phạt.
-Đây là nơi bảo đảm mọi thuật toán đánh giá cùng một bài toán.
-
-### 4. `src/preprocessing/`
-
-Đặt K-Means, chuẩn bị tâm cụm và chuyển tâm cụm thành nghiệm khởi tạo.
-K-Means không được đặt trong `algorithms/` vì nó là tiền xử lý dùng chung cho
-I-WOA và các thí nghiệm khởi tạo.
-
-### 5. `src/algorithms/`
-
-Chỉ chứa cơ chế tìm kiếm:
-
-- WOA gốc;
-- I-WOA với OBL và Levy Flight;
-- PSO;
-- GA.
-
-Thuật toán nhận problem/objective qua interface, không đọc file và không vẽ
-biểu đồ.
-
-### 📚 Tài liệu chi tiết & Công thức từng thuật toán (Defense Guides):
-- [DWGA.md](DWGA.md): Chi tiết toán học & mã nguồn Thuật toán Di truyền (GA).
-- [DWPSO.md](DWPSO.md): Chi tiết toán học & mã nguồn Tối ưu hóa bầy đàn (PSO).
-- [DWWOA.md](DWWOA.md): Chi tiết toán học & mã nguồn Bầy cá voi gốc (WOA).
-- [DWI_WOA.md](DWI_WOA.md): Chi tiết công thức đề xuất I-WOA (K-Means, OBL, Levy Flight).
-- [DWH_PSO_GA.md](DWH_PSO_GA.md): Chi tiết thuật toán lai Hybrid PSO-GA.
-- [DWH_WOA_PSO.md](DWH_WOA_PSO.md): Chi tiết thuật toán lai Hybrid WOA-PSO.
-
-## Quy tắc thêm module
-
-1. Hàm đọc/kiểm tra dữ liệu vào `input/`.
-2. Hàm biến đổi dữ liệu trước tối ưu vào `preprocessing/`.
-3. Công thức miền không phụ thuộc thuật toán vào `physics/` hoặc `objectives/`.
-4. Vòng lặp tìm kiếm vào `algorithms/`.
-5. Tổng hợp nhiều lần chạy và Wilcoxon vào `evaluation/`.
-6. File CSV/JSON/PNG sinh ra chỉ vào `results/` hoặc `data/views/`.
-
+# Công thức, luồng gọi và vị trí mã
+
+[Mục lục](README.md) · [Mô hình đầy đủ](REPORT.md) · [Thuật ngữ](GLOSSARY.md)
+
+Trang này nối công thức với code. Đây là quan hệ gọi hàm, không phải các tầng tuần tự độc lập mà dữ liệu chỉ đi qua đúng một lần.
+
+## Luồng một thí nghiệm
+
+```text
+CSV user → loader → validator → preprocess → problem
+                                            ↑
+                     optimizer → đề xuất X → evaluate(X)
+                                            ↓
+                           physics → C/E/I → fitness
+                                            ↓
+                         best + history → task → bảng/ảnh
+```
+
+K-Means chỉ được optimizer gọi khi case bật K; không chạy tự động trên mọi dataset trước mọi thuật toán.
+
+## Ánh xạ
+
+| Phần | Mã | Ý nghĩa |
+|---|---|---|
+| Đọc/kiểm tra | [input](../src/input/) | Schema và giá trị user |
+| Tiền xử lý | [preprocessor.py](../src/preprocessing/preprocessor.py) | Bỏ user_id trùng, giữ tọa độ |
+| Khoảng cách/góc/LoS/pathloss/SNR | [channel.py](../src/physics/channel.py) | Tính liên kết UAV–UE |
+| C/E/I/F | [metrics.py](../src/objectives/metrics.py) | Các proxy và tổng có trọng số |
+| Miền/khả thi | [objective.py](../src/problem/objective.py) | Clip vào miền rồi kiểm tra khoảng cách |
+| K-Means | [kmeans_init.py](../src/preprocessing/kmeans_init.py) | Tâm cụm XY thành nghiệm mầm |
+| OBL/Lévy WOA | [I_WOA](../src/algorithms/I_WOA/) | Toán tử trong I-WOA |
+| OBL/Lévy GA/PSO | [enhancements.py](../src/algorithms/base/enhancements.py) | Adapter theo kiểu cá thể |
+| FE | [counter.py](../src/counter.py), [budget.py](../src/algorithms/base/budget.py) | Đếm, dừng, lịch điều khiển theo FE |
+| Study notebook | [notebook_study.py](../src/notebook_study.py) | Quan sát 101 mốc, artifact và bảng mô tả |
+| Suy luận FE | [analyze.py](../scripts/analyze.py) | Gộp instance, kiểm định và CI |
+
+## Định nghĩa dùng chung
+
+C là phần user được ít nhất một UAV phủ theo SNR. I là phần user có từ hai liên kết đạt ngưỡng. E là trung bình công suất proxy theo độ cao chia công suất chuẩn hóa cố định. F=0,6C−0,2E−0,2I. Chi tiết công thức và giới hạn: [REPORT](REPORT.md).
+
+Không gọi I là diện tích giao nhau hoặc nhiễu vật lý; không gọi E là tổng năng lượng đội UAV. Thay các định nghĩa này là thay mô hình, cần thiết kế và đối chứng mới.
+
+## Cơ chế thuật toán
+
+[GA](DWGA.md) · [PSO](DWPSO.md) · [WOA](DWWOA.md) · [I-WOA](DWI_WOA.md) · [H-PSO-GA](DWH_PSO_GA.md) · [H-WOA-PSO](DWH_WOA_PSO.md)
+
+Các chương giải thích baseline/bản đầy đủ; quy tắc biến thể tập trung tại [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md). Thuật toán không tự đọc CSV hoặc vẽ ảnh. Các bảng thống kê chuyên biệt hiện nằm trong script analyzer hoặc notebook_study, không mặc định mọi thứ đều ở evaluation.

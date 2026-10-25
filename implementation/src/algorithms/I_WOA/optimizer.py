@@ -11,6 +11,7 @@ import time
 import numpy as np
 
 from ..base.result import OptimizationResult
+from ..base.budget import budgeted, initialize_paired, iterations, progress, evaluate_phase
 from ...preprocessing.kmeans_init import generate_kmeans_uav_initial_guess
 from ..WOA.boundary_handler import handle_boundaries
 from ..WOA.coefficient_update import update_coefficients
@@ -33,6 +34,7 @@ class IWOAOptimizer:
         self.rng = np.random.default_rng(seed)
         self.sigma_u = compute_levy_sigma(self.params.levy_beta)
 
+    @budgeted
     def optimize(self, problem: object) -> OptimizationResult:
         start_time = time.perf_counter()
 
@@ -47,38 +49,37 @@ class IWOAOptimizer:
             upper_bounds=ub,
             rng=self.rng,
         )
+        initialize_paired(whales, problem)
 
         # 1.1. Cải tiến K-Means Smart Initialization
         if self.params.use_kmeans_init and hasattr(problem, "ue_coords") and hasattr(problem, "num_uavs"):
-            try:
-                kmeans_guess = generate_kmeans_uav_initial_guess(
-                    ue_coords=problem.ue_coords,
-                    num_uavs=problem.num_uavs,
-                    random_state=self.seed,
-                )
-                whales[0].position = np.clip(kmeans_guess, lb, ub)
-            except Exception:
-                pass
+            kmeans_guess = generate_kmeans_uav_initial_guess(
+                ue_coords=problem.ue_coords,
+                num_uavs=problem.num_uavs,
+                random_state=self.seed,
+            )
+            whales[0].position = np.clip(kmeans_guess, lb, ub)
 
         # Đánh giá ban đầu
         for w in whales:
             w.fitness = problem.evaluate(w.position)
 
         # 1.2. Cải tiến Opposition-Based Learning (OBL) khởi tạo
-        if self.params.use_obl_init:
+        if self.params.use_obl and self.params.use_obl_init:
             whales = apply_obl_population(whales, problem, lb, ub)
 
         best_whale = max(whales, key=lambda w: w.fitness).copy()
         convergence_history: list[float] = [float(best_whale.fitness)]
 
         # 2. Vòng lặp chính I-WOA
-        for t in range(self.params.iterations):
+        for t in iterations(problem, self.params.iterations):
             for i, whale in enumerate(whales):
                 A, C, l = update_coefficients(
                     iteration=t,
                     max_iterations=self.params.iterations,
                     dimension=dim,
                     rng=self.rng,
+                    progress_fraction=progress(problem, t, self.params.iterations),
                 )
                 p = self.rng.uniform(0.0, 1.0)
 
@@ -102,7 +103,7 @@ class IWOAOptimizer:
 
                 # 2.1. Cải tiến Bước nhảy Levy Flight
                 # Khi cá thể không cải thiện hoặc theo xác suất ngẫu nhiên, kích hoạt Levy Flight
-                if self.rng.uniform(0.0, 1.0) < 0.3:
+                if self.params.use_levy and self.rng.uniform(0.0, 1.0) < self.params.levy_rate:
                     levy_pos = apply_levy_flight(
                         position=new_pos,
                         best_position=best_whale.position,
@@ -113,7 +114,7 @@ class IWOAOptimizer:
                         step_size=self.params.levy_step_size,
                         rng=self.rng,
                     )
-                    levy_fit = problem.evaluate(levy_pos)
+                    levy_fit = evaluate_phase(problem, levy_pos, 'levy')
                     if levy_fit > new_fit:
                         new_pos = levy_pos
                         new_fit = levy_fit
@@ -125,7 +126,7 @@ class IWOAOptimizer:
                     best_whale = whale.copy()
 
             # 2.2. Dynamic OBL định kỳ
-            if self.rng.uniform(0.0, 1.0) < self.params.obl_rate:
+            if self.params.use_obl and self.rng.uniform(0.0, 1.0) < self.params.obl_rate:
                 # Tính biên động hiện tại của quần thể
                 positions = np.array([w.position for w in whales])
                 dyn_lb = np.min(positions, axis=0)

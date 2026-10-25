@@ -1,4 +1,12 @@
 # 🧬 DWGA: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN DI TRUYỀN (GA)
+
+[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+
+Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+
+
+> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+
 > **Mục đích:** Hướng dẫn chi tiết công thức toán học, cấu trúc mã nguồn và kịch bản trả lời phản biện dành cho thuật toán **Genetic Algorithm (GA)** trong bài toán tối ưu hóa vị trí 3D trạm phát sóng UAV.
 
 ---
@@ -17,7 +25,7 @@ $$\mathbf{X} = [x_1, y_1, z_1, \; x_2, y_2, z_2, \; x_3, y_3, z_3, \; x_4, y_4, 
 
 - **Không gian tìm kiếm:**
   - Tọa độ mặt phẳng: $x_i, y_i \in [0, 1000]\text{ m}$ (khu vực $1\text{ km}^2$).
-  - Độ cao bay an toàn: $z_i \in [50, 300]\text{ m}$.
+  - Độ cao bay mô phỏng: $z_i \in [50, 300]\text{ m}$.
 
 ---
 
@@ -31,7 +39,7 @@ Thay vì dùng bánh xe Roulette dễ bị trôi dạt di truyền (genetic drif
 
 ### 3.2. Lai ghép số học liên tục (Arithmetic Crossover)
 Khác với GA nhị phân cắt điểm, bài toán tọa độ liên tục sử dụng phép tổ hợp lồi ngẫu nhiên (Convex Combination):
-- Với xác suất lai ghép $P_c = 0.8$, nếu $r \sim \mathcal{U}(0, 1) < P_c$:
+- Với xác suất lai ghép $P_c = 0.9$ (theo `GAParameters`), nếu $r \sim \mathcal{U}(0, 1) < P_c$:
   - Sinh vector trọng số ngẫu nhiên $\boldsymbol{\alpha} = [\alpha_1, \alpha_2, \dots, \alpha_D] \sim \mathcal{U}(0, 1)^D$ với $D = 12$.
   - Hai cá thể con (Offspring) được sinh ra theo công thức:
     $$\mathbf{X}_{\text{child1}} = \boldsymbol{\alpha} \odot \mathbf{X}_{\text{parent1}} + (1 - \boldsymbol{\alpha}) \odot \mathbf{X}_{\text{parent2}}$$
@@ -41,7 +49,7 @@ Khác với GA nhị phân cắt điểm, bài toán tọa độ liên tục s�
 
 ### 3.3. Đột biến Gaussian (Gaussian Mutation)
 Đột biến đóng vai trò khai phá vùng không gian mới và chống nghẽn gen:
-- Với mỗi gene $j \in \{1, \dots, 12\}$ của cá thể, nếu $r_j \sim \mathcal{U}(0, 1) < P_m$ ($P_m = 0.15$):
+- Với mỗi gene $j \in \{1, \dots, 12\}$ của cá thể, nếu $r_j \sim \mathcal{U}(0, 1) < P_m$ ($P_m = 0.1$, theo `GAParameters`):
   - Giá trị gene được cộng thêm nhiễu Gauss tỉ lệ với dải tìm kiếm:
     $$x_j' = x_j + \Delta_j, \quad \Delta_j \sim \mathcal{N}\left(0, \; (\sigma \cdot (UB_j - LB_j))^2\right)$$
   - Với $\sigma = 0.1$ (độ lệch chuẩn bằng 10% biên độ tìm kiếm).
@@ -58,41 +66,23 @@ Khác với GA nhị phân cắt điểm, bài toán tọa độ liên tục s�
 
 | Thành phần thuật toán | File mã nguồn tương ứng | Hàm / Class chính |
 | :--- | :--- | :--- |
-| Cấu trúc cá thể | [`chromosome.py`](..\src\algorithms\GA\chromosome.py) | `class Chromosome` |
-| Khởi tạo quần thể | [`initialization.py`](..\src\algorithms\GA\initialization.py) | `initialize_population()` |
-| Chọn lọc cha mẹ | [`selection.py`](..\src\algorithms\GA\selection.py) | `tournament_selection()` |
-| Lai ghép số học | [`crossover.py`](..\src\algorithms\GA\crossover.py) | `arithmetic_crossover()` |
-| Đột biến Gaussian | [`mutation.py`](..\src\algorithms\GA\mutation.py) | `gaussian_mutation()` |
-| Chiến lược Elitism | [`replacement.py`](..\src\algorithms\GA\replacement.py) | `elitism_replacement()` |
-| Bộ điều khiển vòng lặp | [`optimizer.py`](..\src\algorithms\GA\optimizer.py) | `class GAOptimizer.optimize()` |
+| Cấu trúc cá thể | [`chromosome.py`](../src/algorithms/GA/chromosome.py) | `class Chromosome` |
+| Khởi tạo quần thể | [`initialization.py`](../src/algorithms/GA/initialization.py) | `initialize_population()` |
+| Chọn lọc cha mẹ | [`selection.py`](../src/algorithms/GA/selection.py) | `tournament_selection()` |
+| Lai ghép số học | [`crossover.py`](../src/algorithms/GA/crossover.py) | `arithmetic_crossover()` |
+| Đột biến Gaussian | [`mutation.py`](../src/algorithms/GA/mutation.py) | `gaussian_mutation()` |
+| Chiến lược Elitism | [`replacement.py`](../src/algorithms/GA/replacement.py) | `elitism_replacement()` |
+| Bộ điều khiển vòng lặp | [`optimizer.py`](../src/algorithms/GA/optimizer.py) | `class GAOptimizer.optimize()` |
 
 ---
 
-## 5. 📊 ĐÁNH GIÁ THỰC NGHIỆM TRONG BÀI TOÁN UAV
-- **Part 1 (35 vòng lặp):** Fitness TB = `0.4369` (Xếp hạng 6/6). GA khởi động chậm do phụ thuộc vào phép lai ngẫu nhiên, chưa hội tụ kịp.
-- **Part 2 (80 vòng lặp):** Fitness TB = `0.4447` (Vươn lên hạng 4/6, tăng $+0.0078$). 
-- **Đặc trưng:** GA có khả năng khám phá không gian rộng rất tốt nhờ đột biến Gauss, độ phủ sóng luôn cao ($99.91\%$), nhưng tỷ lệ nhiễu giao thoa cao ($8.42\% - 11.24\%$) do các UAV dễ bị dồn cụm ngẫu nhiên.
+## 5. Trạng thái thực nghiệm và diễn giải
 
----
+Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
 
-## 6. 🎓 BỘ CÂU HỎI THẦY CÔ VẤN ĐÁP & CÂU TRẢ LỜI MẪU
+## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
 
-### ❓ Câu 1: *"Tại sao em không dùng lai ghép 1 điểm cắt (Single-point Crossover) như GA truyền thống mà lại dùng Arithmetic Crossover?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, GA truyền thống dùng cho chuỗi bit nhị phân nên cắt 1 điểm rất phù hợp. Tuy nhiên bài toán định vị UAV là bài toán trong **không gian liên tục 3D thực**. Nếu cắt ghép thô bạo tọa độ giữa 2 UAV khác nhau sẽ làm đứt gãy cấu trúc hình học của bầy UAV. Phép **Arithmetic Crossover (lai ghép số học tổ hợp lồi)** giúp tạo ra nghiệm con là phép suy rộng vị trí mềm dẻo giữa 2 cấu hình bay của cha mẹ, giữ được tính liên tục của không gian vật lý."*
-
-### ❓ Câu 2: *"Cơ chế Elitism đóng vai trò gì, nếu bỏ đi thì thuật toán bị sao?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, Elitism đảm bảo **tính đơn điệu không giảm** của nghiệm tốt nhất. Do lai ghép và đột biến đều có tính ngẫu nhiên, nếu không giữ lại cá thể tốt nhất ($E=2$), một thế hệ sau có thể vô tình phá hủy cấu hình đặt trạm tối ưu đã tìm được ở thế hệ trước, dẫn đến hiện tượng dao động và mất nghiệm tốt."*
-
-### ❓ Câu 3: *"Tại sao đột biến Gaussian lại tốt hơn đột biến đều (Uniform Mutation)?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, đột biến Uniform làm biến đổi gene nhảy lung tung khắp bản đồ với xác suất như nhau. Trong khi đó, **đột biến Gaussian** có hàm mật độ hình chuông: ưu tiên tạo ra các bước vi chỉnh nhỏ quanh vị trí hiện tại (khai thác tinh chỉnh vị trí UAV) nhưng thỉnh thoảng vẫn có bước nhảy lớn ở đuôi phân phối (giúp thoát khỏi cực trị địa phương)."*
-
----
-
-## 7. 📚 TÀI LIỆU THAM KHẢO HỌC THUẬT (ACADEMIC REFERENCES)
+Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
 1. **Holland, J. H. (1975).** *Adaptation in Natural and Artificial Systems*. University of Michigan Press. *(Nền tảng lý thuyết GA và cơ chế chọn lọc tự nhiên)*.
 2. **Herrera, F., Lozano, M., & Verdegay, J. L. (1998).** "Tackling real-coded genetic algorithms: Operators and tools for behavioural analysis". *Artificial Intelligence Review*, vol. 12, no. 4, pp. 265–319. DOI: [`10.1023/A:1006504901164`](https://doi.org/10.1023/A:1006504901164). *(Cơ sở cho toán tử Arithmetic Crossover liên tục trong `crossover.py`)*.
 3. **Michalewicz, Z. (1996).** *Genetic Algorithms + Data Structures = Evolution Programs*. Springer. *(Đột biến Gaussian và chiến lược Elitism)*.
-

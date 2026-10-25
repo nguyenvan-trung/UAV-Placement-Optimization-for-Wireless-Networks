@@ -1,30 +1,18 @@
 # 🚀 DWI_WOA: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN I-WOA (ĐỀ XUẤT)
+
+[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+
+Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+
+
+> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+
 > **Mục đích:** Hướng dẫn toàn diện công thức toán học, cấu trúc mã nguồn, cơ chế cải tiến và kịch bản trả lời phản biện xuất sắc dành cho thuật toán **Improved Whale Optimization Algorithm (I-WOA)** — đóng góp khoa học cốt lõi của đề tài tối ưu hóa vị trí 3D trạm phát sóng UAV.
 
 ---
 
 ## 1. 💡 ĐỘNG LỰC NGHIÊN CỨU & 3 TRỤ CỘT CẢI TIẾN
-Mặc dù thuật toán bầy cá voi (WOA) gốc có ưu thế về quỹ đạo xoắn ốc phân tán, nhưng thực nghiệm cho thấy WOA gốc gặp **3 hạn chế nghiêm trọng**:
-1. Khởi tạo ngẫu nhiên mù quáng (Random Initialization) khiến nhiều UAV rơi vào góc chết không có người dùng.
-2. Suy giảm tuyến tính của hệ số $a$ làm bầy cá voi mất khả năng thám hiểm toàn cục ở nửa sau quá trình chạy.
-3. Rất dễ bị sa lầy vào cực trị địa phương (Local Optima) khi người dùng phân bố thành nhiều cụm mật độ không đều.
-
-Để giải quyết triệt để các hạn chế trên, **I-WOA** tích hợp **3 trụ cột cải tiến đột phá**:
-
-```text
-               ┌─────────────────────────────────────────────────────────────┐
-               │         I-WOA (IMPROVED WHALE OPTIMIZATION ALGORITHM)        │
-               └──────────────────────────────┬──────────────────────────────┘
-                                              │
-        ┌─────────────────────────────────────┼─────────────────────────────────────┐
-        ▼                                     ▼                                     ▼
- 1. KHỞI TẠO ĐỊNH HƯỚNG K-MEANS       2. HỌC ĐỐI KHÁNG ĐA CHIỀU (OBL)     3. BƯỚC NHẢY ĐỘT BIẾN LEVY FLIGHT
- (Centroid-Guided Initialization)    (Opposition-Based Learning)          (Heavy-Tailed Mantegna Steps)
- - Gom cụm mật độ người dùng         - Khám phá miền không gian đối xứng  - Bước nhảy dài ngẫu nhiên
- - Đưa UAV tiếp cận nhanh điểm nóng  - Chống bẫy lệch góc bản đồ          - Bứt phá khỏi cực trị địa phương
-```
-
----
+I-WOA kết hợp K-Means, OBL và Lévy trên lõi WOA. Mục tiêu thiết kế là khảo sát ảnh hưởng của khởi tạo và đề xuất nghiệm bổ sung. Chưa có ablation theo FE để kết luận từng thành phần có lợi hoặc hiệu quả cộng dồn.
 
 ## 2. 🎯 BIỂU DIỄN NGHIỆM TRONG BÀI TOÁN UAV
 Mỗi cá thể cá voi $\mathbf{X}_i$ mã hóa tọa độ 3D của $N = 4$ trạm phát sóng UAV:
@@ -46,28 +34,28 @@ Thay vì thả rơi 4 UAV ngẫu nhiên khắp khu vực $1\text{ km}^2$, I-WOA 
   $$\arg\min_{\mathcal{S}} \sum_{k=1}^K \sum_{\mathbf{u} \in \mathcal{S}_k} \|\mathbf{u} - \mathbf{c}_k\|^2$$
 - Tọa độ trọng tâm cụm thứ $k$:
   $$\mathbf{c}_k = (c_{x,k}, c_{y,k}) = \frac{1}{|\mathcal{S}_k|} \sum_{\mathbf{u} \in \mathcal{S}_k} \mathbf{u}$$
-- Cá thể "hạt giống" đầu tiên $\mathbf{X}_{\text{seed}}$ được gán thẳng vào tâm các cụm với độ cao trung bình an toàn ($z_0 = 120\text{ m}$):
-  $$\mathbf{X}_{\text{seed}} = [c_{x,1}, c_{y,1}, 120, \; \dots, \; c_{x,4}, c_{y,4}, 120]^T$$
-- Các cá thể còn lại trong quần thể được sinh bằng nhiễu Gauss quanh hạt giống này kết hợp với ngẫu nhiên đều, giúp bầy cá voi ngay từ thế hệ 0 đã có vùng xuất phát thuận lợi.
+- Cá thể "hạt giống" đầu tiên $\mathbf{X}_{\text{seed}}$ được gán vào tâm cụm với độ cao gợi ý mặc định ($z_0 = 100\text{ m}$), rồi clip theo miền. Đây là lựa chọn khởi tạo, không phải độ cao đã chứng minh an toàn hoặc tối ưu:
+  $$\mathbf{X}_{\text{seed}} = [c_{x,1}, c_{y,1}, 100, \; \dots, \; c_{x,4}, c_{y,4}, 100]^T$$
+- Code khởi tạo cả quần thể ngẫu nhiên đều; chỉ thay cá thể đầu bằng gợi ý K-Means. Không sinh Gaussian quanh tâm cụm. Độ cao gợi ý được clip vào miền bài toán. Nguồn: `../src/preprocessing/kmeans_init.py` và `../src/algorithms/I_WOA/optimizer.py`.
 
 ---
 
 ### 3.2. Trụ cột 2: Cơ chế học đối kháng đa chiều (Opposition-Based Learning - OBL)
-Theo lý thuyết của Tizhoosh (2005), nếu một giải pháp đang hướng sai vùng cực trị địa phương thì giải pháp đối xứng ngược chiều của nó có xác suất tiệm cận nghiệm tối ưu toàn cục cao hơn:
+OBL tạo nghiệm đối xứng để đánh giá bổ sung; không bảo đảm nghiệm đối lập có chất lượng cao hơn:
 
 - Với mỗi cá thể $\mathbf{X}_i = [x_{i,1}, \dots, x_{i,D}]^T$, vector đối lập $\mathbf{X}_i^{\text{op}}$ được định nghĩa:
   $$x_{i,d}^{\text{op}} = LB_d + UB_d - x_{i,d}, \quad \forall d \in \{1, \dots, D\}$$
 - **Quy trình chọn lọc OBL:**
   1. Từ quần thể hiện tại $\mathcal{P} = \{\mathbf{X}_1, \dots, \mathbf{X}_{PopSize}\}$, sinh quần thể đối lập $\mathcal{P}^{\text{op}} = \{\mathbf{X}_1^{\text{op}}, \dots, \mathbf{X}_{PopSize}^{\text{op}}\}$.
-  2. Đánh giá hàm Fitness cho toàn bộ $2 \times PopSize$ cá thể trong tập kết hợp $\mathcal{P}_{\text{all}} = \mathcal{P} \cup \mathcal{P}^{\text{op}}$.
+  2. Giữ Fitness của quần thể gốc đã tính, chỉ đánh giá thêm $PopSize$ nghiệm đối lập rồi ghép $\mathcal{P}_{\text{all}} = \mathcal{P} \cup \mathcal{P}^{\text{op}}$.
   3. Sắp xếp giảm dần theo Fitness và chọn ra $PopSize$ cá thể ưu tú nhất:
      $$\mathcal{P}_{\text{new}} = \text{Top}_{PopSize}(\mathcal{P} \cup \mathcal{P}^{\text{op}})$$
-- **Ý nghĩa hình học:** Nếu các UAV bị dồn góc bản đồ $[0, 200]\text{m}$, nghiệm đối lập sẽ phản chiếu sang góc đối xứng $[800, 1000]\text{m}$, giúp bao quát toàn bộ vùng phục vụ $1\text{ km}^2$.
+- **Ý nghĩa hình học:** Với biên toàn miền [0,1000] m, tọa độ [0,200] m được phản chiếu sang [800,1000] m. Ví dụ chỉ mô tả phép đối xứng, không bảo đảm phủ toàn bộ miền. OBL động dùng biên quần thể nên không nhất thiết phản chiếu quanh tâm toàn miền.
 
 ---
 
 ### 3.3. Trụ cột 3: Đột biến bước nhảy phân phối đuôi nặng Levy Flight
-Để khắc phục triệt để hiện tượng suy giảm hệ số $a$ khiến WOA bị "đóng băng" ở nửa cuối, I-WOA áp dụng toán tử đột biến **Levy Flight** (dựa trên thuật toán Mantegna):
+Để khảo sát việc bổ sung đề xuất bước nhảy, I-WOA áp dụng toán tử đột biến **Levy Flight** (dựa trên thuật toán Mantegna):
 
 - **Độ lệch chuẩn Mantegna $\sigma_u$:**
   $$\sigma_u = \left( \frac{\Gamma(1 + \beta) \cdot \sin\left(\frac{\pi \beta}{2}\right)}{\Gamma\left(\frac{1 + \beta}{2}\right) \cdot \beta \cdot 2^{\frac{\beta - 1}{2}}} \right)^{\frac{1}{\beta}}, \quad \text{với } \beta = 1.5$$
@@ -79,8 +67,8 @@ Theo lý thuyết của Tizhoosh (2005), nếu một giải pháp đang hướng
   Trong đó:
   - $\alpha = 0.05$: Hệ số kích thước bước nhảy (Step size scaling).
   - $\boldsymbol{\Delta}_i$: Vector độ lệch định hướng:
-    $$\boldsymbol{\Delta}_i = \begin{cases} \mathbf{X}_i - \mathbf{X}^* & \text{nếu } \|\mathbf{X}_i - \mathbf{X}^*\| > 10^{-3} \\ 0.1 \times (\mathbf{UB} - \mathbf{LB}) & \text{nếu bầy đã quá gần hội tụ (kích hoạt nhảy vùng)} \end{cases}$$
-- **Đặc trưng:** Phân phối Levy là phân phối đuôi nặng (Heavy-tailed): xen kẽ hàng loạt bước vi chỉnh nhỏ là những **bước nhảy cực dài ngẫu nhiên**, giúp UAV "nhảy vọt" ra khỏi hố trũng cực trị địa phương.
+    $$\boldsymbol{\Delta}_i = \begin{cases} \mathbf{X}_i - \mathbf{X}^* & \text{nếu từng tọa độ có } |X_{i,d}-X^*_d| > 10^{-3} \\ 0.1 \times (\mathbf{UB} - \mathbf{LB}) & \text{nếu bầy đã quá gần hội tụ (kích hoạt nhảy vùng)} \end{cases}$$
+- **Đặc trưng:** Phân phối Lévy có đuôi nặng, cho phép có bước nhảy dài; không bảo đảm thoát mọi cực trị. Code kích hoạt theo xác suất levy_rate=0,3, không có bộ phát hiện chắc chắn “đang kẹt”; chỉ nhận đề xuất nếu cải thiện ứng viên. Dynamic OBL có xác suất 0,2 mỗi vòng khi bật.
 
 ---
 
@@ -88,45 +76,21 @@ Theo lý thuyết của Tizhoosh (2005), nếu một giải pháp đang hướng
 
 | Module cải tiến | File mã nguồn tương ứng | Hàm / Class chính |
 | :--- | :--- | :--- |
-| Phân cụm K-Means khởi tạo | [`kmeans.py`](..\src\preprocessing\kmeans.py) | `run_kmeans_clustering()` |
-| Cơ chế học đối kháng (OBL) | [`obl.py`](..\src\algorithms\I_WOA\obl.py) | `generate_opposite_position()`, `apply_obl_population()` |
-| Bước nhảy Levy Flight | [`levy_flight.py`](..\src\algorithms\I_WOA\levy_flight.py) | `compute_levy_sigma()`, `apply_levy_flight()` |
-| Tham số I-WOA | [`parameters.py`](..\src\algorithms\I_WOA\parameters.py) | `class IWOAParameters` |
-| Bộ điều khiển I-WOA | [`optimizer.py`](..\src\algorithms\I_WOA\optimizer.py) | `class IWOAOptimizer.optimize()` |
+| Phân cụm K-Means khởi tạo | [`kmeans_init.py`](../src/preprocessing/kmeans_init.py) | `generate_kmeans_uav_initial_guess()` |
+| Cơ chế học đối kháng (OBL) | [`obl.py`](../src/algorithms/I_WOA/obl.py) | `generate_opposite_position()`, `apply_obl_population()` |
+| Bước nhảy Levy Flight | [`levy_flight.py`](../src/algorithms/I_WOA/levy_flight.py) | `compute_levy_sigma()`, `apply_levy_flight()` |
+| Tham số I-WOA | [`parameters.py`](../src/algorithms/I_WOA/parameters.py) | `class IWOAParameters` |
+| Bộ điều khiển I-WOA | [`optimizer.py`](../src/algorithms/I_WOA/optimizer.py) | `class IWOAOptimizer.optimize()` |
 
 ---
 
-## 5. 🏆 BẰNG CHỨNG THỰC NGHIỆM ĐỘT PHÁ (PART 1 VS PART 2)
+## 5. Trạng thái thực nghiệm và diễn giải
 
-| Chỉ số đánh giá | Part 1 (35 vòng lặp) | Part 2 (80 vòng lặp) | Mức độ bứt phá của I-WOA |
-| :--- | :---: | :---: | :--- |
-| **Xếp hạng tổng thể** | Hạng 5 / 6 | **Hạng 1 / 6 🏆** | **Vươn lên dẫn đầu toàn diện** |
-| **Fitness trung bình** | 0.4405 | **0.4505 🚀** | **Tăng +0.0100 (Cao nhất trong 6 thuật toán, gấp 3 lần PSO)** |
-| **Tỷ lệ Nhiễu giao thoa ($f_3$)** | 9.04% | **5.72% 🎯** | **Giảm -3.32% (Thấp nhất toàn bảng, giảm 45% so với H-WOA-PSO)** |
-| **Tỷ lệ Phủ sóng ($f_1$)** | 99.57% | **99.91%** | **Gần như hoàn hảo tuyệt đối (99.91%)** |
+Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
 
----
+## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
 
-## 6. 🎓 BỘ CÂU HỎI THẦY CÔ VẤN ĐÁP & CÂU TRẢ LỜI MẪU
-
-### ❓ Câu 1: *"Tại sao ở 35 vòng lặp I-WOA xếp hạng 5, nhưng lên 80 vòng lặp lại bứt lên Hạng 1?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy/Cô, đây là đặc tính kinh điển của sự đánh đổi giữa **Exploration (Khám phá)** và **Exploitation (Khai thác)**:
-> - Ở 35 vòng lặp đầu, các thuật toán bầy đàn đơn giản như PSO dồn toàn bộ hạt vào vùng gần nhất nên Fitness tăng rất nhanh ban đầu nhưng thực chất là đã bị kẹt ở cực trị địa phương. Trong khi đó, I-WOA liên tục áp dụng OBL và Levy Flight để thám hiểm không gian trên diện rộng nên chưa kịp co cụm.
-> - Khi ngân sách vòng lặp được mở rộng lên 80 vòng lặp, I-WOA chuyển dịch nhịp nhàng sang pha khai thác sâu: nhờ không bị kẹt ở các hố trũng địa phương, I-WOA đã tìm ra cấu hình đặt trạm tối ưu toàn cục mà PSO và WOA không thể chạm tới, qua đó bứt phá vươn lên vị trí số 1 toàn bảng."*
-
-### ❓ Câu 2: *"Cơ chế OBL có làm tăng gấp đôi số lần tính toán không và chi phí đó có xứng đáng không?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, trong mỗi lần kích hoạt OBL, thuật toán đánh giá thêm $PopSize$ nghiệm đối lập. Thời gian chạy trung bình của I-WOA khoảng **4.34 giây**, trong khi các thuật toán khác mất 1.0 - 1.4 giây. 
-> Tuy nhiên, trong bài toán thực tế đặt trạm phát sóng UAV cứu trợ khẩn cấp, thời gian tính toán 4 giây là hoàn toàn tức thời (real-time) đối với người điều hành mạng, nhưng đổi lại hệ thống giảm được tới **45% lượng nhiễu giao thoa** và đạt độ phủ sóng 99.91%. Đây là sự đánh đổi hoàn toàn xứng đáng và có giá trị thực tiễn rất cao."*
-
-### ❓ Câu 3: *"Tại sao đột biến Levy Flight lại vượt trội hơn đột biến Gauss trong việc thoát cực trị?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, phân phối Gauss có đuôi suy giảm theo hàm mũ ($\sim e^{-x^2}$), nên xác suất xuất hiện một bước nhảy lớn cách xa vị trí hiện tại là cực kỳ nhỏ (hầu như bằng 0 khi vượt quá $3\sigma$). Trong khi đó, **phân phối Levy có đuôi nặng theo hàm lũy thừa ($P(s) \sim s^{-1-\beta}$)**, cho phép thỉnh thoảng sinh ra những bước nhảy cực dài ngẫu nhiên. Chính những cú nhảy dài bất ngờ này giúp cá voi thoát văng ra khỏi các hố trũng cực trị địa phương một cách triệt để."*
-
----
-
-## 7. 📚 TÀI LIỆU THAM KHẢO HỌC THUẬT (ACADEMIC REFERENCES)
+Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
 1. **Mirjalili, S., & Lewis, A. (2016).** "The Whale Optimization Algorithm". *Advances in Engineering Software*, vol. 95, pp. 51–67. DOI: [`10.1016/j.advengsoft.2016.01.008`](https://doi.org/10.1016/j.advengsoft.2016.01.008). *(Thuật toán nền tảng WOA)*.
 2. **Tizhoosh, H. R. (2005).** "Opposition-Based Learning: A New Scheme for Machine Intelligence". *IEEE CIMCA Proceedings*, pp. 695–701. DOI: [`10.1109/CIMCA.2005.1631345`](https://doi.org/10.1109/CIMCA.2005.1631345). *(Cơ sở toán học cho toán tử OBL trong `obl.py`)*.
 3. **Mantegna, R. N. (1994).** "Fast, accurate algorithm for numerical simulation of Lévy stable stochastic processes". *Physical Review E*, vol. 49, no. 5, pp. 4677–4683. DOI: [`10.1103/PhysRevE.49.4677`](https://doi.org/10.1103/PhysRevE.49.4677). *(Thuật toán Mantegna tính $\sigma_u$ cho bước nhảy Levy trong `levy_flight.py`)*.

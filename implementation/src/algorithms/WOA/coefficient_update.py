@@ -8,6 +8,7 @@ def update_coefficients(
     max_iterations: int,
     dimension: int,
     rng: np.random.Generator,
+    progress_fraction: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, float]:
     """Tính các vector hệ số A, C và giá trị l cho cá kình.
 
@@ -16,7 +17,7 @@ def update_coefficients(
     C = 2*r2
     l: số thực ngẫu nhiên trong [-1, 1]
     """
-    a = 2.0 - 2.0 * (iteration / max(1, max_iterations - 1))
+    a = 2.0 - 2.0 * (iteration / max(1, max_iterations - 1) if progress_fraction is None else progress_fraction)
     r1 = rng.uniform(0.0, 1.0, size=dimension)
     r2 = rng.uniform(0.0, 1.0, size=dimension)
 

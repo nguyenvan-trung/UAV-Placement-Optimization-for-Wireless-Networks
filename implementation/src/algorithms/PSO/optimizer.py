@@ -5,6 +5,8 @@ import time
 import numpy as np
 
 from ..base.result import OptimizationResult
+from ..base.enhancements import seed_kmeans, enhance
+from ..base.budget import budgeted, initialize_paired, iterations, progress, evaluate_phase
 from .best_update import update_bests
 from .boundary_handler import handle_boundaries
 from .initialization import initialize_swarm
@@ -21,6 +23,7 @@ class PSOOptimizer:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
+    @budgeted
     def optimize(self, problem: object) -> OptimizationResult:
         start_time = time.perf_counter()
 
@@ -36,6 +39,8 @@ class PSOOptimizer:
             upper_bounds=ub,
             rng=self.rng,
         )
+        initialize_paired(swarm, problem)
+        seed_kmeans(swarm, problem, self.params, self.seed)
 
         # 2. Đánh giá vị trí ban đầu
         for p in swarm:
@@ -44,6 +49,7 @@ class PSOOptimizer:
             p.best_position = p.position.copy()
 
         # Tìm gbest khởi tạo
+        swarm = enhance(swarm, problem, self.params, self.rng, None, initial=True)
         best_particle = max(swarm, key=lambda p: p.fitness)
         gbest_position = best_particle.position.copy()
         gbest_fitness = float(best_particle.fitness)
@@ -52,9 +58,9 @@ class PSOOptimizer:
 
         # 3. Vòng lặp tối ưu bầy đàn
         w_max, w_min = 0.9, 0.4
-        for t in range(self.params.iterations):
+        for t in iterations(problem, self.params.iterations):
             # Trọng số quán tính suy giảm tuyến tính
-            w = w_max - (w_max - w_min) * (t / max(1, self.params.iterations - 1))
+            w = w_max - (w_max - w_min) * progress(problem, t, self.params.iterations)
 
             for p in swarm:
                 # Cập nhật vận tốc
@@ -78,6 +84,7 @@ class PSOOptimizer:
                 p.fitness = problem.evaluate(p.position)
 
             # Cập nhật pbest và gbest
+            swarm = enhance(swarm, problem, self.params, self.rng, gbest_position)
             gbest_position, gbest_fitness = update_bests(swarm, gbest_position, gbest_fitness)
             convergence_history.append(gbest_fitness)
 

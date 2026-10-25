@@ -1,27 +1,13 @@
-# 📅 Kế hoạch thực hiện đề tài
+# Kế hoạch và phân công
 
-Đề tài: **UAV Placement Optimization for 5G Wireless Networks Using Improved Whale Optimization Algorithm (I-WOA)**.
+[Trang đầu](../README.md) · [Mục lục kỹ thuật](../implementation/docs/README.md)
 
-Nhóm nghiên cứu, phát triển thuật toán đề xuất **I-WOA** (tích hợp K-Means, OBL, Levy Flight) và đối chứng toàn diện với **5 thuật toán khác** (GA, PSO, WOA gốc, Hybrid PSO-GA, Hybrid WOA-PSO) trên **500 bộ dữ liệu người dùng**, theo chiến lược thực nghiệm 2 giai đoạn (Hội tụ sớm 35 vòng lặp & Tối ưu hóa sâu 80 vòng lặp).
+Đây là kế hoạch tổ chức công việc, không phải log hoàn thành. Thiết kế hiện tại là notebook 30 trường hợp, 100 vòng trên 500 CSV; chưa chạy study và chưa chốt seed. Thiết kế hai giai đoạn 35/80 vòng trước đây đã được thay trong luồng notebook.
 
-## 👥 Thành viên nhóm
+- [weekly_plan](weekly_plan.md): lộ trình theo giai đoạn và sản phẩm cần có.
+- [team_assignment](team_assignment.md): phân công và review.
+- [project_ideas](project_ideas.md): câu hỏi nghiên cứu và phạm vi.
+- [NOTEBOOK_STUDY](../implementation/docs/NOTEBOOK_STUDY.md): thiết kế thực thi cụ thể.
+- [PROJECT_GUIDE](../implementation/docs/PROJECT_GUIDE.md): trạng thái triển khai, không suy ra từ lịch kế hoạch.
 
-| Họ và tên | Vai trò | Trách nhiệm chính |
-|---|---|---|
-| Nguyễn Văn Trung | Chủ nhóm | Quản lý dự án, kiến trúc hệ thống, phát triển I-WOA đề xuất, thực nghiệm Part 2, kịch bản TALK.md |
-| Hoàng Văn Trường | Thành viên | Thuật toán GA, thuật toán lai H-PSO-GA, quản lý 500 datasets, lý thuyết di truyền DWGA.md |
-| Nguyễn Minh Hiếu | Thành viên | Thuật toán PSO, WOA gốc, thuật toán lai H-WOA-PSO, trực quan hóa 2D/3D, tài liệu DWPSO/DWWOA.md |
-
-## 📂 Các tài liệu kế hoạch & Tiến độ
-
-- [weekly_plan.md](weekly_plan.md): Kế hoạch chi tiết 10 tuần và bảng theo dõi tiến độ thực tế (**Đã hoàn thành 100%**).
-- [team_assignment.md](team_assignment.md): Bảng phân công vai trò, trách nhiệm và quy tắc review chéo chi tiết.
-- [project_ideas.md](project_ideas.md): Ý tưởng, phạm vi và mô hình bài toán đa mục tiêu chuẩn 5G.
-- [team_weekly_progress.xlsx](team_weekly_progress.xlsx): Sổ tay Excel theo dõi tiến độ chi tiết của từng thành viên qua 10 tuần.
-
-## 🎯 Nguyên tắc làm việc & Kiểm chứng
-
-1. Mỗi công việc phải có người phụ trách chính và người kiểm tra độc lập.
-2. Mọi thuật toán phải dùng chung bộ 500 datasets, hàm mục tiêu đa tiêu chí ($f_1, f_2, f_3$), ràng buộc và điều kiện dừng để đảm bảo tính công bằng tuyệt đối.
-3. Toàn bộ kết quả thực nghiệm được kiểm chứng qua 3.000 lượt chạy Monte Carlo trên đa tiến trình Multiprocessing.
-4. Tuần 10 hoàn thiện toàn bộ báo cáo, slide, kịch bản bảo vệ và bộ tài liệu kỹ thuật DW*.md.
+Không đánh dấu hoàn thành 100% hoặc gán thứ hạng trước khi có artifact và kiểm chứng tương ứng.

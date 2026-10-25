@@ -1,116 +1,59 @@
-# 🛸 UAV Placement Optimization for 5G Wireless Networks
+# Tối ưu vị trí UAV cho mạng không dây
 
-> **Đề tài:** Tối ưu hóa vị trí 3D trạm phát sóng UAV trong mạng không dây 5G sử dụng thuật toán bầy cá voi cải tiến (I-WOA)  
-> **Nhóm thực hiện:** Nguyễn Văn Trung (Chủ nhóm), Hoàng Văn Trường, Nguyễn Minh Hiếu  
-> **Tài liệu thuyết trình:** [TALK.md](TALK.md) | **Báo cáo thực nghiệm 2 giai đoạn:** [DEMO_REPORT.md](implementation/results/DEMO_REPORT.md)
+Dự án mô phỏng việc đặt trạm phát sóng UAV trong không gian ba chiều để phục vụ user có tọa độ cho trước. GA, PSO, WOA, hai thuật toán lai và I-WOA tìm tọa độ UAV theo cùng hàm đánh giá phủ sóng, công suất chuẩn hóa và chồng lấn kết nối.
 
----
+**Trạng thái ngày 25/10/2026:** đã có mã thuật toán, bộ 500 CSV, runner FE và notebook thiết kế 30 trường hợp chạy 100 vòng. Notebook chưa chạy thí nghiệm; danh sách seed chưa chốt. Chưa có kết quả mới để kết luận thuật toán nào tốt nhất. Đầu ra smoke và batch dở trong `implementation/results/` đã được dọn.
 
-## 1. 📂 Bản đồ cấu trúc dự án
+## Bắt đầu đọc
 
-```text
-.
-├── data/                         # Dữ liệu độc lập với mã nguồn
-│   ├── stores/                   # 500 file CSV dữ liệu người dùng (50 - 500 UEs)
-│   └── views/                    # Hình ảnh trực quan hóa không gian của từng kịch bản
-├── documents/                    # Tổng hợp tài liệu tham khảo học thuật chuẩn IEEE
-│   └── README.md                 # Danh mục bài báo về Al-Hourani, I-WOA, OBL, Levy, PSO, GA
-├── plan/                         # Kế hoạch tiến độ 10 tuần và phân công nhóm
-│   ├── weekly_plan.md            # Kế hoạch 10 tuần chi tiết (Hoàn thành 100%)
-│   ├── team_assignment.md        # Phân công vai trò từng thành viên và review chéo
-│   └── team_weekly_progress.xlsx # Bảng Excel theo dõi tiến độ chi tiết
-├── implementation/               # Toàn bộ mã nguồn mô phỏng và kết quả
-│   ├── docs/                     # Tài liệu kỹ thuật chuyên sâu từng giải thuật
-│   │   ├── formulas.md           # Kiến trúc phân tầng và ánh xạ công thức
-│   │   ├── DWGA.md               # Giải thích chi tiết & công thức GA
-│   │   ├── DWPSO.md              # Giải thích chi tiết & công thức PSO
-│   │   ├── DWWOA.md              # Giải thích chi tiết & công thức WOA
-│   │   ├── DWI_WOA.md            # Giải thích chi tiết & công thức I-WOA (Đề xuất)
-│   │   ├── DWH_PSO_GA.md         # Giải thích chi tiết thuật toán lai H-PSO-GA
-│   │   └── DWH_WOA_PSO.md        # Giải thích chi tiết thuật toán lai H-WOA-PSO
-│   ├── results/                  # Kết quả thực nghiệm và bảng biểu đồ đối chứng
-│   │   ├── part1_35_iterations/ # Giai đoạn 1: Hội tụ sớm (35 vòng lặp, 500 datasets)
-│   │   ├── part2_80_iterations/ # Giai đoạn 2: Tối ưu sâu (80 vòng lặp, I-WOA Top 1)
-│   │   ├── DEMO_REPORT.md        # Báo cáo so sánh đối chiếu bước nhảy vọt
-│   │   ├── system_parameters_table.png # Ảnh bảng thông số mô phỏng chuẩn
-│   │   ├── part1_vs_part2_breakthrough_comparison.png # Biểu đồ cột bứt phá
-│   │   └── uav_3d_placement_demo.png # Hình ảnh mô phỏng không gian 3D đặt 4 UAV
-│   ├── scripts/                  # Các tập lệnh thực thi dòng lệnh
-│   │   ├── run_batch.py          # Script chạy hàng loạt đa tiến trình (Part 1 & Part 2)
-│   │   ├── run_optimizer.py      # Script chạy tối ưu hóa đơn lẻ cho 1 kịch bản
-│   │   └── generate_dataset.py   # Script sinh 500 kịch bản người dùng
-│   └── src/                      # Cấu trúc mã nguồn module hóa sạch (Clean Architecture)
-│       ├── algorithms/           # Cài đặt 6 thuật toán (GA, PSO, WOA, I-WOA, Hybrid)
-│       ├── physics/              # Kênh truyền vô tuyến Al-Hourani Sub-6 5G (LoS/NLoS, SNR)
-│       ├── objectives/           # Hàm mục tiêu đa tiêu chí (Phủ sóng f1, Năng lượng f2, Nhiễu f3)
-│       ├── preprocessing/        # Phân cụm K-Means khởi tạo thông minh
-│       └── problem/              # Đóng gói bài toán không gian tìm kiếm 12D
-├── NOTE.md                       # Ghi chú nghiên cứu lý thuyết chuyên sâu
-└── TALK.md                       # Kịch bản bảo vệ đồ án và hướng dẫn vấn đáp
-```
+| Bạn cần hiểu gì?                       | Đọc ở đâu?                                                  |
+| -------------------------------------- | ----------------------------------------------------------- |
+| Toàn bộ tài liệu liên kết thế nào      | [Mục lục và lộ trình đọc](implementation/docs/README.md)    |
+| Bài toán, kiến trúc và luồng dữ liệu   | [Hướng dẫn người mới](implementation/docs/PROJECT_GUIDE.md) |
+| UE, seed, FE, ablation, fitness        | [Thuật ngữ](implementation/docs/GLOSSARY.md)                |
+| Mô hình và giới hạn kết luận           | [Báo cáo phương pháp](implementation/docs/REPORT.md)        |
+| Thiết kế 30 trường hợp, 100 vòng       | [Hướng dẫn notebook](implementation/docs/NOTEBOOK_STUDY.md) |
+| Chuẩn bị môi trường và chọn luồng chạy | [Hướng dẫn tái lập](REPRODUCE.md)                           |
+| Trình bày và trả lời câu hỏi           | [Kịch bản thuyết trình](TALK.md)                            |
 
----
+Người mới nên đọc README này → PROJECT_GUIDE → GLOSSARY → REPORT → NOTEBOOK_STUDY. Sau đó chọn tài liệu thuật toán hoặc thống kê trong mục lục.
 
-## 2. ⚙️ Tham số thiết lập mô phỏng chuẩn 5G
+## Bài toán được giải
 
-Toàn bộ tham số được quản lý tập trung trong `implementation/src/constants/network.py` và `experiment.py`:
+Với N UAV, một nghiệm chứa 3N số: `[x1, y1, z1, ..., xN, yN, zN]`. Với 4 UAV, đó là vector 12 chiều. User là đầu vào cố định trong một dataset; UAV là vị trí thuật toán tìm.
 
-| Nhóm thông số | Tên thông số | Ký hiệu | Giá trị thiết lập | Đơn vị / Ý nghĩa |
-| :--- | :--- | :---: | :---: | :--- |
-| **Không gian mạng** | Kích thước khu vực | $W \times H$ | $1000 \times 1000$ | $\text{m}^2$ (Diện tích $1\text{ km}^2$) |
-| | Độ cao bay UAV | $[z_{\min}, z_{\max}]$ | $[50, 300]$ | mét (Độ cao bay hành trình an toàn) |
-| | Số lượng UAV | $N$ | **4** | trạm phát sóng bay |
-| | Số lượng người dùng | $M$ | **50 đến 500** | người dùng (10 mức quy mô) |
-| **Vật lý vô tuyến (5G)** | Tần số sóng mang | $f_c$ | **3.5** | $\text{GHz}$ (Dải tần Sub-6 chuẩn 5G) |
-| | Công suất phát UAV | $P_{\text{tx}}$ | **30** | $\text{dBm}$ (Tương đương 1.0 W) |
-| | Tạp âm nền | $N_0$ | **-104** | $\text{dBm}$ |
-| | Ngưỡng kết nối khả dụng | $SNR_{\text{th}}$ | **18.0** | $\text{dB}$ (Chuẩn đảm bảo QoS 5G) |
-| | Tham số đô thị (Al-Hourani)| $a, b$ | $9.61,\; 0.16$ | Môi trường truyền dẫn đô thị dày đặc |
-| | Suy hao cộng thêm | $\eta_{\text{LoS}}, \eta_{\text{NLoS}}$ | $1.0,\; 20.0$ | $\text{dB}$ |
-| **Hàm mục tiêu đa tiêu chí** | Trọng số Phủ sóng ($f_1$) | $w_1$ | **0.6** | Càng cao càng tốt |
-| | Trọng số Năng lượng ($f_2$) | $w_2$ | **0.2** | Càng thấp càng tốt |
-| | Trọng số Can nhiễu ($f_3$) | $w_3$ | **0.2** | Càng thấp càng tốt |
+Hàm mục tiêu mặc định cần cực đại hóa: `F = 0,6C − 0,2E − 0,2I`.
 
----
+- C: tỷ lệ user được ít nhất một UAV phủ theo ngưỡng SNR.
+- E: proxy công suất trung bình chuẩn hóa; không phải năng lượng Joule.
+- I: tỷ lệ user được từ hai UAV trở lên phủ theo cùng ngưỡng; không phải công suất nhiễu hoặc diện tích giao nhau.
 
-## 3. 🚀 Cài đặt môi trường & Chạy thử nghiệm
+Trọng số và ngưỡng là lựa chọn mô phỏng. Mô hình chưa mô tả đầy đủ dung lượng, backhaul hoặc điều khiển bay. Xem [REPORT](implementation/docs/REPORT.md).
 
-### 3.1. Kích hoạt môi trường ảo Python
-Yêu cầu Python 3.10 trở lên trên Windows PowerShell:
+## Ba luồng chạy
 
-```powershell
-# Kích hoạt venv có sẵn
-.\.venv\Scripts\Activate.ps1
+| Luồng                  | Đầu vào                                | Ngân sách                     | Mục đích                                   |
+| ---------------------- | -------------------------------------- | ----------------------------- | ------------------------------------------ |
+| Notebook               | 500 CSV có sẵn                         | 100 vòng, quần thể 25, 4 UAV  | 30 trường hợp, bảng và ảnh cùng chỗ        |
+| Benchmark FE           | Kịch bản sinh từ YAML và seed manifest | Mặc định 3030 FE, quần thể 30 | Đối chứng cùng FE, ablation và sensitivity |
+| Script đơn lẻ/batch cũ | CSV có sẵn                             | Số vòng qua CLI               | Một dataset hoặc batch sáu thuật toán      |
 
-# Hoặc cài đặt thư viện
-pip install -r implementation\requirements.txt
-```
+Không gộp kết quả ba luồng như cùng thí nghiệm. Cùng 100 vòng không có nghĩa cùng FE. Analyzer FE không nhận trực tiếp schema notebook.
 
-### 3.2. Chạy tối ưu hóa đơn lẻ (1 kịch bản CSV)
-```powershell
-python implementation\scripts\run_optimizer.py --algorithm all --seed 42 --dataset data\stores\001_UAV_3D_50_users_connect.csv
-```
-*(Tham số `--algorithm` hỗ trợ: `GA`, `PSO`, `WOA`, `I_WOA`, `H_PSO_GA`, `H_WOA_PSO`, hoặc `all`)*.
+## Cấu trúc thư mục
 
-### 3.3. Chạy thực nghiệm 2 giai đoạn (Toàn bộ 500 datasets & Đối chiếu Part 1 vs Part 2)
-Script `run_batch.py` tự động kích hoạt chế độ đa tiến trình (Multiprocessing Pool) trên toàn bộ các lõi CPU:
+| Thư mục                                                | Vai trò                                                          |
+| ------------------------------------------------------ | ---------------------------------------------------------------- |
+| `configs/`                                             | Cấu hình notebook và benchmark FE                                |
+| `data/stores/`, `data/views/`                          | CSV user và hình đầu vào                                         |
+| `implementation/src/`                                  | Mô hình, thuật toán, bộ chạy, tổng hợp                           |
+| `implementation/notebooks/`, `implementation/scripts/` | Giao diện notebook và điểm vào CLI                               |
+| `implementation/docs/`                                 | Tài liệu phương pháp và thiết kế                                 |
+| `implementation/tests/`                                | Kiểm tra mã, không phải kết quả nghiên cứu                       |
+| `implementation/results/`                              | Đầu ra khi chạy thực nghiệm                                      |
+| `documents/`, `plan/`                                  | Danh mục tham khảo và kế hoạch                                   |
+| `figures/`, `reports/`, `tmp_audit/`                   | Minh họa, kiểm toán hoặc kiểm tra; xác minh nguồn trước khi dùng |
 
-```powershell
-# Chạy cả 2 phần thực nghiệm và tự động xuất biểu đồ, bảng báo cáo
-python implementation\scripts\run_batch.py --mode all
-```
+Đọc tài liệu không cần chạy mã. Khi có yêu cầu thực thi, theo [REPRODUCE](REPRODUCE.md). Notebook mặc định `CONFIRM_RUN = False`, seed để trống. Không điền kết luận bằng số liệu lịch sử thiếu log.
 
----
-
-## 4. 🏆 Kết quả thực nghiệm đột phá của I-WOA
-
-| Tiêu chí đánh giá | Part 1 (35 vòng lặp — 500 datasets) | Part 2 (80 vòng lặp — 10 mức quy mô) | Đánh giá bứt phá của I-WOA |
-| :--- | :---: | :---: | :--- |
-| **Xếp hạng tổng thể I-WOA** | Hạng 5 / 6 | **Hạng 1 / 6 🏆** | **Vươn lên dẫn đầu toàn bảng** |
-| **Fitness trung bình** | 0.4405 | **0.4505 🚀** | **Tăng +0.0100 (Gấp 3 lần mức tăng của PSO)** |
-| **Tỷ lệ Nhiễu giao thoa ($f_3$)** | 9.04% | **5.72% 🎯** | **Giảm tới 45% lượng nhiễu so với các giải thuật lai** |
-| **Tỷ lệ Phủ sóng ($f_1$)** | 99.57% | **99.91%** | Phủ sóng gần như hoàn hảo tuyệt đối |
-
-Chi tiết số liệu kiểm chứng và kịch bản thuyết trình xem tại:
-- Báo cáo đối chiếu: [DEMO_REPORT.md](implementation/results/DEMO_REPORT.md)
-- Kịch bản bảo vệ đồ án: [TALK.md](TALK.md)
+Nhóm thực hiện: Nguyễn Văn Trung, Hoàng Văn Trường, Nguyễn Minh Hiếu.

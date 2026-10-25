@@ -1,66 +1,39 @@
-# Scripts
-
-ÄÃ¢y lÃ  cÃ¡c entry point cháº¡y tá»« terminal. Logic nghiá»‡p vá»¥ pháº£i náº±m trong
-`src/`, khÃ´ng viáº¿t dá»“n vÃ o script.
-
-| Script | DÃ¹ng khi nÃ o | Äáº§u vÃ o | Äáº§u ra |
-| --- | --- | --- | --- |
-| `generate_dataset.py` | Táº¡o láº¡i dá»¯ liá»‡u mÃ´ phá»ng | tham sá»‘ sá»‘ user/seed | `data/stores/`, `data/views/` |
-| `run_optimizer.py` | Cháº¡y má»™t hoáº·c táº¥t cáº£ thuáº­t toÃ¡n | má»™t CSV trong `data/stores/` | nghiá»‡m vÃ  metric trong `results/` |
-| `run_experiments.py` | Cháº¡y nhiá»u seed Ä‘á»ƒ so sÃ¡nh | dataset + cáº¥u hÃ¬nh thÃ­ nghiá»‡m | báº£ng, log, biá»ƒu Ä‘á»“ trong `results/` |
-
-## Quy trình 1 — Sinh dataset (riêng)
-
-```powershell
-cd implementation
-python scripts/generate_dataset.py
-```
-
-Mặc định tạo 500 CSV, đánh số `001` đến `500`; mỗi kích thước
-`50, 100, 150, ..., 500` có 50 bộ. Vị trí dùng hotspot pha với nền rải thưa.
-
-```powershell
-python scripts/generate_dataset.py --num-datasets 150
-python scripts/generate_dataset.py --num-datasets 500 `
-  --counts 50 100 150 200 250 300 350 400 450 500
-```
-
-Neu chi can tao lai anh tu cac CSV da co trong `data/stores` ma khong sinh lai
-du lieu, chay script PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\regenerate_views.ps1
-```
-
-Script tao bon anh cho moi CSV trong `data/views/<ten-dataset>`:
-
-- `top.png`: phep chieu X-Y.
-- `front.png`: phep chieu X-Z.
-- `side.png`: phep chieu Y-Z.
-- `3d.png`: phep chieu 3D X-Y-Z.
-
-Cot `z_m` la do cao cua user: `0` la user ngoai troi/mat dat, gia tri duong
-la user o tang toa nha. Vi tri UAV khong nam trong CSV user; no la dau ra 3D
-cua bai toan toi uu.
-## Quy trình 2 â€” Cháº¡y thuáº­t toÃ¡n (riÃªng)
-
-python scripts/run_optimizer.py `
-  --algorithm all `
-  --seed 42 `
-  --dataset ../data/stores/001_UAV_3D_50_users_connect.csv
-```
-
-`--algorithm` nháº­n `GA`, `PSO`, `WOA` hoáº·c `all`.
-
-## Quy trÃ¬nh 3 â€” ThÃ­ nghiá»‡m vÃ  notebook
-
-```powershell
-# Cháº¡y bá»™ nhiá»u seed
-python scripts/run_experiments.py
-
-# Chá»‰ má»Ÿ notebook sau khi Ä‘Ã£ cÃ³ output
-jupyter notebook notebooks/comparison_experiment.ipynb
-```
-
-
-
+# Điểm vào dòng lệnh và công cụ phân tích
+
+[Trang đầu](../../README.md) · [Mục lục](../docs/README.md) · [Chọn luồng chạy](../../REPRODUCE.md)
+
+Các script gọi logic trong src. Bảng này là hướng dẫn tìm tệp, không phải danh sách lệnh đã thực thi. Thiết kế hiện tại dùng [notebook 100 vòng](../docs/NOTEBOOK_STUDY.md); không chạy các script khác chỉ vì muốn mở notebook.
+
+| Script | Đầu vào / vai trò | Đầu ra hoặc tài liệu liên quan |
+|---|---|---|
+| generate_dataset.py | Sinh CSV/hình user khi chủ động đổi bộ dữ liệu | data/stores, data/views; 500 CSV hiện đã có |
+| run_optimizer.py | Một CSV, chọn thuật toán | Metric và hình theo tùy chọn |
+| run_experiments.py | Nhiều seed trên CSV | So sánh theo cơ chế script này, không thay study mới |
+| run_batch.py | Nhiều CSV, mặc định sáu thuật toán | CSV batch, summary, báo cáo và ảnh |
+| run_benchmark.py | YAML + seed manifest, dữ liệu sinh mới, ngân sách FE | runs/convergence/solutions/env/completion |
+| generate_seeds.py | Cấu hình FE | Manifest seed, không phải kết quả tối ưu |
+| analyze.py | Log FE sáu thuật toán | Thống kê theo instance; [STATISTICS](../docs/STATISTICS.md) |
+| analyze_stability.py | Log FE sáu thuật toán | Quy mô/phân bố/độ ổn định; [STABILITY](../docs/STABILITY.md) |
+| analyze_sensitivity.py | Log FE nhiều cấu hình fitness | [SENSITIVITY](../docs/SENSITIVITY.md) |
+| audit_fitness.py | Kiểm tra số học mô hình | JSON kiểm toán, không phải benchmark |
+| plot_scenarios.py | Sinh minh họa năm phân bố | figures, không phải kết quả thuật toán |
+| build_report_evidence.py | Dữ liệu kiểm toán/báo cáo hiện có | Ledger; không tự xác nhận nghiên cứu mới |
+| build_fitness_audit_report.py | Tổng hợp kiểm toán fitness | Báo cáo kiểm toán |
+| build_presentation.py | Dựng tài liệu trình bày | Cần rà nội dung/nguồn trước khi dùng |
+| revise_report_docs.py | Công cụ chỉnh tài liệu cũ | Không tự chạy; có thể ghi đè biên tập hiện tại |
+| run_scalability_analysis.py | Công cụ phân tích quy mô trước đó | Không thay các bảng notebook mới |
+| regenerate_views.ps1 | Tạo lại hình từ CSV | data/views |
+
+Các công cụ dựng/chỉnh tài liệu có thể chứa nội dung lịch sử; sau khi chạy phải đối chiếu [REPORT_EVIDENCE](../docs/REPORT_EVIDENCE.md). Không mặc định dùng chúng sẽ giữ nguyên các chỉnh sửa Markdown mới nhất.
+
+## Nếu dùng batch CSV legacy
+
+Các mode gồm all, representative và custom. representative lấy 10 file đầu theo thứ tự tên; chỉ coi là mỗi mức một file nếu quy tắc đặt tên thực sự bảo đảm điều đó. --limit giới hạn số file. --random-uavs thay số UAV theo dataset, khác study hiện tại cố định 4 UAV.
+
+Batch legacy có các mặc định riêng; truyền rõ tham số thay vì coi mặc định là giao thức study. Nó không xuất đủ lịch sử 101 mốc hoặc 30 case của notebook.
+
+## Nếu dùng benchmark FE
+
+Điểm vào gốc run_benchmark.py gọi script FE. Mode benchmark, ablation và sensitivity có schema/thuật toán hợp lệ riêng. Xem [EXPERIMENT_DESIGN](../docs/EXPERIMENT_DESIGN.md) và [DATA_FORMAT](../docs/DATA_FORMAT.md).
+
+Analyzer chỉ đọc kết quả, nhưng lệnh optimizer, plot_scenarios hoặc generate_dataset thực sự sinh/chạy dữ liệu. Chỉ thực hiện khi có yêu cầu tương ứng.

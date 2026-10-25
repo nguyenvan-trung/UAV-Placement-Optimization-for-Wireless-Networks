@@ -9,6 +9,7 @@ tập trung một góc bản đồ.
 import numpy as np
 
 from ..WOA.whale import Whale
+from ..base.budget import evaluate_phase
 
 
 def generate_opposite_position(
@@ -33,7 +34,7 @@ def apply_obl_population(
 
     for w in whales:
         op_pos = generate_opposite_position(w.position, lower_bounds, upper_bounds)
-        op_fit = problem.evaluate(op_pos)
+        op_fit = evaluate_phase(problem, op_pos, 'obl')
         opposite_whales.append(Whale(position=op_pos, fitness=op_fit))
 
     # Ghép 2 quần thể (kích thước 2 * pop_size)

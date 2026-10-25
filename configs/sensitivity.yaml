@@ -1,0 +1,48 @@
+# Déclaration trước khi chạy; chưa phải cấu hình runner FE hoàn chỉnh.
+# Không sửa baseline trong code. Các cấu hình phải tối ưu lại từ đầu.
+status: preregistered_not_run
+# Ngân sách/seed/instance khi chạy lấy từ configs/benchmark.yaml; các giá trị dưới đồng bộ để tra cứu.
+problem:
+  num_uav: 4
+  coverage_threshold_db: 18.0
+  baseline_coverage: SNR
+budget:
+  stop_on: fe
+  max_fe: 3030
+  early_stop: false
+common:
+  population_size: 30 # Giá trị mặc định trong các parameter class
+scenarios:
+  ue_counts: [100, 300, 500]
+  distributions: [single_cluster, multi_cluster, uniform, offset_cluster, with_outliers]
+  eval_runs: 30
+  instances_per_scenario: 1 # Thiết kế khởi đầu, tăng trước khi chạy nếu cần nhiều instance
+  seed_manifest: seeds/seeds.csv
+algorithms: [GA, PSO, WOA, H-PSO-GA, H-WOA-PSO, I-WOA]
+sensitivity:
+  baseline_id: main
+  configurations:
+    - {id: main, coverage_quantity: SNR, weights: {C: 0.6, E: 0.2, I: 0.2}}
+    - {id: w050, coverage_quantity: SNR, weights: {C: 0.5, E: 0.25, I: 0.25}}
+    - {id: w070, coverage_quantity: SNR, weights: {C: 0.7, E: 0.15, I: 0.15}}
+    - {id: w080, coverage_quantity: SNR, weights: {C: 0.8, E: 0.1, I: 0.1}}
+    - {id: w040, coverage_quantity: SNR, weights: {C: 0.4, E: 0.3, I: 0.3}}
+    - {id: coverage_only, coverage_quantity: SNR, weights: {C: 1.0, E: 0.0, I: 0.0}}
+    - {id: sinr_variant, coverage_quantity: SINR, weights: {C: 0.6, E: 0.2, I: 0.2}}
+  # SINR: mọi UAV phát đồng thời trên cùng tài nguyên, không xét gain anten.
+  # I vẫn là proxy chồng lấn SNR của baseline: nhiễu được phản ánh hai lần.
+  sinr_double_interference: true
+  final_metrics: [C_snr, C_sinr, E, I]
+statistics:
+  rank_metric: within_configuration_mean_fitness
+  rank_correlation: spearman
+  paired_test: wilcoxon_two_sided
+  zero_method: wilcox
+  effect_size: paired_rank_biserial
+  multiple_testing: holm
+  # Một family gồm mọi cấu hình và mọi đối thủ I-WOA trong lần phân tích.
+  correction_family: all_configurations_and_opponents
+  alpha: 0.05
+  # Ngưỡng chẩn đoán định trước, không phải chuẩn vật lý.
+  near_constant_energy_variance: 1.0e-8
+  coverage_saturation_threshold: 0.999

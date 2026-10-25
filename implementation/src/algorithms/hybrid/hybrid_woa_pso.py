@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..base.result import OptimizationResult
+from ..base.budget import budgeted, initialize_paired, iterations, progress, evaluate_phase
 from ..WOA.boundary_handler import handle_boundaries
 from ..WOA.coefficient_update import update_coefficients
 from ..WOA.encircling import encircle_prey
@@ -25,6 +26,8 @@ class HWOAPSOParameters:
     spiral_constant: float = 1.0
     c1: float = 1.2
     c2: float = 1.2
+    use_personal_attraction: bool = True
+    use_global_attraction: bool = True
 
 
 class HybridWOAPSOOptimizer:
@@ -35,6 +38,7 @@ class HybridWOAPSOOptimizer:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
+    @budgeted
     def optimize(self, problem: object) -> OptimizationResult:
         start_time = time.perf_counter()
 
@@ -51,6 +55,7 @@ class HybridWOAPSOOptimizer:
             upper_bounds=ub,
             rng=self.rng,
         )
+        initialize_paired(whales, problem)
 
         velocities = [self.rng.uniform(-v_max, v_max, size=dim) for _ in whales]
         pbests = [w.position.copy() for w in whales]
@@ -65,8 +70,8 @@ class HybridWOAPSOOptimizer:
         convergence_history: list[float] = [float(best_whale.fitness)]
 
         w_max, w_min = 0.9, 0.4
-        for t in range(self.params.iterations):
-            w = w_max - (w_max - w_min) * (t / max(1, self.params.iterations - 1))
+        for t in iterations(problem, self.params.iterations):
+            w = w_max - (w_max - w_min) * progress(problem, t, self.params.iterations)
 
             for i, whale in enumerate(whales):
                 A, C, l = update_coefficients(
@@ -74,6 +79,7 @@ class HybridWOAPSOOptimizer:
                     max_iterations=self.params.iterations,
                     dimension=dim,
                     rng=self.rng,
+                    progress_fraction=progress(problem, t, self.params.iterations),
                 )
                 p = self.rng.uniform(0.0, 1.0)
 
@@ -100,8 +106,8 @@ class HybridWOAPSOOptimizer:
                 r2 = self.rng.uniform(0.0, 1.0, size=dim)
                 velocities[i] = (
                     w * velocities[i]
-                    + self.params.c1 * r1 * (pbests[i] - whale.position)
-                    + self.params.c2 * r2 * (best_whale.position - whale.position)
+                    + (self.params.c1 if self.params.use_personal_attraction else 0.0) * r1 * (pbests[i] - whale.position)
+                    + (self.params.c2 if self.params.use_global_attraction else 0.0) * r2 * (best_whale.position - whale.position)
                 )
                 velocities[i] = np.clip(velocities[i], -v_max, v_max)
 
