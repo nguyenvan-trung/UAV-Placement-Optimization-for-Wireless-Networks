@@ -17,7 +17,7 @@ if hasattr(sys.stderr, "reconfigure"):
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import ranksums
+from scipy.stats import wilcoxon
 
 from src.algorithms import (
     GAOptimizer,
@@ -112,7 +112,7 @@ def run_experiment(args: argparse.Namespace) -> None:
         Runtime_Mean=("Runtime_s", "mean"),
     ).reset_index()
 
-    # Kiểm định thống kê Wilcoxon Rank-Sum so với I-WOA
+    # So sánh ghép cặp theo cùng seed bằng kiểm định Wilcoxon signed-rank.
     iwoa_scores = results_df[results_df["Algorithm"] == "I-WOA"]["Fitness"].to_numpy()
     p_values = {}
     for name in algo_factories:
@@ -120,16 +120,19 @@ def run_experiment(args: argparse.Namespace) -> None:
             p_values[name] = 1.0
             continue
         scores = results_df[results_df["Algorithm"] == name]["Fitness"].to_numpy()
-        try:
-            stat, p_val = ranksums(iwoa_scores, scores)
-            p_values[name] = p_val
-        except Exception:
-            p_values[name] = np.nan
+        if len(iwoa_scores) != len(scores):
+            raise RuntimeError(f"Không đủ kết quả để so sánh ghép cặp I-WOA với {name}.")
+        p_values[name] = wilcoxon(
+            iwoa_scores,
+            scores,
+            zero_method="zsplit",
+            alternative="two-sided",
+        ).pvalue
 
     summary["Wilcoxon_p_value"] = summary["Algorithm"].map(p_values)
 
     print("\n" + "=" * 90)
-    print("BANG TONG HOP THONG KE QUA CAC SEED & KIEM DINH WILCOXON")
+    print("BANG TONG HOP THONG KE QUA CAC SEED & KIEM DINH WILCOXON SIGNED-RANK")
     print("=" * 90)
     print(summary.to_string(index=False))
     print("=" * 90)

@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 from ..base.result import OptimizationResult
+from ..base.budget import budgeted, initialize_paired, iterations, progress, evaluate_phase
 from .boundary_handler import handle_boundaries
 from .coefficient_update import update_coefficients
 from .encircling import encircle_prey
@@ -22,6 +23,7 @@ class WOAOptimizer:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
+    @budgeted
     def optimize(self, problem: object) -> OptimizationResult:
         start_time = time.perf_counter()
 
@@ -36,6 +38,7 @@ class WOAOptimizer:
             upper_bounds=ub,
             rng=self.rng,
         )
+        initialize_paired(whales, problem)
 
         # 2. Đánh giá thế hệ đầu tiên
         for w in whales:
@@ -46,13 +49,14 @@ class WOAOptimizer:
         convergence_history: list[float] = [float(best_whale.fitness)]
 
         # 3. Vòng lặp săn mồi chính
-        for t in range(self.params.iterations):
+        for t in iterations(problem, self.params.iterations):
             for i, whale in enumerate(whales):
                 A, C, l = update_coefficients(
                     iteration=t,
                     max_iterations=self.params.iterations,
                     dimension=dim,
                     rng=self.rng,
+                    progress_fraction=progress(problem, t, self.params.iterations),
                 )
                 p = self.rng.uniform(0.0, 1.0)
 

@@ -1,4 +1,12 @@
 # 🐋🦅 DWH_WOA_PSO: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN LAI H-WOA-PSO
+
+[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+
+Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+
+
+> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+
 > **Mục đích:** Hướng dẫn chi tiết công thức toán học, cơ chế lai ghép và kịch bản trả lời phản biện dành cho thuật toán lai **Hybrid WOA-PSO (H-WOA-PSO)** trong bài toán tối ưu hóa vị trí 3D trạm phát sóng UAV.
 
 ---
@@ -34,7 +42,7 @@ Tại mỗi vòng lặp $t$, cá thể vừa được cập nhật vận tốc t
                             ▼
  ┌────────────────────────────────────────────────────────┐
  │ 3. TỔNG HỢP VỊ TRÍ MỚI & CẮT BIÊN AN TOÀN              │
- │    x_new = clip(x_woa + 0.5 * v(t+1), LB, UB)          │
+ │    x_new = clip(0.5*x_woa + 0.5*(x+v), LB, UB)          │
  └──────────────────────────┬─────────────────────────────┘
                             ▼
  ┌────────────────────────────────────────────────────────┐
@@ -45,6 +53,8 @@ Tại mỗi vòng lặp $t$, cá thể vừa được cập nhật vận tốc t
 ---
 
 ## 3. 📐 CÔNG THỨC TOÁN HỌC CỐT LÕI
+
+Mỗi cá thể thực hiện cả đề xuất WOA và bước vận tốc PSO trước khi trộn, không chia đôi quần thể. Điều kiện |A| trong nhánh WOA được code tính bằng norm(A)/sqrt(D). Các case bỏ pbest/gbest chỉ tắt lực hút tương ứng trong vận tốc; nhánh WOA vẫn giữ best. Xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md).
 
 ### 3.1. Cập nhật gia tốc bầy đàn PSO
 Mỗi cá thể duy trì kỷ lục cá nhân $P_{\text{best}, i}$ và kỷ lục toàn đàn $G_{\text{best}}$:
@@ -64,42 +74,27 @@ $$v_{i,d}(t+1) = w \cdot v_{i,d}(t) + c_1 r_1 \cdot (p_{i,d} - x_{i,d}(t)) + c_2
 
 ### 3.3. Phối hợp tổng hợp vị trí
 Vị trí mới là sự kết hợp giữa vị trí dẫn đường của WOA và xung lực gia tốc của PSO:
-$$\mathbf{X}_i(t+1) = \text{clip}\left(\mathbf{X}_{i}^{\text{woa}} + \beta \cdot \mathbf{V}_i(t+1), \; \mathbf{LB}, \; \mathbf{UB}\right)$$
+$$\mathbf{X}_i(t+1) = \text{clip}\left((1-\beta) \mathbf{X}_{i}^{\text{woa}} + \beta (\mathbf{X}_i(t)+\mathbf{V}_i(t+1)), \; \mathbf{LB}, \; \mathbf{UB}\right)$$
 *(với $\beta = 0.5$ là hệ số điều phối)*.
 
 ---
 
 ## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
 
-- **File triển khai chính:** [`hybrid_woa_pso.py`](..\src\algorithms\hybrid\hybrid_woa_pso.py)
+- **File triển khai chính:** [`hybrid_woa_pso.py`](../src/algorithms/hybrid/hybrid_woa_pso.py)
 - **Tái sử dụng các module:**
-  - Toán tử WOA: [`spiral_update.py`](..\src\algorithms\WOA\spiral_update.py), [`encircling.py`](..\src\algorithms\WOA\encircling.py), [`exploration.py`](..\src\algorithms\WOA\exploration.py).
-  - Khởi tạo & Vận tốc: [`initialization.py`](..\src\algorithms\WOA\initialization.py), [`velocity_update.py`](..\src\algorithms\PSO\velocity_update.py).
+  - Toán tử WOA: [`spiral_update.py`](../src/algorithms/WOA/spiral_update.py), [`encircling.py`](../src/algorithms/WOA/encircling.py), [`exploration.py`](../src/algorithms/WOA/exploration.py).
+  - Khởi tạo & Vận tốc: [`initialization.py`](../src/algorithms/WOA/initialization.py), [`velocity_update.py`](../src/algorithms/PSO/velocity_update.py).
 
 ---
 
-## 5. 📊 ĐÁNH GIÁ THỰC NGHIỆM TRONG BÀI TOÁN UAV
-- **Part 1 (35 vòng lặp):** Fitness TB = `0.4430` (**QUÁN QUÂN HẠNG 1 TOÀN BẢNG** ở giai đoạn hội tụ sớm). H-WOA-PSO giải quyết triệt để sự chậm chạp của WOA ban đầu nhờ có vận tốc PSO thúc đẩy, vượt mặt cả PSO thuần.
-- **Part 2 (80 vòng lặp):** Fitness TB = `0.4411` (Tụt xuống hạng 6/6).
-- **Hiện tượng xung đột động lực học (Dynamic Conflict):** Ở các vòng lặp sâu, quỹ đạo xoắn ốc của WOA và lực kéo vector của PSO bắt đầu triệt tiêu lẫn nhau, khiến cá thể bị rung lắc quanh cực trị địa phương thay vì hội tụ mịn vào nghiệm tối ưu toàn cục.
+## 5. Trạng thái thực nghiệm và diễn giải
 
----
+Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
 
-## 6. 🎓 BỘ CÂU HỎI THẦY CÔ VẤN ĐÁP & CÂU TRẢ LỜI MẪU
+## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
 
-### ❓ Câu 1: *"Tại sao H-WOA-PSO lại dẫn đầu bảng ở Part 1 (35 vòng lặp) nhưng lại tụt hạng ở Part 2 (80 vòng lặp)?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy/Cô, kết quả đối chứng 2 giai đoạn này phản ánh hiện tượng rất thú vị trong tối ưu hóa đa mục tiêu:
-> - Ở 35 vòng lặp đầu: PSO cung cấp 'gia tốc phản lực' giúp bầy cá voi của WOA lao thẳng vào vùng có mật độ người dùng cao chỉ trong 10-15 vòng lặp, giúp H-WOA-PSO giành ngôi Quán quân hội tụ nhanh.
-> - Tuy nhiên ở 80 vòng lặp: Khi nghiệm cần sự tinh chỉnh vi mô, hai lực kéo ngược nhau — một bên là lực kéo thẳng của PSO, một bên là lực xoáy ốc của WOA — gây ra hiện tượng dao động cưỡng bức (oscillation), làm các UAV khó ổn định ở vị trí tối ưu sâu. Đây chính là lý do vì sao thuật toán đề xuất **I-WOA** (chọn lọc OBL và Levy) vượt trội hơn hẳn các mô hình lai cơ học."*
-
-### ❓ Câu 2: *"H-WOA-PSO phù hợp nhất cho kịch bản thực tế nào trong mạng UAV?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, H-WOA-PSO cực kỳ thích hợp cho các tình huống **cứu hộ khẩn cấp cần triển khai tức thì trong vòng vài giây (Fast-response Deployment)**, nơi yêu cầu phải tìm được cấu hình trạm bay đạt độ phủ sóng 99% với số vòng lặp tối thiểu (dưới 35 vòng lặp)."*
-
----
-
-## 7. 📚 TÀI LIỆU THAM KHẢO HỌC THUẬT (ACADEMIC REFERENCES)
+Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
 1. **Elhosseini, M. A., et al. (2019).** "A novel hybrid whale optimization algorithm with particle swarm optimization for global optimization". *Journal of Computational Science*, vol. 37, p. 101031. *(Nguyên lý lai ghép đường bơi xoắn ốc WOA với vận tốc PSO)*.
 2. **Kaur, G., & Arora, S. (2018).** "Chaotic whale optimization algorithm with particle swarm optimization for global numerical optimization". *International Journal of Computer Applications*, vol. 180, no. 31, pp. 24–31.
 3. **Mozaffari, M., et al. (2016).** "Efficient deployment of multiple unmanned aerial vehicles for optimal wireless coverage". *IEEE Communications Letters*, vol. 20, no. 8, pp. 1647–1650. DOI: [`10.1109/LCOMM.2016.2578312`](https://doi.org/10.1109/LCOMM.2016.2578312).

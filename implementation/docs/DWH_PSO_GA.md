@@ -1,4 +1,12 @@
 # 🧬🦅 DWH_PSO_GA: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN LAI H-PSO-GA
+
+[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+
+Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+
+
+> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+
 > **Mục đích:** Hướng dẫn chi tiết công thức toán học, cơ chế lai ghép và kịch bản trả lời phản biện dành cho thuật toán lai **Hybrid PSO-GA (H-PSO-GA)** trong bài toán tối ưu hóa vị trí 3D trạm phát sóng UAV.
 
 ---
@@ -48,7 +56,7 @@ Tại mỗi vòng lặp $t$:
 ### 3.1. Pha 1: Động lực học hạt PSO
 - Cập nhật vận tốc từng chiều $d \in \{1, \dots, 12\}$:
   $$v_{i,d}(t+1) = w \cdot v_{i,d}(t) + c_1 r_{1,d} \cdot (p_{i,d} - x_{i,d}(t)) + c_2 r_{2,d} \cdot (g^*_d - x_{i,d}(t))$$
-  - Tham số: $w = 0.7, c_1 = 1.5, c_2 = 1.5$.
+  - Tham số: $w$ giảm tuyến tính theo vòng lặp trong code hiện tại; $c_1 = 1.5, c_2 = 1.5$.
   - Cắt tỉa vận tốc: $v_{i,d} \in [-0.2 \Delta_d, \; 0.2 \Delta_d]$.
 - Cập nhật vị trí tạm thời:
   $$\mathbf{X}_i^{\text{temp}} = \text{clip}(\mathbf{X}_i(t) + \mathbf{V}_i(t+1), \mathbf{LB}, \mathbf{UB})$$
@@ -70,34 +78,20 @@ Tại mỗi vòng lặp $t$:
 
 ## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
 
-- **File triển khai chính:** [`hybrid_pso_ga.py`](..\src\algorithms\hybrid\hybrid_pso_ga.py)
+- **File triển khai chính:** [`hybrid_pso_ga.py`](../src/algorithms/hybrid/hybrid_pso_ga.py)
 - **Tái sử dụng các module:**
-  - Vận tốc & Vị trí PSO: [`velocity_update.py`](..\src\algorithms\PSO\velocity_update.py), [`position_update.py`](..\src\algorithms\PSO\position_update.py).
-  - Lai ghép & Đột biến GA: [`crossover.py`](..\src\algorithms\GA\crossover.py), [`mutation.py`](..\src\algorithms\GA\mutation.py).
+  - Vận tốc & Vị trí PSO: [`velocity_update.py`](../src/algorithms/PSO/velocity_update.py), [`position_update.py`](../src/algorithms/PSO/position_update.py).
+  - Lai ghép & Đột biến GA: [`crossover.py`](../src/algorithms/GA/crossover.py), [`mutation.py`](../src/algorithms/GA/mutation.py).
 
 ---
 
-## 5. 📊 ĐÁNH GIÁ THỰC NGHIỆM TRONG BÀI TOÁN UAV
-- **Part 1 (35 vòng lặp):** Fitness TB = `0.4416` (Xếp hạng 4/6).
-- **Part 2 (80 vòng lặp):** Fitness TB = `0.4481` (**Xếp hạng 2/6, chỉ đứng sau I-WOA**).
-- **Nhận xét chuyên sâu:** H-PSO-GA thể hiện sức mạnh vượt trội hơn hẳn so với cả PSO thuần và GA thuần. Các toán tử lai ghép và đột biến của GA đã thành công "giải cứu" bầy hạt PSO khỏi hiện tượng trì trệ, giúp thuật toán liên tục cải thiện Fitness ở các vòng lặp sâu.
+## 5. Trạng thái thực nghiệm và diễn giải
 
----
+Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
 
-## 6. 🎓 BỘ CÂU HỎI THẦY CÔ VẤN ĐÁP & CÂU TRẢ LỜI MẪU
+## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
 
-### ❓ Câu 1: *"Tại sao em lại lai ghép PSO với GA mà không giữ nguyên PSO thuần?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, điểm yếu tử huyệt của PSO là sau khi các hạt tiến lại gần $G_{\text{best}}$, thành phần vận tốc triệt tiêu dần và bầy bị tê liệt (kẹt cực trị địa phương). Việc tích hợp GA đóng vai trò như một **bộ sốc điện tái tạo năng lượng**: lai ghép giúp các hạt chia sẻ thông tin vị trí tốt cho nhau, còn đột biến Gauss thỉnh thoảng làm lệch vị trí một vài hạt, giúp bầy tiếp tục khám phá các vùng không gian tiềm năng mới."*
-
-### ❓ Câu 2: *"H-PSO-GA đứng thứ 2 rất tốt, vậy vì sao I-WOA vẫn vượt trội hơn H-PSO-GA ở Part 2?"*
-> **Trả lời:**  
-> *"Dạ thưa Thầy, dù H-PSO-GA cải thiện được tính đa dạng, nhưng quỹ đạo chuyển động của nó vẫn dựa trên vector gia tốc thẳng của PSO nên có xu hướng kéo các UAV về cùng cụm trung tâm, khiến **tỷ lệ nhiễu giao thoa vẫn ở mức $7.75\%$**. 
-> Trong khi đó, **I-WOA** dùng quỹ đạo xoắn ốc kết hợp với **phân cụm K-Means** và **bước nhảy Levy** giúp các UAV tản đều thành các vùng nón phủ độc lập, hạ tỷ lệ nhiễu xuống đáy kỷ lục **$5.72\%$**, do đó đạt điểm số Fitness cao hơn."*
-
----
-
-## 7. 📚 TÀI LIỆU THAM KHẢO HỌC THUẬT (ACADEMIC REFERENCES)
+Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
 1. **Juang, C. F. (2004).** "A hybrid of genetic algorithm and particle swarm optimization for recurrent network design". *IEEE Transactions on Systems, Man, and Cybernetics, Part B*, vol. 34, no. 2, pp. 997–1006. DOI: [`10.1109/TSMCB.2003.818557`](https://doi.org/10.1109/TSMCB.2003.818557). *(Nguyên lý lai ghép PSO với các toán tử di truyền GA)*.
 2. **Shi, X. H., Lu, Y. H., Shen, C. G., & Wang, L. X. (2005).** "A hybrid algorithm of genetic algorithm and particle swarm optimization for TSP". *Fourth International Conference on Machine Learning and Cybernetics*, pp. 4941–4946.
 3. **Robinson, J., Sinton, S., & Rahmat-Samii, Y. (2002).** "Particle swarm, genetic algorithm, and their hybrids: optimization of a profiled corrugated horn antenna". *IEEE Antennas and Propagation Society International Symposium*, vol. 1, pp. 314–317.

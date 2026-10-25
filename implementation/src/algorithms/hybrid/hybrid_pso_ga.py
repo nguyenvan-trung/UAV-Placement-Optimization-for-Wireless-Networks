@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..base.result import OptimizationResult
+from ..base.budget import budgeted, initialize_paired, iterations, progress, evaluate_phase
 from ..GA.crossover import arithmetic_crossover
 from ..GA.mutation import gaussian_mutation
 from ..GA.chromosome import Chromosome
@@ -31,6 +32,8 @@ class HPSOGAParameters:
     social_coefficient: float = 1.5
     crossover_rate: float = 0.8
     mutation_rate: float = 0.15
+    use_crossover: bool = True
+    use_mutation: bool = True
 
 
 class HybridPSOGAOptimizer:
@@ -41,6 +44,7 @@ class HybridPSOGAOptimizer:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
+    @budgeted
     def optimize(self, problem: object) -> OptimizationResult:
         start_time = time.perf_counter()
 
@@ -56,6 +60,7 @@ class HybridPSOGAOptimizer:
             upper_bounds=ub,
             rng=self.rng,
         )
+        initialize_paired(swarm, problem)
 
         # 2. Đánh giá ban đầu
         for p in swarm:
@@ -70,9 +75,9 @@ class HybridPSOGAOptimizer:
         convergence_history: list[float] = [gbest_fitness]
 
         w_max, w_min = 0.9, 0.4
-        for t in range(self.params.iterations):
+        for t in iterations(problem, self.params.iterations):
             # Hệ số quán tính PSO suy giảm
-            w = w_max - (w_max - w_min) * (t / max(1, self.params.iterations - 1))
+            w = w_max - (w_max - w_min) * progress(problem, t, self.params.iterations)
 
             # --- Pha 1: Cập nhật vận tốc và vị trí kiểu PSO ---
             for p in swarm:
@@ -101,7 +106,7 @@ class HybridPSOGAOptimizer:
                 c1_crossed, c2_crossed = arithmetic_crossover(
                     parent1=c1,
                     parent2=c2,
-                    crossover_rate=self.params.crossover_rate,
+                    crossover_rate=self.params.crossover_rate if self.params.use_crossover else 0.0,
                     lower_bounds=lb,
                     upper_bounds=ub,
                     rng=self.rng,
@@ -110,14 +115,14 @@ class HybridPSOGAOptimizer:
                 # Đột biến cá thể con
                 c1_mutated = gaussian_mutation(
                     chromosome=c1_crossed,
-                    mutation_rate=self.params.mutation_rate,
+                    mutation_rate=self.params.mutation_rate if self.params.use_mutation else 0.0,
                     lower_bounds=lb,
                     upper_bounds=ub,
                     rng=self.rng,
                 )
                 c2_mutated = gaussian_mutation(
                     chromosome=c2_crossed,
-                    mutation_rate=self.params.mutation_rate,
+                    mutation_rate=self.params.mutation_rate if self.params.use_mutation else 0.0,
                     lower_bounds=lb,
                     upper_bounds=ub,
                     rng=self.rng,

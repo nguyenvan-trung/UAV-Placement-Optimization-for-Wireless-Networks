@@ -54,6 +54,13 @@ def parse_args() -> argparse.Namespace:
         help="Chế độ: 'representative' (10 file 50->500), 'all' (toàn bộ 500 file), 'custom'.",
     )
     parser.add_argument("--uavs", type=int, default=DEFAULT_NUM_UAVS, help="Số lượng UAV.")
+    parser.add_argument(
+        "--random-uavs",
+        action="store_true",
+        help="Chọn ngẫu nhiên số UAV riêng cho từng dataset, cố định theo seed.",
+    )
+    parser.add_argument("--min-uavs", type=int, default=2, help="Số UAV tối thiểu khi bật --random-uavs.")
+    parser.add_argument("--max-uavs", type=int, default=8, help="Số UAV tối đa khi bật --random-uavs.")
     parser.add_argument("--pop-size", type=int, default=25, help="Kích thước quần thể.")
     parser.add_argument("--iterations", type=int, default=35, help="Số vòng lặp.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
@@ -61,10 +68,17 @@ def parse_args() -> argparse.Namespace:
         "--algorithms",
         nargs="+",
         default=["GA", "PSO", "WOA", "H-PSO-GA", "H-WOA-PSO", "I-WOA"],
+        choices=("GA", "PSO", "WOA", "H-PSO-GA", "H-WOA-PSO", "I-WOA"),
         help="Danh sách thuật toán cần chạy.",
     )
     parser.add_argument("--limit", type=int, default=None, help="Giới hạn tối đa số file CSV chạy.")
     parser.add_argument("--workers", type=int, default=min(12, os.cpu_count() or 4), help="Số luồng CPU xử lý song song.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=RESULTS_DIR,
+        help="Thư mục lưu CSV, bảng tổng hợp và biểu đồ.",
+    )
     return parser.parse_args()
 
 
@@ -122,6 +136,9 @@ def process_single_dataset(task_args: tuple) -> list[dict]:
             "Total_Users": total_users,
             "Num_UAVs": uavs,
             "Algorithm": algo_name,
+            "Population_Size": pop_size,
+            "Iterations": iterations,
+            "Seed": seed,
             "Fitness": res.best_objective,
             "Coverage_Rate": m.coverage_rate,
             "Covered_Users": m.covered_users_count,
@@ -135,7 +152,25 @@ def process_single_dataset(task_args: tuple) -> list[dict]:
 
 def main() -> None:
     args = parse_args()
+    if args.uavs <= 0:
+        raise ValueError("--uavs phải lớn hơn 0.")
+    if args.min_uavs <= 0 or args.max_uavs < args.min_uavs:
+        raise ValueError("--min-uavs và --max-uavs phải thỏa 0 < min <= max.")
+    if args.pop_size <= 0 or args.iterations <= 0:
+        raise ValueError("--pop-size và --iterations phải lớn hơn 0.")
+    if args.workers <= 0:
+        raise ValueError("--workers phải lớn hơn 0.")
+
     files = select_datasets(args.mode, args.limit)
+    if args.random_uavs:
+        uav_rng = np.random.default_rng(args.seed)
+        uavs_per_dataset = uav_rng.integers(
+            args.min_uavs,
+            args.max_uavs + 1,
+            size=len(files),
+        ).tolist()
+    else:
+        uavs_per_dataset = [args.uavs] * len(files)
 
     print("=" * 85)
     print("CHẠY HÀNG LOẠT (BATCH RUNNER) TRÊN TOÀN BỘ BỘ DỮ LIỆU UAV")
@@ -143,16 +178,23 @@ def main() -> None:
     print(f"Số lượng file : {len(files)} files")
     print(f"Thuật toán    : {args.algorithms}")
     print(f"Số luồng CPU  : {args.workers} workers song song")
-    print(f"Cấu hình      : UAVs={args.uavs} | PopSize={args.pop_size} | Iterations={args.iterations} | Seed={args.seed}")
+    uav_description = (
+        f"random {args.min_uavs}-{args.max_uavs} (seed {args.seed})"
+        if args.random_uavs
+        else str(args.uavs)
+    )
+    print(f"Cấu hình      : UAVs={uav_description} | PopSize={args.pop_size} | Iterations={args.iterations} | Seed={args.seed}")
     print("=" * 85)
 
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_csv = RESULTS_DIR / ("batch_results_all_500_datasets.csv" if args.mode == "all" else f"batch_results_{args.mode}.csv")
+    output_dir = args.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_csv = output_dir / ("batch_results_all_500_datasets.csv" if args.mode == "all" else f"batch_results_{args.mode}.csv")
 
     records = []
+    failures: list[str] = []
     task_list = [
-        (str(fpath), args.uavs, args.pop_size, args.iterations, args.seed, args.algorithms)
-        for fpath in files
+        (str(fpath), uavs, args.pop_size, args.iterations, args.seed, args.algorithms)
+        for fpath, uavs in zip(files, uavs_per_dataset)
     ]
 
     start_time = time.time()
@@ -186,6 +228,7 @@ def main() -> None:
 
                 except Exception as e:
                     print(f"❌ Lỗi khi xử lý file {Path(fpath_str).name}: {e}")
+                    failures.append(f"{Path(fpath_str).name}: {e}")
 
     else:
         # Chạy tuần tự nếu workers=1
@@ -199,6 +242,13 @@ def main() -> None:
     total_df = pd.DataFrame(records)
     total_df.to_csv(out_csv, index=False)
 
+    expected_rows = len(files) * len(args.algorithms)
+    if failures or len(total_df) != expected_rows:
+        details = "; ".join(failures[:10]) if failures else "số dòng kết quả không khớp cấu hình"
+        raise RuntimeError(
+            f"Batch chưa đầy đủ: có {len(total_df)}/{expected_rows} kết quả. {details}"
+        )
+
     total_elapsed = time.time() - start_time
     print("\n" + "=" * 85)
     print(f"🎉 HOÀN TẤT TOÀN BỘ {len(files)} FILES BỘ DỮ LIỆU! (Thời gian: {total_elapsed:.1f}s)")
@@ -206,14 +256,19 @@ def main() -> None:
     print("=" * 85)
 
     print("\n📊 Đang tự động kết xuất bảng tổng hợp và bộ biểu đồ demo...")
-    generate_summary_reports_and_plots(out_csv)
-    print("✅ Hoàn tất kết xuất bảng báo cáo và biểu đồ trong results/")
+    generate_summary_reports_and_plots(out_csv, iterations=args.iterations, seed=args.seed)
+    print(f"✅ Hoàn tất kết xuất bảng báo cáo và biểu đồ trong {output_dir}")
 
 
-def generate_summary_reports_and_plots(csv_path: Path) -> None:
+def generate_summary_reports_and_plots(
+    csv_path: Path,
+    iterations: int = 35,
+    seed: int = 42,
+) -> None:
     if not csv_path.exists():
         return
     df = pd.read_csv(csv_path)
+    results_dir = csv_path.parent
 
     # 1. Bảng tổng hợp theo Total_Users và Algorithm
     agg_df = df.groupby(["Total_Users", "Algorithm"]).agg({
@@ -225,10 +280,59 @@ def generate_summary_reports_and_plots(csv_path: Path) -> None:
     }).reset_index()
     agg_df.columns = ["User_Count", "Algorithm", "Fitness", "Fitness_Std", "Fitness_Max", "Fitness_Min", "Coverage_Rate", "Energy_Normalized", "Interference_Rate", "Runtime_Seconds"]
 
-    scalability_csv = RESULTS_DIR / "scalability_summary_50_to_500.csv"
+    scalability_csv = results_dir / "scalability_summary_50_to_500.csv"
     agg_df.to_csv(scalability_csv, index=False)
 
-    # 2. Vẽ bộ 4 biểu đồ đa tiêu chí
+    # 2. Tổng hợp thêm theo số UAV để không gộp lẫn các cấu hình khác nhau.
+    uav_summary = df.groupby(["Num_UAVs", "Algorithm"]).agg({
+        "Fitness": ["mean", "std", "max", "min"],
+        "Coverage_Rate": "mean",
+        "Energy_Normalized": "mean",
+        "Interference_Rate": "mean",
+        "Runtime_Seconds": "mean",
+    }).reset_index()
+    uav_summary.columns = [
+        "Num_UAVs", "Algorithm", "Fitness", "Fitness_Std", "Fitness_Max",
+        "Fitness_Min", "Coverage_Rate", "Energy_Normalized",
+        "Interference_Rate", "Runtime_Seconds",
+    ]
+    uav_summary.to_csv(results_dir / "uav_count_summary.csv", index=False)
+    uav_dataset_counts = df[["Dataset", "Num_UAVs"]].drop_duplicates()
+    uav_distribution = (
+        uav_dataset_counts.groupby("Num_UAVs")
+        .size()
+        .reindex(
+            range(
+                int(uav_dataset_counts["Num_UAVs"].min()),
+                int(uav_dataset_counts["Num_UAVs"].max()) + 1,
+            ),
+            fill_value=0,
+        )
+        .rename("Dataset_Count")
+        .rename_axis("Num_UAVs")
+        .reset_index()
+    )
+    uav_distribution.to_csv(
+        results_dir / "uav_count_distribution.csv",
+        index=False,
+    )
+    fig, ax = plt.subplots(figsize=(8, 5))
+    bars = ax.bar(
+        uav_distribution["Num_UAVs"],
+        uav_distribution["Dataset_Count"],
+        color="#2b5c8f",
+    )
+    ax.bar_label(bars)
+    ax.set_title("Phân bố số UAV được chọn ngẫu nhiên theo dataset")
+    ax.set_xlabel("Số UAV")
+    ax.set_ylabel("Số dataset")
+    ax.set_xticks(uav_distribution["Num_UAVs"])
+    ax.grid(axis="y", linestyle="--", alpha=0.5)
+    fig.tight_layout()
+    fig.savefig(results_dir / "uav_count_distribution.png", dpi=300)
+    plt.close(fig)
+
+    # 3. Vẽ bộ 4 biểu đồ đa tiêu chí
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     plt.rcParams.update({"font.size": 11, "font.family": "sans-serif"})
 
@@ -286,26 +390,35 @@ def generate_summary_reports_and_plots(csv_path: Path) -> None:
     ax4.legend(loc="upper left", framealpha=0.9)
 
     plt.tight_layout()
-    scalability_plot_path = RESULTS_DIR / "scalability_analysis_50_to_500.png"
+    scalability_plot_path = results_dir / "scalability_analysis_50_to_500.png"
     plt.savefig(scalability_plot_path, dpi=300)
     plt.close()
 
     # 3. Mô phỏng 3D UAV placement
-    sample_dataset = DATASET_STORES_DIR / "004_UAV_3D_200_users_connect.csv"
-    if sample_dataset.exists():
+    sample_rows = df[df["Total_Users"] == 200]
+    sample_dataset = (
+        DATASET_STORES_DIR / sample_rows.iloc[0]["Dataset"]
+        if not sample_rows.empty
+        else None
+    )
+    if sample_dataset is not None and sample_dataset.exists():
         raw_df = load_users(sample_dataset)
         validate_users(raw_df)
         clean_df = preprocess_users(raw_df)
         ue_coords = clean_df[["x_m", "y_m", "z_m"]].to_numpy()
-        problem = UAVPlacementProblem(ue_coords=ue_coords, num_uavs=4)
-        opt = IWOAOptimizer(IWOAParameters(population_size=25, iterations=35), seed=42)
+        sample_uavs = int(sample_rows.iloc[0]["Num_UAVs"])
+        problem = UAVPlacementProblem(ue_coords=ue_coords, num_uavs=sample_uavs)
+        opt = IWOAOptimizer(
+            IWOAParameters(population_size=25, iterations=iterations),
+            seed=seed,
+        )
         res = opt.optimize(problem)
         uav_coords = decode_uav_positions(problem.search_space.clip(res.best_position))
 
         fig = plt.figure(figsize=(12, 9))
         ax = fig.add_subplot(111, projection="3d")
         ax.scatter(ue_coords[:, 0], ue_coords[:, 1], ue_coords[:, 2], c="#2b5c8f", marker=".", alpha=0.6, s=35, label="Người dùng (UEs)")
-        uav_colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"]
+        uav_colors = plt.cm.tab10(np.linspace(0, 1, sample_uavs))
         for i, (ux, uy, uz) in enumerate(uav_coords):
             ax.scatter(ux, uy, uz, c=uav_colors[i], marker="^", s=220, edgecolors="black", linewidths=1.5, label=f"UAV {i+1} (z={uz:.1f}m)")
             ax.plot([ux, ux], [uy, uy], [0, uz], color=uav_colors[i], linestyle="--", linewidth=1.5, alpha=0.8)
@@ -316,28 +429,36 @@ def generate_summary_reports_and_plots(csv_path: Path) -> None:
             cz = np.zeros_like(cx)
             ax.plot(cx, cy, cz, color=uav_colors[i], alpha=0.5, linewidth=1.2)
 
-        ax.set_title("Mô Phỏng Vị Trí Không Gian 3D của 4 UAVs và 200 UEs (Thuật Toán I-WOA)", fontweight="bold", fontsize=14, pad=20)
+        ax.set_title(f"Mô phỏng vị trí {sample_uavs} UAVs và 200 UEs (I-WOA, {iterations} vòng lặp)", fontweight="bold", fontsize=14, pad=20)
         ax.set_xlabel("Tọa độ X (m)", fontweight="semibold")
         ax.set_ylabel("Tọa độ Y (m)", fontweight="semibold")
         ax.set_zlabel("Độ cao Z (m)", fontweight="semibold")
         ax.set_xlim([0, 1000])
         ax.set_ylim([0, 1000])
-        ax.set_zlim([0, 250])
+        ax.set_zlim([0, 300])
         ax.view_init(elev=28, azim=45)
         ax.legend(loc="upper right", framealpha=0.9)
         plt.tight_layout()
-        plt.savefig(RESULTS_DIR / "uav_3d_placement_demo.png", dpi=300)
+        plt.savefig(results_dir / "uav_3d_placement_demo.png", dpi=300)
         plt.close()
 
     # 4. Xuất DEMO_REPORT.md
-    report_md_path = RESULTS_DIR / "DEMO_REPORT.md"
+    report_md_path = results_dir / "batch_results_all_500_datasets_report.md"
     pivot_fitness = agg_df.pivot(index="User_Count", columns="Algorithm", values="Fitness")
     pivot_interf = agg_df.pivot(index="User_Count", columns="Algorithm", values="Interference_Rate") * 100
     pivot_cov = agg_df.pivot(index="User_Count", columns="Algorithm", values="Coverage_Rate") * 100
 
     report_lines = [
-        "# BÁO CÁO KẾT QUẢ THỰC NGHIỆM TỐI ƯU VỊ TRÍ UAV 3D (DEMO)",
+        "# KẾT QUẢ BATCH TỐI ƯU VỊ TRÍ UAV 3D",
         "",
+        f"- Số dataset: {df['Dataset'].nunique()}",
+        f"- Số lượt tối ưu hóa: {len(df)}",
+        f"- Số vòng lặp: {iterations}",
+        f"- Seed: {seed}",
+        f"- Số UAV được dùng: {', '.join(map(str, sorted(df['Num_UAVs'].unique())))}",
+        "- Bảng fitness theo số user là trung bình trên các bộ dữ liệu có cùng số user; "
+        "với số UAV ngẫu nhiên, hãy dùng thêm bảng `uav_count_summary.csv` để xem theo số UAV.",
+        "- Chi tiết số UAV theo dataset: `uav_count_distribution.csv`",
         "## 1. Bảng So Sánh Fitness (Hàm Thích Nghi Tổng Hợp - Càng Cao Càng Tốt)",
         "",
         pivot_fitness.to_markdown(),
@@ -377,5 +498,3 @@ def generate_summary_reports_and_plots(csv_path: Path) -> None:
 
 if __name__ == "__main__":
     main()
-
-

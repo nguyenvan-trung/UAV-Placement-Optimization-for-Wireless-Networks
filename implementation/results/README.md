@@ -1,24 +1,27 @@
-# Results: kết quả chạy thuật toán
+# Kết quả được sinh khi thực thi
 
-Thư mục này chỉ chứa đầu ra được sinh bởi pipeline, không chứa mã nguồn và
-không phải nơi lưu dataset đầu vào.
+[Trang đầu](../../README.md) · [Mục lục](../docs/README.md) · [Schema](../docs/DATA_FORMAT.md)
 
-```text
-results/
-├── tables/       # CSV/JSON metric theo seed và thuật toán
-├── figures/      # coverage, objective, runtime, convergence
-├── solutions/    # vị trí UAV tốt nhất và metadata
-├── convergence/  # lịch sử fitness theo iteration
-└── logs/         # log cấu hình và lỗi của từng lần chạy
-```
+Thư mục này dành cho đầu ra, không chứa dataset gốc hoặc mã thuật toán. Đầu ra smoke và batch dở trước đây đã được dọn. Hiện chưa có study notebook hoàn tất.
 
-## Nguồn tạo kết quả
+## Notebook hiện tại
 
-- `scripts/run_optimizer.py`: chạy một dataset và một lựa chọn thuật toán.
-- `scripts/run_experiments.py`: chạy nhiều seed/thuật toán để so sánh.
-- `notebooks/comparison_experiment.ipynb`: đọc bảng trong `results/tables/`
-  và phân tích/trình bày, không thay thế script chạy chính thức.
+Output mặc định: study_100_iterations, chỉ được tạo khi thực thi có xác nhận.
 
-Khi chưa có optimizer/evaluator hoàn chỉnh, các thư mục kết quả có thể rỗng.
-Không nhập kết quả thủ công vào đây vì notebook sẽ không biết nguồn và cấu
-hình của kết quả.
+| Đường dẫn trong output | Nội dung |
+|---|---|
+| manifest.json | Cấu hình, case, dataset và chữ ký nội dung |
+| tasks/*.json | Một task dataset–case–seed, result và 101 mốc history |
+| runs.csv | Tổng hợp lượt chạy sau khi đủ task |
+| completion.json | Dấu hoàn thành với expected/actual |
+| tables/*.csv và *.md | Bảng mô tả từ toàn study |
+| figures/*.png | Hình xuất bởi các ô vẽ của notebook |
+| .running | Khóa trong lúc chạy; không phải kết quả |
+
+Đọc bảng chỉ khi đủ task và manifest khớp. Không dùng checkpoint dở để xếp hạng toàn thiết kế. Xem [NOTEBOOK_STUDY](../docs/NOTEBOOK_STUDY.md).
+
+## Các luồng khác
+
+Batch cũ ghi CSV và báo cáo trực tiếp ở output-dir. Benchmark FE mặc định có thể ghi ngoài thư mục này theo config/CLI và dùng schema riêng. Các thư mục tables/figures/solutions/convergence không phải cấu trúc bắt buộc chung cho mọi runner.
+
+Không coi ảnh minh họa, test hoặc số liệu lịch sử thiếu log là kết quả chính thức. Quy tắc truy nguồn nằm trong [REPORT_EVIDENCE](../docs/REPORT_EVIDENCE.md).

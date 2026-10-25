@@ -1,4 +1,10 @@
 numpy
 pandas
 matplotlib
+scipy
+scikit-learn
+tabulate
 jupyter
+PyYAML
+threadpoolctl
+pytest

@@ -13,3 +13,6 @@ class IWOAParameters:
     use_obl_init: bool = True        # Sử dụng Học đối kháng khi khởi tạo
     obl_rate: float = 0.2            # Xác suất áp dụng OBL trong quá trình lặp
     use_kmeans_init: bool = True     # Sử dụng K-Means tạo cá thể mầm ban đầu
+    use_obl: bool = True            # Master switch: initialization and dynamic OBL
+    use_levy: bool = True           # Disable without consuming extra RNG draws
+    levy_rate: float = 0.3          # Preserve the previous activation probability

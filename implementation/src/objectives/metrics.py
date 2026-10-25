@@ -98,6 +98,8 @@ def evaluate_solution(
     w1: float = WEIGHT_COVERAGE,
     w2: float = WEIGHT_ENERGY,
     w3: float = WEIGHT_INTERFERENCE,
+    min_alt: float = DEFAULT_MIN_ALTITUDE_M,
+    max_alt: float = DEFAULT_MAX_ALTITUDE_M,
 ) -> ObjectiveValues:
     """Đánh giá toàn diện một nghiệm vị trí UAV."""
     # 1. Tính toán vật lý kênh truyền
@@ -109,7 +111,7 @@ def evaluate_solution(
 
     # 2. Tính các hàm mục tiêu f1, f2, f3
     f1, covered_mask = calculate_coverage_rate(snr, snr_th=snr_th)
-    f2 = calculate_energy_consumption(uav_coords)
+    f2 = calculate_energy_consumption(uav_coords, min_alt=min_alt, max_alt=max_alt)
     f3 = calculate_interference_rate(snr, snr_th=snr_th)
 
     # 3. Hàm Fitness tổng hợp: Fitness = w1*f1 - w2*f2 - w3*f3

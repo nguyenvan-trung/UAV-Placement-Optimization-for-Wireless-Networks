@@ -1,0 +1,65 @@
+# Kế hoạch khai báo trước, không phải kết quả thực nghiệm. Cấu hình mới dùng UE mặt đất.
+problem:
+  num_uav: 4
+  channel: Al-Hourani
+  carrier_frequency_hz: 3500000000.0
+  snr_threshold_db: 18.0
+  area_width: 1000.0
+  area_height: 1000.0
+  min_altitude: 50.0
+  max_altitude: 300.0
+  min_uav_distance: 10.0 # Giả định mô phỏng, không phải tiêu chuẩn an toàn
+  fitness:
+    maximize: true
+    weights: {C: 0.6, E: 0.2, I: 0.2}
+    coverage_quantity: SNR
+    normalization: 'C/I: tỷ lệ trên tổng UE; E: trung bình công suất / (1.5*100+1) W; cận độ cao cố định'
+scenarios:
+  ue_counts: [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+  distributions: [single_cluster, multi_cluster, uniform, offset_cluster, with_outliers]
+  instances_per_scenario: 1 # Thiết kế khởi đầu; chốt trước full run, tăng nếu cần suy luận theo instance
+  tuning_runs: 5 # Thiết kế mới, không phải thông số suy ra từ báo cáo cũ
+  eval_runs: 30
+  selection_rule: 'Dùng toàn bộ mức UE và phân bố; không chọn dựa trên kết quả'
+  parameters:
+    cluster_sigma_fraction: 0.05
+    cluster_radius_fraction: 0.12
+    outlier_fraction: 0.10
+    outlier_min_distance_fraction: 0.35
+    outlier_max_distance_fraction: 0.45
+budget:
+  reference_woa_iterations: 100 # Mặc định WOAParameters
+  max_fe: 3030 # P*(1+reference_woa_iterations), P là quần thể, không phải số UAV
+  stop_on: fe
+  early_stop: false
+  extra_budget_levels: [6060] # Mức bổ sung khai báo trước; chỉ chạy khi yêu cầu bằng --max-fe
+common:
+  population_size: 30
+algorithms:
+  GA: {crossover_rate: 0.9, mutation_rate: 0.1, elite_count: 2}
+  PSO: {cognitive_coefficient: 1.5, social_coefficient: 1.5}
+  WOA: {spiral_constant: 1.0}
+  H-PSO-GA: {cognitive_coefficient: 1.5, social_coefficient: 1.5, crossover_rate: 0.8, mutation_rate: 0.15}
+  H-WOA-PSO: {spiral_constant: 1.0, c1: 1.2, c2: 1.2}
+  I-WOA: {spiral_constant: 1.0, levy_beta: 1.5, levy_step_size: 0.05, levy_rate: 0.3, obl_rate: 0.2, use_obl_init: true}
+ablation:
+  WOA(000): [false, false, false]
+  A(K): [true, false, false]
+  B(O): [false, true, false]
+  C(L): [false, false, true]
+  D(K+O): [true, true, false]
+  E(K+L): [true, false, true]
+  F(O+L): [false, true, true]
+  I-WOA(K+O+L): [true, true, true]
+seeds:
+  root_seed: 20261024
+  manifest: seeds/seeds.csv
+parallel:
+  n_workers: 1 # Tăng sau khi smoke đa tiến trình thành công trên máy chạy
+  threads_per_worker: 1
+output:
+  directory: results/benchmark
+  convergence_interval: 50
+  target_fitness: null # Chưa chốt mục tiêu: hit_target/fe_to_target để trống, không tự đặt ngưỡng
+sensitivity:
+  configuration_file: configs/sensitivity.yaml

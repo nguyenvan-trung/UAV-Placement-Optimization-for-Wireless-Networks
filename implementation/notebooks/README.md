@@ -1,38 +1,19 @@
-# Notebooks: phân tích và trình bày kết quả
+# Notebook: code, bảng và biểu đồ cùng nơi
 
-Notebook không sinh dataset mới và không chứa logic thuật toán chính. Nó dùng
-để đọc dữ liệu/kết quả đã có, kiểm tra trực quan và trình bày so sánh.
+[Trang đầu](../../README.md) · [Mục lục](../docs/README.md)
 
-## Notebook hiện có
+## Notebook dùng cho thiết kế hiện tại
 
-### `comparison_experiment.ipynb`
+[full_study_100_iterations.ipynb](full_study_100_iterations.ipynb) trình bày 30 case trên 500 CSV, 100 vòng. Logic chính được gọi từ notebook_study.py, không chép lại toàn bộ thuật toán vào các ô.
 
-Mục đích:
+Thứ tự ô: thiết lập → bảng thiết kế → ô chạy có khóa → đọc bảng → hội tụ → kết quả theo quy mô → nghiệm 3D → hướng dẫn đánh giá.
 
-1. Đọc kết quả chạy từ `../results/tables/`.
-2. Tóm tắt coverage, objective, số vòng hội tụ và runtime theo thuật toán.
-3. Vẽ biểu đồ so sánh để kiểm tra nhanh trước khi đưa vào báo cáo.
-4. Thử nghiệm tương tác các cách trình bày mà không làm thay đổi mã nguồn.
+**Chưa chạy study.** Ô chạy mặc định CONFIRM_RUN=False; seed trong config để trống. Mở file hoặc đọc Markdown không khởi chạy. Chỉ thực thi khi được yêu cầu.
 
-Luồng dữ liệu:
+Hướng dẫn đầy đủ và bảng case: [NOTEBOOK_STUDY](../docs/NOTEBOOK_STUDY.md). Schema đầu ra: [DATA_FORMAT](../docs/DATA_FORMAT.md). Môi trường/kernel: [REPRODUCE](../../REPRODUCE.md).
 
-```text
-data/stores/*.csv
-    -> scripts/run_experiments.py
-    -> results/tables/*.csv
-    -> comparison_experiment.ipynb
-    -> results/figures/ hoặc biểu đồ hiển thị trong notebook
-```
+## Notebook khác
 
-Notebook hiện là khung giao diện phân tích; các ô có `TODO` sẽ dùng kết quả
-thật sau khi optimizer và evaluator hoàn thiện.
+comparison_experiment.ipynb là notebook so sánh trước đó, không phải điểm vào study 30 case. Không giả định nó đọc được schema mới. Không chạy script tạo kết quả cũ chỉ để mở notebook mới.
 
-## Cách mở và chạy
-
-```powershell
-cd implementation
-jupyter notebook notebooks/comparison_experiment.ipynb
-```
-
-Nên chạy `scripts/run_experiments.py` trước. Không chạy notebook để thay thế
-pipeline thực nghiệm chính thức.
+Tọa độ và số liệu trong bảng/ảnh phải lấy từ task thật. Các ô phân tích của notebook mới đọc lại artifact, không gọi optimizer để vẽ lại.

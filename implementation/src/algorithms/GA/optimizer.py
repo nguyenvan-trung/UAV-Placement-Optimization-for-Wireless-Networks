@@ -5,6 +5,8 @@ import time
 import numpy as np
 
 from ..base.result import OptimizationResult
+from ..base.enhancements import seed_kmeans, enhance
+from ..base.budget import budgeted, initialize_paired, iterations, progress, evaluate_phase
 from .crossover import arithmetic_crossover
 from .fitness import evaluate_population
 from .initialization import initialize_population
@@ -22,6 +24,7 @@ class GAOptimizer:
         self.seed = seed
         self.rng = np.random.default_rng(seed)
 
+    @budgeted
     def optimize(self, problem: object) -> OptimizationResult:
         start_time = time.perf_counter()
 
@@ -35,16 +38,19 @@ class GAOptimizer:
             upper_bounds=ub,
             rng=self.rng,
         )
+        initialize_paired(population, problem)
+        seed_kmeans(population, problem, self.params, self.seed)
 
         # 2. Đánh giá thế hệ đầu tiên
         evaluate_population(population, problem)
 
         # Lưu cá thể tốt nhất
+        population = enhance(population, problem, self.params, self.rng, None, initial=True)
         best_individual = max(population, key=lambda c: c.fitness).copy()
         convergence_history: list[float] = [best_individual.fitness]
 
         # 3. Vòng lặp tiến hóa qua các thế hệ
-        for _ in range(self.params.generations):
+        for _ in iterations(problem, self.params.generations):
             offspring: list = []
 
             # Tạo ra thế hệ con
@@ -92,6 +98,7 @@ class GAOptimizer:
             )
 
             # Cập nhật cá thể tốt nhất toàn cục
+            population = enhance(population, problem, self.params, self.rng, best_individual.genes)
             current_best = max(population, key=lambda c: c.fitness)
             if current_best.fitness > best_individual.fitness:
                 best_individual = current_best.copy()

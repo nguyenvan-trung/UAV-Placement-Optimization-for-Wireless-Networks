@@ -1,4 +1,10 @@
-# 📚 TỔNG HỢP TÀI LIỆU THAM KHẢO HỌC THUẬT (LITERATURE REVIEWS & CITATIONS)
+# Danh mục tài liệu tham khảo cần đọc và xác minh
+
+[Trang đầu](../README.md) · [Mục lục kỹ thuật](../implementation/docs/README.md) · [Mô hình thực sự triển khai](../implementation/docs/REPORT.md)
+
+Danh mục kế thừa phục vụ tìm nguồn, chưa phải xác nhận đã kiểm tra toàn văn/DOI của mọi mục. Các chú giải chỉ nêu hướng liên hệ cần đối chiếu; không dùng một bài báo như chứng cứ cho toàn bộ fitness, trọng số hoặc thứ hạng dự án. Lượt chỉnh tài liệu này không tải/đọc lại bài báo bên ngoài.
+
+Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần nhóm tự thiết kế và khác biệt với code. C/E/I hiện tại có các proxy riêng; đặc biệt I không phải diện tích giao nhau. Xem [FITNESS_AUDIT](../implementation/docs/FITNESS_AUDIT.md) và [REPORT_EVIDENCE](../implementation/docs/REPORT_EVIDENCE.md).
 
 > **Dự án:** Tối ưu hóa vị trí 3D trạm phát sóng UAV trong mạng không dây 5G sử dụng thuật toán bầy cá voi cải tiến (I-WOA)  
 > **Hướng dẫn tải:** Bạn có thể copy tên bài báo hoặc mã DOI dán vào [Google Scholar](https://scholar.google.com/), [IEEE Xplore](https://ieeexplore.ieee.org/), hoặc [ResearchGate](https://www.researchgate.net/) để tải file PDF toàn văn.
@@ -7,13 +13,15 @@
 
 ## 📑 Danh mục các nhóm tài liệu
 
-- [1. Mô hình Kênh truyền Vô tuyến & Tối ưu hóa vị trí UAV 3D](#-1-mô-hình-kênh-truyền-vô-tuyến--tối-ưu-hóa-vị-trí-uav-3d-foundation)
-- [2. Thuật toán Bầy cá voi (WOA) & Các cơ chế cải tiến (I-WOA)](#-2-thuật-toán-bầy-cá-voi-woa--cải-tiến-i-woa-core-contribution)
-- [3. Tối ưu hóa bầy đàn (PSO) & Biến thể](#-3-tối-ưu-hóa-bầy-đàn-pso--thuật-toán-bầy-đàn-benchmark)
-- [4. Thuật toán Di truyền (GA) trong không gian liên tục](#-4-thuật-toán-di-truyền-ga-genetic-algorithms)
-- [5. Các kỹ thuật lai ghép Metaheuristic (Hybrid Methods)](#-5-các-kỹ-thuật-lai-ghép-metaheuristic-hybrid-methods)
+- [1. Mô hình kênh và vị trí UAV](#foundation)
+- [2. WOA và các cơ chế cải tiến](#woa)
+- [3. PSO](#pso)
+- [4. GA](#ga)
+- [5. Thuật toán lai](#hybrid)
 
 ---
+
+<a id="foundation"></a>
 
 ## 📡 1. Mô hình Kênh truyền Vô tuyến & Tối ưu hóa vị trí UAV 3D (Foundation)
 
@@ -29,7 +37,7 @@
 - **Tác giả:** M. Mozaffari, W. Saad, M. Bennis, and M. Debbah
 - **Tạp chí:** *IEEE Communications Letters*, vol. 20, no. 8, pp. 1647–1650, Aug. 2016.
 - **DOI:** [`10.1109/LCOMM.2016.2578312`](https://doi.org/10.1109/LCOMM.2016.2578312)
-- **Đóng góp vào đề tài:** Mô hình hóa bài toán bố trí đa trạm UAV (Multiple UAVs), phân tích nón phủ sóng trên mặt đất và cơ chế tối thiểu hóa diện tích chồng lấn gây nhiễu (tương ứng với hàm mục tiêu $f_3$).
+- **Hướng đối chiếu:** Bố trí nhiều UAV và mô hình nhiễu/vùng phủ. Không đồng nhất diện tích chồng lấn của bài báo với f3 hiện tại, vốn đếm tỷ lệ user có từ hai liên kết SNR đạt ngưỡng.
 
 ### [1.3] A Tutorial on UAVs for Wireless Networks: Applications, Challenges, and Open Problems
 - **Tác giả:** M. Mozaffari, W. Saad, M. Bennis, Y.-H. Nam, and M. Debbah
@@ -43,6 +51,8 @@
 - **DOI:** [`10.1109/MCOM.2016.7470933`](https://doi.org/10.1109/MCOM.2016.7470933)
 
 ---
+
+<a id="woa"></a>
 
 ## 🐋 2. Thuật toán Bầy cá voi (WOA) & Cải tiến (I-WOA) (Core Contribution)
 
@@ -68,9 +78,11 @@
 - **Tác giả:** Y. Ling, Y. Zhou, and Q. Luo
 - **Tạp chí:** *IEEE Access*, vol. 5, pp. 6168–6186, 2017.
 - **DOI:** [`10.1109/ACCESS.2017.2695498`](https://doi.org/10.1109/ACCESS.2017.2695498)
-- **Đóng góp vào đề tài:** Bằng chứng khoa học chứng minh việc kết hợp Levy Flight vào WOA giúp giải quyết triệt để vấn đề mất cân bằng giữa Exploration và Exploitation.
+- **Hướng đối chiếu:** Biến thể WOA dùng Lévy; cần đọc điều kiện thí nghiệm và cách triển khai trước khi liên hệ với dự án. Không suy ra bảo đảm thoát mọi cực trị hoặc ưu thế của study chưa chạy.
 
 ---
+
+<a id="pso"></a>
 
 ## 🦅 3. Tối ưu hóa bầy đàn (PSO) & Thuật toán bầy đàn (Benchmark)
 
@@ -88,6 +100,8 @@
 
 ---
 
+<a id="ga"></a>
+
 ## 🧬 4. Thuật toán Di truyền (GA - Genetic Algorithms)
 
 ### [4.1] Adaptation in Natural and Artificial Systems
@@ -103,6 +117,8 @@
 
 ---
 
+<a id="hybrid"></a>
+
 ## 🔀 5. Các kỹ thuật lai ghép Metaheuristic (Hybrid Methods)
 
 ### [5.1] Hybridizing Particle Swarm Optimization with Genetic Algorithm
@@ -113,7 +129,7 @@
 ### [5.2] A Hybrid Whale Optimization Algorithm with Particle Swarm Optimization
 - **Tác giả:** M. A. Elhosseini et al.
 - **Tạp chí:** *Journal of Computational Science*, 2019.
-- **Đóng góp vào đề tài:** Ý tưởng kết hợp quỹ đạo bơi xoắn ốc của WOA với gia tốc bầy đàn của PSO, tạo nên thuật toán H-WOA-PSO vô địch ở giai đoạn 35 vòng lặp (`src/algorithms/hybrid/hybrid_woa_pso.py`).
+- **Hướng đối chiếu:** Ý tưởng kết hợp WOA và PSO; phiên bản triển khai riêng được mô tả trong [DWH_WOA_PSO](../implementation/docs/DWH_WOA_PSO.md). Không có kết luận thứ hạng mới khi chưa có log study.
 
 ---
 
