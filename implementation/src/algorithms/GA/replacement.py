@@ -1,3 +1,4 @@
+
 """Toán tử thay thế quần thể kết hợp Elitism cho GA."""
 
 from .chromosome import Chromosome
@@ -19,4 +20,6 @@ def elitism_replacement(
     remaining_needed = pop_size - elite_count
     new_population = elites + sorted_offspring[:remaining_needed]
 
+
     return new_population
+

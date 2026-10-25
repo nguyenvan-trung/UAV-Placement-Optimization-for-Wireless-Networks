@@ -1,3 +1,5 @@
+"""Lai ghép chromosome bố mẹ để sinh chromosome con."""
+
 """Toán tử lai ghép Arithmetic / Blend Crossover cho GA liên tục."""
 
 import numpy as np
@@ -26,5 +28,6 @@ def arithmetic_crossover(
 
     child1_genes = np.clip(child1_genes, lower_bounds, upper_bounds)
     child2_genes = np.clip(child2_genes, lower_bounds, upper_bounds)
+
 
     return Chromosome(genes=child1_genes), Chromosome(genes=child2_genes)

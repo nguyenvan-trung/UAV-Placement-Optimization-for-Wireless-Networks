@@ -8,3 +8,4 @@ jupyter
 PyYAML
 threadpoolctl
 pytest
+scikit-learn --Required by I-WOA and K-Means
