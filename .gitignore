@@ -1,7 +1,16 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-*/
 .mypy_cache/
 .pytest_cache/
+pytest-cache-files-*/
+.tmp-test-*/
+.ipynb_checkpoints/
+
+# Generated experiment artifacts; keep only result documentation in Git.
+/implementation/results/*
+!/implementation/results/README.md
+!/implementation/results/READING_RESULTS.md
 tmp_audit/
 reports/statistics_test_artifacts/

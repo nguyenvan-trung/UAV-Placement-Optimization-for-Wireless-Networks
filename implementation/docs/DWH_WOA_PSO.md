@@ -57,13 +57,13 @@ Nguồn nguyên lý: [SOURCES — WOA](SOURCES.md#woa), [SOURCES — PSO](SOURCE
 ## 3. Phương trình trộn
 
 $$
-X_i'=\operatorname{clip}\left(\lambda X_{\mathrm{WOA}}+(1-\lambda)X_{\mathrm{PSO}},L,U\right).
+X_i'=\mathrm{clip}\left(\lambda X_{\mathrm{WOA}}+(1-\lambda)X_{\mathrm{PSO}},L,U\right).
 $$
 
 Với lambda=0,5:
 
 $$
-X_i'=\operatorname{clip}\left(0.5X_{\mathrm{WOA}}+0.5(X_i+V_i'),L,U\right).
+X_i'=\mathrm{clip}\left(0.5X_{\mathrm{WOA}}+0.5(X_i+V_i'),L,U\right).
 $$
 
 | Thành phần | Giải thích |

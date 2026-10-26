@@ -12,7 +12,7 @@
 
 [Mục lục](README.md) · [Trang đầu](../../README.md) · [Thuật ngữ](GLOSSARY.md)
 
-Mục tiêu trang này là giúp người chưa tham gia dự án hiểu được đầu vào, phần nào tìm nghiệm và kết quả được tạo ra thế nào. Trạng thái cập nhật 25/10/2026: có mã và thiết kế study; chưa chạy study notebook 100 vòng, seed còn để trống.
+Mục tiêu trang này là giúp người mới hiểu đầu vào, tìm nghiệm và đầu ra. **Study đã dừng và kết quả đã được xóa theo yêu cầu**; dữ liệu và cấu hình được giữ nguyên. Xem [RUN_STATUS](RUN_STATUS.md).
 
 ![Luồng dữ liệu và trách nhiệm các khối](assets/overview.svg)
 
@@ -90,9 +90,9 @@ figures/scenario_*.csv minh họa các bộ sinh scenario. Chúng không phải 
 |---|---|
 | Sáu thuật toán và hàm đánh giá chung | Có mã |
 | 30 case, notebook, checkpoint, bảng mô tả | Đã triển khai |
-| Danh sách seed notebook | Chưa chốt; để trống |
-| Xác nhận chạy optimizer toàn trình của study mới | Chưa có |
-| Study 500 CSV, 100 vòng | Chưa chạy |
+| Danh sách seed notebook | Đã chốt 30 seed |
+| Luồng tối ưu và xuất báo cáo | Đã kiểm tra 90 task thật, 83 kiểm tra đạt |
+| Study 500 CSV, 100 vòng | Đã dừng; kết quả đã được dọn sạch |
 | Kiểm định cho 30 case | Chưa triển khai |
 | Runner/analyzer FE sáu thuật toán | Có mã, tách khỏi notebook |
 | Kết quả FE đầy đủ mới | Chưa có |

@@ -17,7 +17,7 @@
 
 Đọc hình từ trên xuống: dữ liệu user tạo bài toán; thuật toán đề xuất vị trí UAV; fitness chấm nhiều lần; task lưu best để tổng hợp sau này. Hình biên soạn theo code, không phải kết quả thực nghiệm. Chương công thức có bảng ký hiệu/đơn vị và nguồn gần từng biểu thức.
 
-Đây là điểm tra cứu chung. Mỗi trang có phạm vi riêng; liên kết dẫn sang phần tiếp theo thay vì yêu cầu người đọc biết lịch sử trao đổi. Trạng thái hiện tại: study 30 trường hợp đã được triển khai nhưng chưa chạy; seed chưa chốt.
+Đây là điểm tra cứu chung. Mỗi trang có phạm vi riêng; liên kết dẫn sang phần tiếp theo thay vì yêu cầu người đọc biết lịch sử trao đổi. **Study đã được duyệt và đang chạy: 30 seed, 450.000 task**; xem [RUN_STATUS](RUN_STATUS.md).
 
 <a id="doc-section-01"></a>
 

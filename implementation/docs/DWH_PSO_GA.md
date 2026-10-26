@@ -47,7 +47,7 @@ V_i'=wV_i+c_1r_1\odot(p_i-X_i)+c_2r_2\odot(g-X_i).
 $$
 
 $$
-X_{i,\mathrm{tmp}}=\operatorname{clip}(X_i+V_i',L,U).
+X_{i,\mathrm{tmp}}=\mathrm{clip}(X_i+V_i',L,U).
 $$
 
 **Giải thích:** quán tính giữ hướng cũ; hai lực hút hướng về bộ nhớ cá nhân và toàn bầy. c1=c2=1,5; w giảm 0,9→0,4 theo tiến độ vòng, hoặc FE trong chế độ FE. Vận tốc bị chặn ±0,2(U−L).

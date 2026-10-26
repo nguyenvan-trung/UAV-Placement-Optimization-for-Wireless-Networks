@@ -29,7 +29,15 @@ Các số đo mới phải chờ kết quả đúng giao thức (notebook hoặc
 
 <a id="doc-section-01"></a>
 
+## Khởi chạy study theo xác nhận người dùng
+
+Người dùng chọn 30 seed, 450.000 task. Đã sửa requirements, validator artifact/resume, metadata môi trường, progress và lưu JSON gzip theo bucket. Thêm coordinator bốn subprocess cùng bộ xuất báo cáo/notebook; cập nhật notebook đọc task nén. 83 kiểm tra đạt và 90 task kiểm tra thật xác nhận pipeline xuất 12 bảng/13 hình. Study chính thức đang chạy; trạng thái trực tiếp ở RUN_STATUS.md. Không dùng kết quả kiểm tra để thay kết quả cuối.
+
 ## Bố cục phục vụ đọc trên GitHub
+
+Sau khi người dùng cung cấp ảnh lỗi “The following macros are not allowed: operatorname”, đã thay 8 vị trí trong REPORT, DWGA, DWPSO, DWI_WOA, DWH_PSO_GA và DWH_WOA_PSO bằng cách viết math roman đơn giản. Bổ sung định nghĩa clip và quy tắc tránh macro này. Kiểm tra cấu trúc trước đó chưa bao phủ danh sách macro GitHub chấp nhận; chưa coi sửa cục bộ là đã xác nhận render của commit trên GitHub.
+
+Rà soát kỹ lần tiếp theo: đổi ký hiệu đếm tập trong GA thành card(S) và giải thích; đơn giản hóa ngoặc của clip; dùng geq cho bất đẳng thức. Cả 41 khối toán được parser math độc lập chấp nhận và đã dựng/xem bốn trang ảnh preview cục bộ, không thấy công thức bị cắt. Kiểm tra lại 38 Markdown, 628 tham chiếu nội bộ và XML của 9 SVG không phát hiện đích thiếu. Preview dùng Matplotlib, không phải renderer GitHub. Công cụ web không truy cập được hai trang nhánh Trung_SICT trong lần kiểm tra, nên chưa xác nhận bản hiển thị từ xa. Không commit/push hoặc chạy optimizer.
 
 Viết lại bốn file gốc, REPORT và sáu chương thuật toán theo cấu trúc: SVG lớn → cách đọc → bước xử lý → công thức ngắn → ký hiệu/đơn vị → nguồn/code. Thêm SOURCES và DOCUMENTATION_GUIDE. Math block đặt riêng ngoài danh sách/bảng; ảnh cần commit cùng Markdown. Không thay code, seed hoặc chạy optimizer.
 

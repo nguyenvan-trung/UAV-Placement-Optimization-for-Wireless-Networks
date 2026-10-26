@@ -46,12 +46,13 @@ Không dùng E để ký hiệu số elite vì E đã chỉ proxy công suất t
 Mỗi lần chọn: lấy k=3 cá thể khác nhau trong quần thể, chọn fitness cao nhất. Thực hiện hai lần để có hai cha mẹ; hai lần chọn có thể trả cùng cá thể.
 
 $$
-X_{\mathrm{parent}}=\operatorname*{arg\,max}_{X\in S}F(X),\qquad \#S=3.
+X_{\mathrm{parent}}=\mathrm{arg\,max}_{X\in S}F(X),\qquad \mathrm{card}(S)=3.
 $$
 
 | Thành phần | Ý nghĩa |
 |---|---|
 | S | Tập ba ứng viên được lấy ngẫu nhiên không lặp trong một tournament |
+| card(S) | Số phần tử của S, bằng 3 |
 | arg max | Trả ứng viên, không phải chỉ giá trị điểm |
 | F | Hàm chung từ REPORT |
 

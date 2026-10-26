@@ -82,9 +82,9 @@ Best cao nhất trong một run không thay mean/median trên toàn thiết kế
 | 500 CSV sẵn có, 4 UAV, P=25, 100 vòng | Thiết kế hiện tại |
 | Vòng 35/80 | Đọc từ history của lần chạy 100 vòng |
 | Lưu tọa độ và chỉ số mỗi mốc | Có mã quan sát 101 mốc |
-| Danh sách seed | Chưa chốt |
-| Sửa requirements/notebook và củng cố resume | Cần xử lý theo PRE_RUN_REVIEW |
-| Chạy benchmark 500 file | Chờ duyệt riêng |
+| Danh sách seed | Đã chốt 30 seed, lưu trước chạy |
+| Sửa requirements/notebook và củng cố resume | Đã xử lý và kiểm tra |
+| Chạy benchmark 500 file | Đã được duyệt, đang chạy bốn worker |
 | Kết luận phương án tốt nhất | Chưa có dữ liệu để viết |
 
 Cùng 100 vòng không có nghĩa cùng FE. Dùng lại bộ 500 CSV hiện có không đồng nghĩa dùng bộ sinh ground-user của runner FE. Không ép độ cao user về 0 khi chưa có thiết kế mới.

@@ -2,7 +2,7 @@
 
 [Trang đầu](README.md) · [Thiết kế nghiên cứu](NOTE.md) · [Mục lục kỹ thuật](implementation/docs/README.md)
 
-**Chưa chạy benchmark.** Đây là hướng dẫn cho lần thực thi được duyệt. Không chạy lệnh chỉ vì đọc trang này. Danh sách seed trống và các vấn đề trong [PRE_RUN_REVIEW](implementation/docs/PRE_RUN_REVIEW.md) cần được xử lý trước.
+**Study đã dừng; kết quả, log và file tạm đã được xóa theo yêu cầu.** Dữ liệu và cấu hình được giữ nguyên. Chỉ chạy lại khi được yêu cầu; xem [RUN_STATUS](implementation/docs/RUN_STATUS.md).
 
 ## Mục lục
 
@@ -53,7 +53,7 @@ Code dùng cú pháp Python từ 3.10. Môi trường phiên trước là Python
 | Jupyter / ipykernel | Mở notebook và chạy bằng kernel phù hợp |
 | PyYAML | Cấu hình FE/sensitivity |
 
-**Chú ý trước cài:** requirements.txt hiện có dòng sai đã ghi trong PRE_RUN_REVIEW. Cần sửa sau khi được duyệt; không chạy cài đặt từ một file biết đang sai.
+requirements.txt đã sửa dòng chú thích sai; không cần cài lại các thư viện đang có chỉ để theo dõi lần chạy này.
 
 Ví dụ chuẩn bị môi trường riêng sau khi xử lý file phụ thuộc:
 
@@ -75,7 +75,7 @@ Nguồn: [configs/notebook_study.json](configs/notebook_study.json).
 | iterations | 100 | Số vòng/generation |
 | population | 25 | Số cấu hình UAV trong quần thể |
 | num_uavs | 4 | Số UAV trong mỗi cấu hình |
-| seeds | [] | Chưa chốt; bộ chạy yêu cầu ít nhất hai |
+| seeds | 30 số cố định | Đã chốt theo lựa chọn người dùng |
 | output | implementation/results/study_100_iterations | Thư mục riêng cho một thiết kế |
 
 500 × 30 × số seed = số task. Hai seed chỉ là tối thiểu kỹ thuật, không tự bảo đảm độ tin cậy thống kê. Chốt danh sách trước khi xem kết quả.

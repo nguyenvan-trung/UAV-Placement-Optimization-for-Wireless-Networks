@@ -38,13 +38,15 @@ Nguồn: [notebook_study.py](../src/notebook_study.py). Thiết kế: [NOTEBOOK_
 | Artifact | Cấu trúc |
 |---|---|
 | manifest.json | signature, config, expected_tasks, danh sách datasets và cases |
-| tasks/*.json: result | dataset, users, case, seed, fitness, coverage, energy, interference, fe, wall_s, optimizer_fitness, feasible |
-| tasks/*.json: history | 101 dòng, iteration=0..100; fitness, fe, elapsed_s, coverage, energy, interference, position |
+| tasks theo bucket: result | dataset, users, case, seed, fitness, coverage, energy, interference, fe, wall_s, optimizer_fitness, feasible |
+| tasks theo bucket: history | 101 dòng, iteration=0..100; fitness, fe, elapsed_s, coverage, energy, interference, position |
 | runs.csv | Các trường result, tạo khi đủ task |
 | completion.json | complete, expected, actual |
 | tables/*.csv, *.md | Các phép gộp được liệt kê trong NOTEBOOK_STUDY |
 
 Khóa task là dataset–case–seed. position là vector phẳng 3N tọa độ UAV. fitness là best đã đánh giá; optimizer_fitness là giá trị optimizer trả về. C/E/I là tỷ lệ/chỉ số chuẩn hóa; thời gian giây; FE là số đếm. wall_s và elapsed_s là phạm vi quan sát notebook, không đồng nghĩa wall_time_s của runner FE.
+
+Lần chạy 30 seed hiện dùng bốn shard: shards/worker_XX/tasks/bucket/task_id.json.gz. Nội dung JSON được gzip không mất dữ liệu; read_task/task_paths hỗ trợ cả định dạng này và JSON cũ. Mỗi shard có manifest/env/progress/completion riêng; root có manifest/progress và chỉ có completion cuối sau tổng hợp, vẽ hình và xuất notebook. Không dùng completion của một shard để tuyên bố xong cả study.
 
 Không có scenario_id, distribution, purpose hoặc batch CPU trong schema notebook. Không tự bịa các cột này để đưa vào analyzer FE.
 

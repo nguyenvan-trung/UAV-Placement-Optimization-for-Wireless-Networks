@@ -48,6 +48,12 @@ $$
 
 Biểu diễn là lựa chọn triển khai của dự án. CSV hiện có user cao đến 132 m; không dùng công thức khoảng cách chỉ có z_i nếu h_j khác 0.
 
+Trong các công thức dưới, clip(q,L,U) nghĩa là chặn q vào đoạn [L,U]: giá trị nhỏ hơn L được đưa về L, lớn hơn U đưa về U, còn lại giữ nguyên. Nếu đầu vào là vector, áp dụng riêng từng tọa độ. Cách viết toán tương đương:
+
+$$
+\mathrm{clip}(q,L,U)=\min\left(U,\max(L,q)\right).
+$$
+
 <a id="kenh"></a>
 
 ## 3. Khoảng cách, góc và kênh truyền
@@ -59,7 +65,7 @@ d_{ij}=\sqrt{(x_i-u_j)^2+(y_i-v_j)^2+(z_i-h_j)^2}.
 $$
 
 $$
-\theta_{ij}=\frac{180}{\pi}\arcsin\left(\operatorname{clip}\left(\frac{z_i-h_j}{\max(d_{ij},10^{-3})},0,1\right)\right).
+\theta_{ij}=\frac{180}{\pi}\arcsin\left(\mathrm{clip}\left(\frac{z_i-h_j}{\max(d_{ij},10^{-3})},0,1\right)\right).
 $$
 
 **Bằng lời:** tính khoảng cách 3D; tỷ số chênh cao/khoảng cách cho góc ngẩng; đổi radian sang độ. d dùng mét, theta dùng độ. Sàn 1 mm và clip là quy tắc số học của code. Ép góc âm về 0 là giới hạn cần thẩm định khi user cao hơn UAV.
@@ -112,7 +118,7 @@ $$
 Đặt A_ij=1 nếu SNR_ij≥gamma, ngược lại bằng 0. Khi đó:
 
 $$
-C(X)=\frac{1}{M}\sum_{j=1}^{M}\mathbf{1}\left[\sum_{i=1}^{N}A_{ij}\ge 1\right].
+C(X)=\frac{1}{M}\sum_{j=1}^{M}\mathbf{1}\left[\sum_{i=1}^{N}A_{ij}\geq 1\right].
 $$
 
 **Bằng lời:** user có ít nhất một liên kết đạt ngưỡng được đếm một lần. Mẫu số là toàn bộ M user; C thuộc [0,1].
@@ -126,7 +132,7 @@ $$
 ## 5. Proxy công suất E
 
 $$
-r_i=\operatorname{clip}\left(\frac{z_i-z_{\min}}{z_{\max}-z_{\min}+10^{-6}},0,1\right).
+r_i=\mathrm{clip}\left(\frac{z_i-z_{\min}}{z_{\max}-z_{\min}+10^{-6}},0,1\right).
 $$
 
 $$
@@ -155,7 +161,7 @@ $$
 ## 6. Proxy chồng lấn I
 
 $$
-I(X)=\frac{1}{M}\sum_{j=1}^{M}\mathbf{1}\left[\sum_{i=1}^{N}A_{ij}\ge 2\right].
+I(X)=\frac{1}{M}\sum_{j=1}^{M}\mathbf{1}\left[\sum_{i=1}^{N}A_{ij}\geq 2\right].
 $$
 
 **Bằng lời:** đếm user có ít nhất hai liên kết đạt ngưỡng. I thuộc [0,1], dùng cùng M như C.

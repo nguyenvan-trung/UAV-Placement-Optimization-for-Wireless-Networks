@@ -4,6 +4,9 @@ import itertools
 import json
 import os
 import time
+import platform
+import importlib.metadata
+import gzip
 from pathlib import Path
 
 import numpy as np
@@ -113,8 +116,85 @@ def plan(root, config):
 
 def atomic_json(path, value):
     temp = path.with_suffix('.tmp')
-    temp.write_text(json.dumps(value, ensure_ascii=False, allow_nan=False), encoding='utf-8')
-    temp.replace(path)
+    payload = json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode('utf-8')
+    if path.suffix == '.gz':
+        temp.write_bytes(gzip.compress(payload, compresslevel=3, mtime=0))
+    else:
+        temp.write_bytes(payload)
+    # Windows readers/editors can briefly hold the destination without delete sharing.
+    for attempt in range(20):
+        try:
+            temp.replace(path)
+            break
+        except PermissionError:
+            if attempt == 19:
+                raise
+            time.sleep(min(0.05 * (attempt + 1), 0.5))
+
+
+def task_paths(output):
+    folders = [output / 'tasks', *sorted((output / 'shards').glob('worker_*/tasks'))]
+    return [p for folder in folders for p in sorted(folder.rglob('*.json*'))
+            if p.name.endswith(('.json', '.json.gz'))]
+
+
+def read_task(path):
+    payload = gzip.decompress(path.read_bytes()) if path.suffix == '.gz' else path.read_bytes()
+    return json.loads(payload.decode('utf-8'))
+
+
+def dataset_result_stem(dataset):
+    return Path(dataset).stem.removesuffix('_users_connect')
+
+
+def task_filename(dataset, case, seed):
+    return f'{dataset_result_stem(dataset)}_result_{case}_seed{seed}.json.gz'
+
+
+def task_destination(output, dataset, case, seed):
+    return output / 'tasks' / dataset_result_stem(dataset) / task_filename(dataset, case, seed)
+
+
+def validate_task(artifact, *, dataset=None, case=None, seed=None, problem=None):
+    """Reject corrupt/resumed artifacts before completion or aggregation."""
+    record, history = artifact['result'], artifact['history']
+    for key, expected in [('dataset', dataset), ('case', case), ('seed', seed)]:
+        if expected is not None and record[key] != expected:
+            raise ValueError(f'Task identity mismatch: {key}')
+    if record['feasible'] is not True:
+        raise ValueError('Task has no feasible result')
+    if [r['iteration'] for r in history] != list(range(101)):
+        raise ValueError('Task must contain iterations 0..100')
+    numeric = np.array([[r[k] for k in ('fitness', 'coverage', 'energy', 'interference', 'fe', 'elapsed_s')]
+                        for r in history], dtype=float)
+    if not np.isfinite(numeric).all():
+        raise ValueError('Nonfinite history metrics')
+    if (numeric[:, 1:4] < 0).any() or (numeric[:, 1:4] > 1).any():
+        raise ValueError('Quality metrics outside [0,1]')
+    if (np.diff(numeric[:, 0]) < -1e-12).any():
+        raise ValueError('Best fitness decreased')
+    if (numeric[:, 4] <= 0).any() or (numeric[:, 4] != np.floor(numeric[:, 4])).any() or (np.diff(numeric[:, 4]) < 0).any():
+        raise ValueError('Invalid FE history')
+    if (numeric[:, 5] < 0).any() or (np.diff(numeric[:, 5]) < 0).any():
+        raise ValueError('Invalid timing history')
+    positions = np.asarray([r['position'] for r in history], dtype=float)
+    if positions.ndim != 2 or positions.shape[1] < 3 or positions.shape[1] % 3 or not np.isfinite(positions).all():
+        raise ValueError('Invalid position history')
+    final = history[-1]
+    for field, history_field in [('fitness', 'fitness'), ('coverage', 'coverage'), ('energy', 'energy'),
+                                 ('interference', 'interference'), ('fe', 'fe'), ('wall_s', 'elapsed_s')]:
+        if not np.isclose(record[field], final[history_field], rtol=0, atol=1e-10):
+            raise ValueError(f'Result/history mismatch: {field}')
+    if not np.isfinite(record['optimizer_fitness']) or record['optimizer_fitness'] > record['fitness'] + 1e-10:
+        raise ValueError('Invalid optimizer result')
+    if problem is not None:
+        if positions.shape[1] != problem.dimension or not all(problem.is_feasible(x) for x in positions):
+            raise ValueError('Infeasible history position')
+        metrics = problem.evaluate_detailed(positions[-1])
+        expected = [metrics.fitness, metrics.coverage_rate, metrics.energy_normalized, metrics.interference_rate]
+        if not np.allclose(numeric[-1, :4], expected, rtol=0, atol=1e-10):
+            raise ValueError('Final solution does not reproduce reported metrics')
+    return record
 
 
 def study_signature(root, config, files):
@@ -127,25 +207,66 @@ def study_signature(root, config, files):
 
 def read_results(output, *, include_history=False):
     records, histories = [], []
-    for path in sorted((output / 'tasks').glob('*.json')):
-        artifact = json.loads(path.read_text(encoding='utf-8'))
-        records.append(artifact['result'])
+    for path in task_paths(output):
+        artifact = read_task(path)
+        records.append(validate_task(artifact))
         if include_history:
             histories.extend(dict(dataset=artifact['result']['dataset'], case=artifact['result']['case'],
                 seed=artifact['result']['seed'], **row) for row in artifact['history'])
     return pd.DataFrame(records), pd.DataFrame(histories)
 
 
-def run_study(root, config, *, confirmed=False):
+def export_dataset_csv(output, *, dataset=None, destination=None):
+    """Export Excel-readable CSVs, loading only one dataset's history at a time."""
+    grouped = {}
+    paths = (sorted((output / 'tasks' / dataset_result_stem(dataset)).glob('*.json*'))
+             if dataset is not None else task_paths(output))
+    for path in paths:
+        record = read_task(path)['result']
+        grouped.setdefault(record['dataset'], []).append(path)
+    for dataset, paths in sorted(grouped.items()):
+        records, positions, convergence = [], [], []
+        for path in paths:
+            artifact = read_task(path)
+            record = validate_task(artifact, dataset=dataset)
+            records.append(record)
+            identity = dict(dataset=dataset, case=record['case'], seed=record['seed'])
+            final_positions = np.asarray(artifact['history'][-1]['position']).reshape(-1, 3)
+            for index, (x, y, z) in enumerate(final_positions, start=1):
+                positions.append(dict(**identity, uav_id=index, x_m=x, y_m=y, z_m=z))
+            for row in artifact['history']:
+                convergence.append(dict(**identity, **{k: v for k, v in row.items() if k != 'position'}))
+        results = pd.DataFrame(records)
+        if results.duplicated(['dataset', 'case', 'seed']).any():
+            raise ValueError('Duplicate tasks in CSV export')
+        stem = dataset_result_stem(dataset)
+        folder = (destination or output) / 'datasets' / stem
+        folder.mkdir(parents=True, exist_ok=True)
+        for suffix, frame, order in (
+            ('result', results, ['case', 'seed']),
+            ('positions', pd.DataFrame(positions), ['case', 'seed', 'uav_id']),
+            ('convergence', pd.DataFrame(convergence), ['case', 'seed', 'iteration']),
+        ):
+            frame.sort_values(order).to_csv(folder / f'{stem}_{suffix}.csv',
+                index=False, encoding='utf-8-sig')
+
+
+def run_study(root, config, *, confirmed=False, shard_index=0, shard_count=1):
     if not confirmed:
         raise RuntimeError('Run disabled: explicit confirmation is required')
     files, variants, expected = plan(root, config)
+    if not 0 <= shard_index < shard_count <= len(files):
+        raise ValueError('Invalid dataset shard')
+    files = files[shard_index::shard_count]
+    expected = len(files) * len(variants) * len(config['seeds'])
     if len(config['seeds']) < 2:
         raise ValueError('Choose at least two evaluation seeds before running; seed count is not finalized')
     output = (root / config['output']).resolve()
     if not output.is_relative_to((root / 'implementation/results').resolve()):
         raise ValueError('Output must be inside implementation/results')
     output.mkdir(parents=True, exist_ok=True)
+    if (output / '.coordinator').exists():
+        raise RuntimeError('A coordinator is running for this output; do not start a second runner')
     lock = output / '.running'
     # Exclusive lock prevents two notebook kernels writing the same task directory.
     with lock.open('x', encoding='utf-8') as stream:
@@ -160,9 +281,18 @@ def run_study(root, config, *, confirmed=False):
             raise ValueError('Output is not empty and has no manifest')
         atomic_json(manifest, dict(signature=signature, config=config, expected_tasks=expected,
             datasets=[p.name for p in files], cases=variants))
+        versions = {name: importlib.metadata.version(name) for name in
+                    ['numpy', 'pandas', 'scipy', 'scikit-learn', 'matplotlib', 'threadpoolctl']}
+        environment = dict(python=platform.python_version(), platform=platform.platform(), versions=versions)
+        env_path = output / 'env.json'
+        if env_path.exists() and json.loads(env_path.read_text(encoding='utf-8')) != environment:
+            raise ValueError('Environment changed; use a new output directory')
+        atomic_json(env_path, environment)
         tasks = output / 'tasks'
         tasks.mkdir(exist_ok=True)
         completed = 0
+        resumed = 0
+        started = time.perf_counter()
         with threadpool_limits(limits=1):
             for path in files:
                 users = load_users(path)
@@ -175,9 +305,13 @@ def run_study(root, config, *, confirmed=False):
                     initial = rng.uniform(original.search_space.lower_bounds, original.search_space.upper_bounds,
                         (config['population'], original.dimension))
                     for case in variants:
-                        task_id = hashlib.sha256(f"{path.name}|{seed}|{case['case']}".encode()).hexdigest()[:24]
-                        destination = tasks / f'{task_id}.json'
-                        if not destination.exists():
+                        destination = task_destination(output, path.name, case['case'], seed)
+                        destination.parent.mkdir(exist_ok=True)
+                        if destination.exists():
+                            validate_task(read_task(destination),
+                                dataset=path.name, case=case['case'], seed=seed, problem=original)
+                            resumed += 1
+                        else:
                             observed = ObservedProblem(original, initial)
                             optimizer = make_case(case, config['population'], config['iterations'], seed)
                             result = optimizer.optimize(observed)
@@ -188,10 +322,17 @@ def run_study(root, config, *, confirmed=False):
                                 fitness=final['fitness'], coverage=final['coverage'], energy=final['energy'],
                                 interference=final['interference'], fe=final['fe'], wall_s=final['elapsed_s'],
                                 optimizer_fitness=float(result.best_objective), feasible=True)
-                            atomic_json(destination, dict(result=record, history=observed.history))
+                            artifact = dict(result=record, history=observed.history)
+                            validate_task(artifact, dataset=path.name, case=case['case'], seed=seed, problem=original)
+                            atomic_json(destination, artifact)
                         completed += 1
+                        atomic_json(output / 'progress.json', dict(completed=completed, expected=expected,
+                            resumed=resumed, elapsed_s=time.perf_counter()-started,
+                            dataset=path.name, case=case['case'], seed=seed, pid=os.getpid()))
                         if completed % 25 == 0:
                             print(f'{completed}/{expected} tasks (including resumed tasks)', flush=True)
+                export_dataset_csv(output, dataset=path.name,
+                    destination=output.parents[1] if shard_count > 1 else output)
         results, _ = read_results(output)
         if len(results) != expected or results.duplicated(['dataset', 'case', 'seed']).any():
             raise RuntimeError('Result count mismatch or duplicate tasks')
@@ -223,14 +364,20 @@ def build_tables(output):
     stability = df.groupby(['dataset', 'case']).fitness.std().groupby('case').mean()
     summary['seed_sd_mean'] = stability
     tables = {name: summary.reindex(names).reset_index() for name, names in GROUPS.items()}
+    tables['design'] = pd.DataFrame(cases())
+    tables['by_dataset'] = df.groupby(['dataset', 'users', 'case']).agg(
+        fitness_mean=('fitness', 'mean'), fitness_sd=('fitness', 'std'),
+        coverage_mean=('coverage', 'mean'), energy_mean=('energy', 'mean'),
+        interference_mean=('interference', 'mean'), wall_s_mean=('wall_s', 'mean'),
+        fe_mean=('fe', 'mean'), seeds=('seed', 'size')).reset_index()
     tables['by_scale'] = df.groupby(['users', 'case']).agg(fitness_mean=('fitness', 'mean'),
         coverage=('coverage', 'mean'), energy=('energy', 'mean'), interference=('interference', 'mean'),
         wall_s=('wall_s', 'mean'), fe=('fe', 'mean')).reset_index()
     # Read one task at a time: never materialize millions of position dictionaries.
     trajectories, checkpoints = {}, {}
     fields = ['fitness', 'coverage', 'energy', 'interference', 'fe', 'elapsed_s']
-    for path in sorted((output / 'tasks').glob('*.json')):
-        artifact = json.loads(path.read_text(encoding='utf-8'))
+    for path in task_paths(output):
+        artifact = read_task(path)
         name = artifact['result']['case']
         rows = artifact['history']
         if [r['iteration'] for r in rows] != list(range(101)):

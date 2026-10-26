@@ -63,6 +63,8 @@ Sau công thức có câu giải thích và bảng:
 
 Tách công thức dài. Bộ tài liệu không dùng dấu phân cách LaTeX dạng ngoặc vuông/ngược làm mặc định math. Không đặt công thức trong inline-code rồi mong MathJax render; code chỉ dùng để xem biểu thức thô.
 
+Ảnh lỗi GitHub thực tế đã xác nhận macro tên toán tử bị từ chối. Bộ tài liệu dùng `\mathrm{clip}` và `\mathrm{arg\,max}` thay macro `\operatorname`/dạng có dấu sao. Phải kiểm tra nội dung macro bên trong, không chỉ đếm đủ dấu $$ hoặc parse Markdown. Lỗi này cũng được ghi nhận trong [github/markup #1688](https://github.com/github/markup/issues/1688); không coi trình render cục bộ chấp nhận là bảo đảm GitHub chấp nhận.
+
 Giữ cách đọc bằng lời để trình xem không có math vẫn hiểu. Nguồn: [GitHub math](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions).
 
 <a id="nguon"></a>

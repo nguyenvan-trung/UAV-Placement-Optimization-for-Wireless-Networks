@@ -15,11 +15,11 @@
 
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Mô hình](REPORT.md) · [Schema](DATA_FORMAT.md)
 
-Ngày 25/10/2026: **đã triển khai, chưa chạy thí nghiệm**. Notebook chưa có output; danh sách seed chưa chốt. Tài liệu này mô tả hành vi mã hiện tại và các giới hạn, không phải kết quả nghiên cứu.
+**Study đang chạy:** người dùng đã chốt 30 seed; coordinator bốn worker thực hiện 450.000 task. Xem [RUN_STATUS](RUN_STATUS.md) để theo dõi. Chưa có bảng cuối khi chưa đủ task.
 
 ![Thiết kế, duyệt chạy, thực thi task, kiểm tra và tổng hợp](assets/study.svg)
 
-**Cách đọc:** chốt thiết kế trước; chỉ thực thi khi được duyệt; lưu task rồi kiểm tra đủ cặp mới tổng hợp. Đây là quy trình, không xác nhận study đã chạy. Hình theo notebook_study.py; validator đầy đủ vẫn cần củng cố theo PRE_RUN_REVIEW.
+**Cách đọc:** thiết kế đã được duyệt; lưu task rồi kiểm tra đủ cặp mới tổng hợp. Hình theo notebook_study.py; validator đã bổ sung kiểm tra identity, 101 mốc, metric hữu hạn, best không giảm, FE/thời gian và tái tính nghiệm.
 
 <a id="doc-section-01"></a>
 
@@ -28,16 +28,18 @@ Ngày 25/10/2026: **đã triển khai, chưa chạy thí nghiệm**. Notebook ch
 | Tệp | Vai trò |
 |---|---|
 | [full_study_100_iterations.ipynb](../notebooks/full_study_100_iterations.ipynb) | Thiết kế, ô chạy, bảng và ảnh bên dưới code |
-| [notebook_study.json](../../configs/notebook_study.json) | 100 vòng, quần thể 25, 4 UAV, seeds=[] |
-| [notebook_study.py](../src/notebook_study.py) | 30 case, đọc CSV, chạy tuần tự, lưu task, tổng hợp |
+| [notebook_study.json](../../configs/notebook_study.json) | 100 vòng, quần thể 25, 4 UAV, 30 seed cố định |
+| [notebook_study.py](../src/notebook_study.py) | 30 case, đọc CSV, worker, validator và bảng |
+| [run_notebook_study.py](../scripts/run_notebook_study.py) | Coordinator bốn tiến trình, tổng hợp sau hoàn tất |
+| [study_report.py](../src/study_report.py) | Xuất hình, RESULTS.md và notebook kết quả |
 | [enhancements.py](../src/algorithms/base/enhancements.py) | K/OBL/Lévy cho GA và PSO |
 | [test_notebook_study.py](../tests/test_notebook_study.py) | Kiểm tra hợp đồng; không phải benchmark |
 
 Dùng 500 CSV có sẵn, dự kiến 10 mức 50–500 user, mỗi mức 50 dataset. Không tự thay tọa độ bằng bộ sinh FE và không ép độ cao user về 0. plan kiểm tra số file; loader/validator kiểm tra dữ liệu từng file khi thực thi.
 
-Cùng dataset, seed, quần thể nền và hàm fitness giữa các đối chứng. Seed thuật toán chưa được chọn; bộ chạy yêu cầu ít nhất hai seed khác nhau, nhưng hai chỉ là điều kiện kỹ thuật, không bảo đảm lực thống kê.
+Cùng dataset, seed, quần thể nền và fitness giữa các đối chứng. Đã chọn 30 seed bằng SeedSequence(20261024), ghi vào config trước chạy. Số seed không tự chứng minh độc lập giữa dataset hoặc đủ lực mọi kiểm định.
 
-Khối lượng: 500 × 30 = **15.000 task mỗi seed**. Nếu chọn 30 seed sẽ là 450.000 task; đây là phép tính thiết kế, không phải số task đã chạy.
+Khối lượng: 500 × 30 = **15.000 task mỗi seed**, tổng **450.000 task**. Số đã hoàn tất xem progress, không dùng tổng thiết kế để nói đã chạy xong.
 
 <a id="doc-section-02"></a>
 
@@ -136,13 +138,13 @@ Mỗi nhóm có ảnh hội tụ median/IQR và ảnh sáu chỉ số theo quy m
 
 ## 8. Chạy, lưu và tiếp tục
 
-Notebook mặc định CONFIRM_RUN=False. Danh sách seed để trống. Đọc [REPRODUCE](../../REPRODUCE.md) trước khi được yêu cầu chạy; trong lượt chỉnh tài liệu này không thực thi notebook.
+Notebook giữ CONFIRM_RUN=False để không mở trùng coordinator. CLI hiện chạy nền; không bật ô chạy trong lúc đó. Seed đã lưu trong config.
 
-Mỗi task ghi JSON nguyên tử. Manifest lưu config, case, dataset, hash source/config/nội dung CSV. Khi chạy lại, task có JSON được bỏ qua; task chưa hoàn thành chạy lại. Nếu đổi source/config/data, dùng output mới thay vì trộn kết quả.
+Mỗi task ghi JSON gzip không mất dữ liệu, nguyên tử, theo bucket. Root output có shards/worker_XX/tasks/bucket/*.json.gz. Manifest lưu config, case, dataset và chữ ký source/config/CSV. Artifact cũ được xác minh trước khi bỏ qua; task thiếu chạy lại. Nếu đổi source/config/data, dùng output mới.
 
 Khóa .running ngăn hai kernel ghi cùng output. Kill kernel có thể để lại khóa; xác minh tiến trình cũ đã dừng trước khi xử lý. Không xóa kết quả để chữa lỗi resume.
 
-Chỉ đủ task mới ghi runs.csv/completion.json và cho phép tổng hợp. Thư mục mặc định là implementation/results/study_100_iterations. Bộ chạy tuần tự một worker; đọc bảng không gọi optimizer. Tổng hợp đọc từng artifact để tránh nạp toàn bộ tọa độ lịch sử vào RAM, nhưng vẫn cần bộ nhớ cho chuỗi fitness.
+Mỗi shard có completion riêng; completion.json gốc chỉ xuất sau khi đủ 450.000 task và xuất báo cáo. Output mặc định là implementation/results/study_100_iterations. Bốn worker dùng subprocess độc lập để tránh lỗi multiprocessing Pipe của Windows. Đọc bảng không gọi optimizer. Tổng hợp vẫn cần bộ nhớ cho chuỗi fitness.
 
 <a id="doc-section-09"></a>
 
@@ -150,4 +152,4 @@ Chỉ đủ task mới ghi runs.csv/completion.json và cho phép tổng hợp. 
 
 Ranking/contributions hiện là mô tả, chưa có kiểm định/CI cho 30 case. Không đưa CSV này vào analyzer FE sáu thuật toán như cùng schema. Chọn phương án theo chất lượng, chi phí và ổn định; không mặc định I-WOA hoặc KOL tốt nhất.
 
-Trạng thái xác minh trước lượt tài liệu này: sáu kiểm tra hợp đồng đạt, cấu trúc notebook hợp lệ; chưa xác nhận optimizer study toàn trình, chưa chạy study 500 file. Kết quả test không thay kết quả nghiên cứu. Xem [REPORT_EVIDENCE](REPORT_EVIDENCE.md).
+Chuẩn bị hiện tại: 83 kiểm tra đạt; 90 task kiểm tra thật xác nhận cả tối ưu và luồng xuất 12 bảng/13 hình/notebook. Study 500 file đang chạy. Artifact kiểm tra ở tmp_audit không thay kết quả nghiên cứu. Xem [REPORT_EVIDENCE](REPORT_EVIDENCE.md).

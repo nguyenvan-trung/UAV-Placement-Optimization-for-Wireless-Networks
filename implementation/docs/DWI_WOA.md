@@ -104,7 +104,7 @@ Nguồn chính xác biểu thức: [levy_flight.py](../src/algorithms/I_WOA/levy
 Đặt delta_d bằng X_d−X*_d nếu độ lớn chênh lệch lớn hơn 10^-3; ngược lại dùng 0,1(U_d−L_d). Sau đó:
 
 $$
-X'_d=\operatorname{clip}(X_d+\alpha s_d\delta_d,L_d,U_d).
+X'_d=\mathrm{clip}(X_d+\alpha s_d\delta_d,L_d,U_d).
 $$
 
 alpha=0,05; X ở đây là ứng viên sau bước WOA. Delta dùng mét; alpha và s không có đơn vị.

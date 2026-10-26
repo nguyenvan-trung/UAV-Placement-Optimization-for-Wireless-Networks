@@ -77,7 +77,7 @@ $$
 ## 4. Vị trí và xử lý biên
 
 $$
-x_{i,d}^{t+1}=\operatorname{clip}(x_{i,d}^{t}+v_{i,d}^{t+1},L_d,U_d).
+x_{i,d}^{t+1}=\mathrm{clip}(x_{i,d}^{t}+v_{i,d}^{t+1},L_d,U_d).
 $$
 
 Nếu vị trí trước clip vượt biên, đặt vận tốc của chiều đó về 0. Khoảng cách giữa UAV vẫn do problem kiểm tra; clip tọa độ chưa bảo đảm toàn bộ cấu hình khả thi.

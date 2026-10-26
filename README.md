@@ -2,10 +2,11 @@
 
 Tìm vị trí ba chiều cho các UAV phát sóng để phục vụ một tập người dùng cố định. Người đọc có thể theo dõi dự án theo thứ tự: **bài toán → mô hình → thuật toán → thiết kế thí nghiệm → kết quả có nguồn**.
 
-**Trạng thái:** study mới 500 CSV / 30 trường hợp / 100 vòng chưa chạy; seed chưa chốt. Đọc [rà soát trước chạy](implementation/docs/PRE_RUN_REVIEW.md) để biết các phần cần xử lý. Không có thứ hạng thực nghiệm mới trong trang này.
+**Trạng thái:** study đã dừng theo yêu cầu; kết quả, log và file tạm đã được xóa. Giữ nguyên 500 CSV đầu vào và cấu hình 30 trường hợp / 100 vòng / 30 seed. Xem [trạng thái](implementation/docs/RUN_STATUS.md). Chưa có kết quả để xếp hạng toàn study.
 
 ## Mục lục
 
+0. [Cài đặt, chạy và đọc kết quả](#bat-dau)
 1. [Mô hình tổng quan](#tong-quan)
 2. [Đầu vào, đầu ra và một ví dụ](#dau-vao)
 3. [Cách chấm một phương án](#fitness)
@@ -14,6 +15,125 @@ Tìm vị trí ba chiều cho các UAV phát sóng để phục vụ một tập
 6. [Bản đồ thư mục](#thu-muc)
 7. [Lộ trình đọc tài liệu](#lo-trinh)
 8. [Nguồn và trạng thái kiểm chứng](#nguon)
+
+<a id="bat-dau"></a>
+
+## Cài đặt, chạy và đọc kết quả
+
+Các lệnh dưới đây dùng **PowerShell trên Windows**, chạy tại thư mục gốc repository, nơi có `configs/`, `data/` và `implementation/`. Cần Python **3.10 trở lên**; dùng bản Python cho Windows, không chọn nhầm Python của MSYS2. Việc cài môi trường không khởi chạy thí nghiệm.
+
+### 1. Cài môi trường
+
+Tạo môi trường mới để tránh dùng nhầm `.venv` cũ:
+
+```powershell
+py -3 -m venv .venv-uav
+& ".\.venv-uav\Scripts\python.exe" -m pip install --upgrade pip
+& ".\.venv-uav\Scripts\python.exe" -m pip install -r implementation\requirements.txt ipykernel nbformat
+```
+
+Nếu không có lệnh `py`, thay `py -3` bằng đường dẫn đến Python đã cài. Không cần activate môi trường vì các lệnh gọi trực tiếp interpreter.
+
+Kiểm tra thư viện mà không chạy optimizer:
+
+```powershell
+& ".\.venv-uav\Scripts\python.exe" -B -c "import numpy, pandas, scipy, sklearn, matplotlib, ipykernel, nbformat, tabulate, threadpoolctl; print('Environment OK')"
+```
+
+### 2. Kiểm tra dữ liệu và cấu hình
+
+Đầu vào là **500 file có sẵn** tại `data/stores/*_users_connect.csv`. Không cần sinh lại dữ liệu. Xem [hướng dẫn dữ liệu](data/README.md).
+
+```powershell
+(Get-ChildItem data\stores\*_users_connect.csv -File).Count
+Get-Content configs\notebook_study.json
+```
+
+Cấu hình luồng này nằm trong **`configs/notebook_study.json`**:
+
+| Tham số | Hiện tại |
+|---|---|
+| `iterations` | 100 vòng mỗi lượt |
+| `population` | 25 phương án bố trí UAV |
+| `num_uavs` | 4 UAV mỗi phương án |
+| `seeds` | 30 seed cố định |
+| `output` | `implementation/results/study_100_iterations` |
+
+30 case được định nghĩa trong `implementation/src/notebook_study.py`: ba họ GA/PSO/WOA, mỗi họ có tám tổ hợp bật/tắt K-Means, OBL, Lévy; thêm sáu case hybrid. `benchmark.yaml` và `sensitivity.yaml` thuộc luồng FE riêng, không điều khiển study CSV này.
+
+Tổng khối lượng: **500 dataset × 30 case × 30 seed = 450.000 lượt tối ưu**. Một lượt là một tổ hợp dataset–case–seed. Đây là tác vụ dài, có thể mất nhiều ngày tùy máy.
+
+### 3. Chạy toàn bộ dữ liệu
+
+Chỉ chạy lệnh này khi muốn bắt đầu hoặc tiếp tục study:
+
+```powershell
+& ".\.venv-uav\Scripts\python.exe" -B implementation\scripts\run_notebook_study.py --workers 4
+```
+
+Giữ terminal mở và máy hoạt động; tránh sleep. Chỉ chạy một coordinator cho cùng thư mục output. Có thể giảm `--workers` để giảm tải trước lần chạy mới; khi tiếp tục một study phải giữ nguyên số worker, dữ liệu, code, cấu hình và môi trường.
+
+**Theo dõi** ở terminal khác:
+
+```powershell
+Get-Content implementation\results\study_100_iterations\progress.json
+Get-Content implementation\results\study_100_iterations\logs\worker_00.log -Tail 20
+```
+
+`completed/expected` đếm lượt tối ưu, không đếm dataset. `eta_s` là số giây còn lại ước tính, có thể thay đổi; `phase` cho biết đang tối ưu, tổng hợp, hoàn tất hoặc gặp lỗi. File không cập nhật có thể là tiến độ cũ; kiểm tra terminal và log nếu nghi ngờ tiến trình đã dừng.
+
+**Dừng:** nhấn `Ctrl+C` trong terminal chạy chính. Checkpoint đã ghi được giữ lại. Chạy lại cùng lệnh để tiếp tục sau khi xác nhận các tiến trình cũ đã dừng; các task hợp lệ được kiểm tra rồi bỏ qua. Nếu bị tắt cưỡng bức, có thể còn `.coordinator`/`.running`; chỉ gỡ khóa sau khi xác minh không còn coordinator/worker. Đổi code/config/data hoặc số worker thì dùng output mới. Nếu đã xóa checkpoint, lần chạy sau bắt đầu từ đầu.
+
+### 4. Cấu trúc file kết quả
+
+```text
+implementation/results/
+├── README.md
+├── READING_RESULTS.md
+└── study_100_iterations/             # Chỉ xuất hiện sau khi chạy
+    ├── manifest.json                # Cấu hình, case, dataset, chữ ký source/input
+    ├── progress.json                # Tiến độ cập nhật trong khi chạy
+    ├── completion.json              # Chỉ ghi sau khi xuất báo cáo thành công
+    ├── runs.csv                     # Tất cả lượt chạy, sau khi đủ task
+    ├── RESULTS.md                   # Báo cáo tổng hợp
+    ├── study_results.ipynb           # Bảng và 13 ảnh nhúng
+    ├── datasets/                    # CSV để mở trong Excel
+    │   ├── 001_UAV_3D_50/
+    │   │   ├── 001_UAV_3D_50_result.csv
+    │   │   ├── 001_UAV_3D_50_positions.csv
+    │   │   └── 001_UAV_3D_50_convergence.csv
+    │   └── ...                      # Các dataset khác
+    ├── tables/                      # Bảng CSV và Markdown (.md)
+    │   ├── design.csv               # Bảng bật/tắt các thành phần
+    │   ├── by_dataset.csv           # Trung bình/SD qua seed trên từng dataset
+    │   ├── by_scale.csv             # Gộp theo số user và case
+    │   ├── main.csv                 # Sáu phương pháp chính
+    │   ├── GA.csv / PSO.csv / WOA.csv
+    │   ├── ranking.csv
+    │   └── ...                      # Hội tụ, độ ổn định, đóng góp, hybrid
+    ├── figures/                     # 13 PNG: hội tụ, quy mô, bố trí UAV 3D
+    ├── logs/                        # worker_00.log đến worker_03.log
+    └── shards/                      # Checkpoint nội bộ để tiếp tục
+        └── worker_00/               # Tương tự worker_01, 02, 03
+            ├── manifest.json
+            ├── env.json
+            ├── progress.json
+            └── tasks/001_UAV_3D_50/
+                └── 001_UAV_3D_50_result_GA_seed1051920946.json.gz
+```
+
+File kết quả đặt theo tên dataset. Hậu tố case và seed phân biệt các lượt chạy; `.json.gz` là JSON nén dùng nội bộ để resume. Các file CSV dành cho người đọc được lưu UTF-8 BOM để mở bằng Excel.
+
+**Thời điểm xuất:** mỗi dataset chạy đủ **30 case × 30 seed = 900 lượt** mới có bộ ba CSV của dataset đó. Bảng toàn study, ảnh và notebook báo cáo được xuất sau khi tất cả worker hoàn tất. Vì vậy lúc đầu có checkpoint nhưng chưa có CSV/ảnh là bình thường. Lệnh chạy trực tiếp in tiến độ/lỗi ra terminal; các file `*.launch.log` hoặc `*.error.log` ở ngoài thư mục study chỉ có nếu chủ động chuyển hướng đầu ra, không tự được tạo bởi lệnh trên.
+
+### 5. Đọc bảng và xem ảnh trong notebook
+
+- Mở `datasets/<dataset>/<dataset>_result.csv` để so sánh các case/seed của một dataset. `positions.csv` lưu tọa độ nghiệm cuối, `convergence.csv` lưu chỉ số vòng 0–100.
+- Mở `tables/by_dataset.csv` để xem trung bình và độ lệch chuẩn qua seed; `tables/by_scale.csv` gộp theo số user, nên không có một dòng riêng cho mỗi file đầu vào.
+- Khi hoàn tất, mở `study_results.ipynb`: các bảng và ảnh đã được nhúng sẵn, không cần chạy optimizer lại.
+- Muốn tự tạo lại ảnh từ artifact, mở `implementation/notebooks/full_study_100_iterations.ipynb`, bấm **Select Kernel → Python Environments**, chọn `.venv-uav\Scripts\python.exe`. Chạy ô thiết lập, đọc bảng và vẽ; giữ **`CONFIRM_RUN = False`** nếu chỉ xem kết quả. Notebook và script dùng chung hàm tạo ảnh: script tự xuất PNG vào `figures/`, notebook có thể tạo lại và hiển thị ảnh dưới ô code.
+
+Ý nghĩa cột và thứ tự đọc chi tiết: [READING_RESULTS](implementation/results/READING_RESULTS.md). Khi chưa có kết quả đầy đủ, không dùng số liệu kiểm tra hoặc checkpoint dở để kết luận thứ hạng toàn study.
 
 <a id="tong-quan"></a>
 
@@ -107,7 +227,7 @@ FE là một lần đánh giá fitness. Cùng vòng không bảo đảm cùng FE
 | implementation/results/ | Đầu ra khi được thực thi |
 | documents/ | Danh mục tài liệu học thuật |
 | plan/ | Kế hoạch/phân công |
-| figures/, reports/, tmp_audit/ | Minh họa, kiểm toán, kiểm tra; xác minh nguồn trước khi dùng |
+| reports/ | Ghi chú hạ tầng benchmark FE; không phải kết quả study CSV |
 
 <a id="lo-trinh"></a>
 
@@ -131,6 +251,6 @@ FE là một lần đánh giá fitness. Cùng vòng không bảo đảm cùng FE
 
 [SOURCES](implementation/docs/SOURCES.md) tách nguồn học thuật, lựa chọn riêng của nhóm và mã triển khai. Mỗi chương công thức dẫn về phần tương ứng; không quy toàn bộ phương pháp cho một bài báo.
 
-Hiện có mã và thiết kế, chưa có study mới hoàn tất. Notebook còn mục cần xử lý trong PRE_RUN_REVIEW; chưa bật ô chạy và chưa tự chọn seed. Người đọc có thể xem toàn bộ tài liệu mà không thực thi Python.
+Study đã dừng và kết quả chạy thử đã được dọn sạch. Không có coordinator chạy nền. Notebook giữ ô chạy tắt; chỉ khởi chạy khi được yêu cầu. Đọc tài liệu không cần thực thi Python.
 
 Nhóm: Nguyễn Văn Trung, Hoàng Văn Trường, Nguyễn Minh Hiếu.
