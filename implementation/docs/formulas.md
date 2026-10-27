@@ -47,7 +47,7 @@ K-Means chỉ được optimizer gọi khi case bật K; không chạy tự đ�
 | OBL/Lévy WOA | [I_WOA](../src/algorithms/I_WOA/) | Toán tử trong I-WOA |
 | OBL/Lévy GA/PSO | [enhancements.py](../src/algorithms/base/enhancements.py) | Adapter theo kiểu cá thể |
 | FE | [counter.py](../src/counter.py), [budget.py](../src/algorithms/base/budget.py) | Đếm, dừng, lịch điều khiển theo FE |
-| Study notebook | [notebook_study.py](../src/notebook_study.py) | Quan sát 101 mốc, artifact và bảng mô tả |
+| Study notebook | [notebook_study.py](../src/notebook_study.py) | Quan sát 81 mốc, artifact và bảng mô tả |
 | Suy luận FE | [analyze.py](../scripts/analyze.py) | Gộp instance, kiểm định và CI |
 
 <a id="doc-section-03"></a>

@@ -2,7 +2,7 @@
 
 ## Mục lục
 
-1. [Phân biệt với notebook 30 trường hợp](#doc-section-01)
+1. [Phân biệt với notebook 12 trường hợp](#doc-section-01)
 2. [Chạy khi được yêu cầu](#doc-section-02)
 3. [Hợp đồng log](#doc-section-03)
 4. [Phương pháp và sản phẩm](#doc-section-04)
@@ -16,9 +16,9 @@ thuật toán. Chưa phân tích kết quả nghiên cứu thật vì chưa có 
 
 <a id="doc-section-01"></a>
 
-## Phân biệt với notebook 30 trường hợp
+## Phân biệt với notebook 12 trường hợp
 
-Trang này mô tả analyzer FE sáu thuật toán chính. Notebook có bảng mô tả, hạng và đóng góp riêng trong [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md); chưa triển khai kiểm định/CI cho 30 case. Không truyền trực tiếp runs.csv notebook vào analyze.py vì khác schema, số thuật toán và giao thức ngân sách.
+Trang này mô tả analyzer FE sáu thuật toán chính. Notebook có bảng mô tả, hạng và đóng góp riêng trong [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md); chưa triển khai kiểm định/CI cho 12 case. Không truyền trực tiếp runs.csv notebook vào analyze.py vì khác schema, số thuật toán và giao thức ngân sách.
 
 Trong notebook, SD qua seed được tính trên mỗi dataset trước khi gộp; dải IQR hội tụ không phải CI. Bảng hạng hoặc win_fraction chỉ mô tả, không tự tạo kết luận có ý nghĩa thống kê. Các từ instance/run/seed được giải thích tại [GLOSSARY](GLOSSARY.md).
 

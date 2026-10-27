@@ -1,4 +1,4 @@
-"""Explicitly invoked 100-iteration study on existing CSVs; no work at import."""
+"""Explicitly invoked configurable-iteration study on existing CSVs; no work at import."""
 import hashlib
 import itertools
 import json
@@ -23,31 +23,19 @@ from .problem.objective import UAVPlacementProblem
 
 
 def cases():
-    """24 factorial cases + two hybrids + four hybrid ablations."""
+    """Eight WOA combinations and four unchanged comparison algorithms."""
     rows = []
-    for family in ('WOA', 'PSO', 'GA'):
-        for k, o, l in itertools.product((False, True), repeat=3):
-            suffix = ''.join(letter for letter, flag in zip('KOL', (k, o, l)) if flag)
-            name = family if not suffix else f'{family}-{suffix}'
-            if family == 'WOA' and suffix == 'KOL':
-                name = 'I-WOA'
-            rows.append(dict(case=name, family=family, K=k, O=o, L=l))
-    rows.extend([
-        dict(case='H-PSO-GA', family='H-PSO-GA', crossover=True, mutation=True),
-        dict(case='PSO+Crossover', family='H-PSO-GA', crossover=True, mutation=False),
-        dict(case='PSO+Mutation', family='H-PSO-GA', crossover=False, mutation=True),
-        dict(case='H-WOA-PSO', family='H-WOA-PSO', personal=True, global_attraction=True),
-        dict(case='H-WOA-PSO-no-pbest', family='H-WOA-PSO', personal=False, global_attraction=True),
-        dict(case='H-WOA-PSO-no-gbest-velocity', family='H-WOA-PSO', personal=True, global_attraction=False),
-    ])
+    for k, o, l in itertools.product((False, True), repeat=3):
+        suffix = ''.join(letter for letter, flag in zip('KOL', (k, o, l)) if flag)
+        name = 'I-WOA' if suffix == 'KOL' else ('WOA' if not suffix else 'WOA-' + suffix)
+        rows.append(dict(case=name, family='WOA', K=k, O=o, L=l))
+    rows.extend(dict(case=name, family=name, K=False, O=False, L=False)
+                for name in ('GA', 'PSO', 'H-PSO-GA', 'H-WOA-PSO'))
     return rows
 
 
 MAIN = ['GA', 'PSO', 'WOA', 'H-PSO-GA', 'H-WOA-PSO', 'I-WOA']
-GROUPS = {'main': MAIN,
-    **{family: [c['case'] for c in cases() if c['family'] == family] for family in ('WOA', 'PSO', 'GA')},
-    'hybrid_pso_ga': ['PSO', 'PSO+Crossover', 'PSO+Mutation', 'H-PSO-GA'],
-    'hybrid_woa_pso': ['WOA', 'PSO', 'H-WOA-PSO-no-pbest', 'H-WOA-PSO-no-gbest-velocity', 'H-WOA-PSO']}
+GROUPS = {'main': MAIN, 'WOA': [c['case'] for c in cases() if c['family'] == 'WOA']}
 
 
 def make_case(case, population, iterations, seed):
@@ -63,9 +51,9 @@ def make_case(case, population, iterations, seed):
         return PSOOptimizer(PSOParameters(swarm_size=population, iterations=iterations, **flags), seed=seed)
     if family == 'H-PSO-GA':
         return HybridPSOGAOptimizer(HPSOGAParameters(population_size=population, iterations=iterations,
-            use_crossover=case['crossover'], use_mutation=case['mutation']), seed=seed)
+            use_crossover=case.get('crossover', True), use_mutation=case.get('mutation', True)), seed=seed)
     return HybridWOAPSOOptimizer(HWOAPSOParameters(population_size=population, iterations=iterations,
-        use_personal_attraction=case['personal'], use_global_attraction=case['global_attraction']), seed=seed)
+        use_personal_attraction=case.get('personal', True), use_global_attraction=case.get('global_attraction', True)), seed=seed)
 
 
 class ObservedProblem:
@@ -104,10 +92,10 @@ class ObservedProblem:
 
 def plan(root, config):
     files = sorted((root / 'data/stores').glob('*_users_connect.csv'))
-    if len(files) != 500:
-        raise ValueError(f'Expected 500 input CSVs, found {len(files)}')
-    if config['iterations'] != 100 or config['population'] < 3 or config['num_uavs'] < 1:
-        raise ValueError('Study requires 100 iterations, population >= 3 and positive UAV count')
+    if len(files) != config.get('expected_datasets', 200):
+        raise ValueError(f"Expected {config.get('expected_datasets', 200)} input CSVs, found {len(files)}")
+    if config['iterations'] not in (80, 100) or config['population'] < 3 or config['num_uavs'] < 1:
+        raise ValueError('Study requires 80 or 100 iterations, population >= 3 and positive UAV count')
     seeds = config['seeds']
     if len(seeds) != len(set(seeds)) or any(type(s) is not int or not 0 <= s < 2**32 for s in seeds):
         raise ValueError('Seeds must be distinct integers in [0, 2**32)')
@@ -155,7 +143,7 @@ def task_destination(output, dataset, case, seed):
     return output / 'tasks' / dataset_result_stem(dataset) / task_filename(dataset, case, seed)
 
 
-def validate_task(artifact, *, dataset=None, case=None, seed=None, problem=None):
+def validate_task(artifact, *, dataset=None, case=None, seed=None, problem=None, iterations=None):
     """Reject corrupt/resumed artifacts before completion or aggregation."""
     record, history = artifact['result'], artifact['history']
     for key, expected in [('dataset', dataset), ('case', case), ('seed', seed)]:
@@ -163,8 +151,9 @@ def validate_task(artifact, *, dataset=None, case=None, seed=None, problem=None)
             raise ValueError(f'Task identity mismatch: {key}')
     if record['feasible'] is not True:
         raise ValueError('Task has no feasible result')
-    if [r['iteration'] for r in history] != list(range(101)):
-        raise ValueError('Task must contain iterations 0..100')
+    iterations = len(history) - 1 if iterations is None else iterations
+    if iterations not in (80, 100) or [r['iteration'] for r in history] != list(range(iterations + 1)):
+        raise ValueError('Task must contain all iterations from 0 to the configured final iteration')
     numeric = np.array([[r[k] for k in ('fitness', 'coverage', 'energy', 'interference', 'fe', 'elapsed_s')]
                         for r in history], dtype=float)
     if not np.isfinite(numeric).all():
@@ -309,13 +298,13 @@ def run_study(root, config, *, confirmed=False, shard_index=0, shard_count=1):
                         destination.parent.mkdir(exist_ok=True)
                         if destination.exists():
                             validate_task(read_task(destination),
-                                dataset=path.name, case=case['case'], seed=seed, problem=original)
+                                dataset=path.name, case=case['case'], seed=seed, problem=original, iterations=config['iterations'])
                             resumed += 1
                         else:
                             observed = ObservedProblem(original, initial)
                             optimizer = make_case(case, config['population'], config['iterations'], seed)
                             result = optimizer.optimize(observed)
-                            if len(observed.history) != 101 or not original.is_feasible(observed.position):
+                            if len(observed.history) != config['iterations'] + 1 or not original.is_feasible(observed.position):
                                 raise RuntimeError('Incomplete history or infeasible best solution')
                             final = observed.history[-1]
                             record = dict(dataset=path.name, users=len(coords), case=case['case'], seed=seed,
@@ -323,7 +312,7 @@ def run_study(root, config, *, confirmed=False, shard_index=0, shard_count=1):
                                 interference=final['interference'], fe=final['fe'], wall_s=final['elapsed_s'],
                                 optimizer_fitness=float(result.best_objective), feasible=True)
                             artifact = dict(result=record, history=observed.history)
-                            validate_task(artifact, dataset=path.name, case=case['case'], seed=seed, problem=original)
+                            validate_task(artifact, dataset=path.name, case=case['case'], seed=seed, problem=original, iterations=config['iterations'])
                             atomic_json(destination, artifact)
                         completed += 1
                         atomic_json(output / 'progress.json', dict(completed=completed, expected=expected,
@@ -353,6 +342,7 @@ def build_tables(output):
         raise ValueError('Duplicate tasks')
     # Do not rank incomplete paired experiments.
     manifest = json.loads((output / 'manifest.json').read_text(encoding='utf-8'))
+    iterations = manifest['config']['iterations']
     expected_keys = set(itertools.product(manifest['datasets'],
         [c['case'] for c in manifest['cases']], manifest['config']['seeds']))
     if set(df[keys].itertuples(index=False, name=None)) != expected_keys:
@@ -380,10 +370,10 @@ def build_tables(output):
         artifact = read_task(path)
         name = artifact['result']['case']
         rows = artifact['history']
-        if [r['iteration'] for r in rows] != list(range(101)):
+        if [r['iteration'] for r in rows] != list(range(iterations + 1)):
             raise ValueError('Incomplete task history')
         trajectories.setdefault(name, []).append(np.array([r['fitness'] for r in rows]))
-        for iteration in (0, 35, 80, 100):
+        for iteration in sorted({0, 35, 80, iterations}):
             key = (name, iteration)
             total, count = checkpoints.get(key, (np.zeros(len(fields)), 0))
             checkpoints[key] = (total + np.array([rows[iteration][f] for f in fields]), count + 1)
@@ -394,14 +384,14 @@ def build_tables(output):
     for name, values in trajectories.items():
         q25, median, q75 = np.quantile(np.stack(values), [.25, .5, .75], axis=0)
         convergence.extend(dict(case=name, iteration=i, median=median[i], q25=q25[i], q75=q75[i])
-            for i in range(101))
+            for i in range(iterations + 1))
     tables['convergence'] = pd.DataFrame(convergence)
     tables['stability'] = df.groupby(['dataset', 'case']).fitness.agg(
         mean='mean', sd='std', minimum='min', maximum='max', seeds='size').reset_index()
     paired = df.pivot(index=['dataset', 'seed'], columns='case', values='fitness')
     contrasts = []
     registry = cases()
-    for family in ('WOA', 'PSO', 'GA'):
+    for family in ('WOA',):
         group = [c for c in registry if c['family'] == family]
         for component in 'KOL':
             for off in [c for c in group if not c[component]]:

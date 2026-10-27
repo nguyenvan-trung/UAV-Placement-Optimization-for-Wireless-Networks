@@ -1,13 +1,9 @@
 # Study status
 
-Stopped at the user request. All generated study results, pipeline-check artifacts, logs, checkpoints, and temporary audit outputs have been deleted as requested.
+The new study has not started. Previous generated results and checkpoints were removed at the user's request.
 
-No study coordinator or workers remain running. There is no completed study or final ranking to report. Previous run progress is no longer available.
+Current design: 200 CSV datasets (40 each at 100, 200, 300, 400, 500 users), 12 cases, 10 seeds, 80 iterations, population 25, 4 UAVs: 24,000 optimization tasks. Views match all 200 CSV names. Selection and renaming manifests are in data/.
 
-The 500 original CSV datasets in `data/stores` are unchanged (verified using SHA-256 before and after cleanup). Configuration is preserved: 30 cases, 30 seeds, 100 iterations, population 25, and 4 UAVs.
+Configuration: configs/notebook_study.json. Output: implementation/results/study_80_iterations. Notebook: implementation/notebooks/full_study_80_iterations.ipynb.
 
-Notebook execution remains disabled by default. Do not restart the study without a new user instruction. A future run will start from scratch because all checkpoints were deleted.
-
-- [Run instructions](../../REPRODUCE.md)
-- [Reading future results](../results/READING_RESULTS.md)
-- [Data guide](../../data/README.md)
+Do not start the study without a user instruction. No completed study or final ranking is available. Equal iterations do not imply equal FE.

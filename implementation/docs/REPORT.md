@@ -210,6 +210,6 @@ Mã ràng buộc: [objective.py](../src/problem/objective.py), [constraints.py](
 
 ## 9. Từ mô hình tới thí nghiệm
 
-[Notebook](NOTEBOOK_STUDY.md) giữ nguyên mô hình trên, chạy 30 case theo 100 vòng. [FE](EXPERIMENT_DESIGN.md) là luồng riêng dừng theo ngân sách đánh giá, với dữ liệu sinh mới. Không gộp hai giao thức.
+[Notebook](NOTEBOOK_STUDY.md) giữ nguyên mô hình trên, chạy 12 case theo 80 vòng. [FE](EXPERIMENT_DESIGN.md) là luồng riêng dừng theo ngân sách đánh giá, với dữ liệu sinh mới. Không gộp hai giao thức.
 
 Đọc [formulas](formulas.md) để tìm module; sau đó chọn [GA](DWGA.md), [PSO](DWPSO.md), [WOA](DWWOA.md), [I-WOA](DWI_WOA.md) hoặc hai chương hybrid. Kết quả mới chưa có; không bổ sung thứ hạng hoặc số giây bằng ước lượng.

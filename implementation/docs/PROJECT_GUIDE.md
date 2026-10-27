@@ -22,7 +22,7 @@ Mục tiêu trang này là giúp người mới hiểu đầu vào, tìm nghiệ
 
 ## 1. Đầu vào và đầu ra
 
-Đầu vào notebook là 500 CSV trong data/stores. Mỗi dòng chứa user_id, x_m, y_m, z_m và demand. Đó là tọa độ user, không phải vị trí UAV. Xem [DATA_FORMAT](DATA_FORMAT.md).
+Đầu vào notebook là 200 CSV trong data/stores. Mỗi dòng chứa user_id, x_m, y_m, z_m và demand. Đó là tọa độ user, không phải vị trí UAV. Xem [DATA_FORMAT](DATA_FORMAT.md).
 
 Đầu ra của một run là cấu hình tọa độ cho 4 UAV, fitness và lịch sử tìm kiếm. Một cá thể biểu diễn cả bốn UAV bằng vector 12 chiều. Quần thể 25 nghĩa là 25 cấu hình UAV ứng viên, không phải 25 UAV.
 
@@ -48,11 +48,11 @@ Fitness gọi mô hình kênh để tính SNR, sau đó tính C/E/I. Thuật to�
 
 | Luồng | Điểm vào | Dữ liệu | Cách dừng |
 |---|---|---|---|
-| Study hiện tại | [notebook](../notebooks/full_study_100_iterations.ipynb), [notebook_study.py](../src/notebook_study.py) | 500 CSV sẵn có | 100 vòng |
+| Study hiện tại | [notebook](../notebooks/full_study_80_iterations.ipynb), [notebook_study.py](../src/notebook_study.py) | 200 CSV sẵn có | 80 vòng |
 | FE | [run_benchmark.py](../scripts/run_benchmark.py) | Sinh từ YAML/manifest | max_fe |
 | Legacy CSV | [run_batch.py](../scripts/run_batch.py), run_optimizer.py | CSV sẵn có | iterations/generations |
 
-Notebook dùng 30 case; batch cũ mặc định sáu thuật toán. FE mặc định quần thể 30; notebook 25. 3030 FE được chọn từ ngân sách tham chiếu của WOA, không biến mọi thuật toán thành đúng 100 vòng. Chi tiết: [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md), [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md).
+Notebook dùng 12 case; batch cũ mặc định sáu thuật toán. FE mặc định quần thể 30; notebook 25. 3030 FE được chọn từ ngân sách tham chiếu của WOA, không biến mọi thuật toán thành đúng 80 vòng. Chi tiết: [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md), [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md).
 
 <a id="doc-section-04"></a>
 
@@ -76,11 +76,11 @@ Notebook dùng 30 case; batch cũ mặc định sáu thuật toán. FE mặc đ�
 
 ## 5. Đọc đầu ra
 
-Một task notebook có khóa dataset–case–seed. JSON chứa result và history, trong đó history có 101 mốc. completion.json chỉ được ghi khi đủ task. Bảng tổng hợp có thể đọc lại từ task mà không chạy optimizer.
+Một task notebook có khóa dataset–case–seed. JSON chứa result và history, trong đó history có 81 mốc. completion.json chỉ được ghi khi đủ task. Bảng tổng hợp có thể đọc lại từ task mà không chạy optimizer.
 
 Mean fitness, best fitness, median và SD trả lời các câu hỏi khác nhau. SD qua seed phải tính trên cùng dataset trước khi tổng hợp. Ranking dùng trung vị seed theo dataset; không tự chứng minh ý nghĩa thống kê. Xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md) và [STATISTICS](STATISTICS.md).
 
-figures/scenario_*.csv minh họa các bộ sinh scenario. Chúng không phải tọa độ UAV tối ưu và không phải kết quả của 500 CSV. reports và tmp_audit có thể chứa test/audit; cần xem nguồn trước khi dùng con số.
+figures/scenario_*.csv minh họa các bộ sinh scenario. Chúng không phải tọa độ UAV tối ưu và không phải kết quả của 200 CSV. reports và tmp_audit có thể chứa test/audit; cần xem nguồn trước khi dùng con số.
 
 <a id="doc-section-06"></a>
 
@@ -89,11 +89,11 @@ figures/scenario_*.csv minh họa các bộ sinh scenario. Chúng không phải 
 | Hạng mục | Trạng thái |
 |---|---|
 | Sáu thuật toán và hàm đánh giá chung | Có mã |
-| 30 case, notebook, checkpoint, bảng mô tả | Đã triển khai |
-| Danh sách seed notebook | Đã chốt 30 seed |
-| Luồng tối ưu và xuất báo cáo | Đã kiểm tra 90 task thật, 83 kiểm tra đạt |
-| Study 500 CSV, 100 vòng | Đã dừng; kết quả đã được dọn sạch |
-| Kiểm định cho 30 case | Chưa triển khai |
+| 12 case, notebook, checkpoint, bảng mô tả | Đã triển khai |
+| Danh sách seed notebook | Đã chốt 10 seed |
+| Luồng tối ưu và xuất báo cáo | Đã kiểm tra 48 task thật; 13 test pytest và 3 test thư mục tạm đạt |
+| Study 200 CSV, 80 vòng | Chưa khởi chạy; đầu ra smoke test đã xóa |
+| Kiểm định cho 12 case | Chưa triển khai |
 | Runner/analyzer FE sáu thuật toán | Có mã, tách khỏi notebook |
 | Kết quả FE đầy đủ mới | Chưa có |
 | Cài sạch từ lock và tính tái lập trên máy khác | Chưa xác minh |

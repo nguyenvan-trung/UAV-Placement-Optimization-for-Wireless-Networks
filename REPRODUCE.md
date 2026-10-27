@@ -9,7 +9,7 @@
 1. [Mô hình quy trình](#quy-trinh)
 2. [Chọn đúng luồng](#chon-luong)
 3. [Môi trường và kernel](#moi-truong)
-4. [Cấu hình notebook 100 vòng](#cau-hinh)
+4. [Cấu hình notebook 80 vòng](#cau-hinh)
 5. [Thực thi sau khi được duyệt](#thuc-thi)
 6. [Dừng và tiếp tục](#resume)
 7. [Đọc bảng và truy nguồn](#doc-ket-qua)
@@ -30,7 +30,7 @@
 
 | Bạn muốn làm gì? | Dùng gì? | Input |
 |---|---|---|
-| 30 case, 100 vòng, code và kết quả cùng trang | [Notebook study](implementation/notebooks/full_study_100_iterations.ipynb) | 500 CSV hiện có |
+| 12 case, 80 vòng, code và kết quả cùng trang | [Notebook study](implementation/notebooks/full_study_80_iterations.ipynb) | 200 CSV hiện có |
 | Đối chứng cùng FE | [Runner FE](run_benchmark.py) | Kịch bản sinh từ YAML và seed manifest |
 | Chạy một CSV hoặc batch sáu phương pháp | [Script CSV](implementation/scripts/README.md) | CSV hiện có |
 
@@ -66,19 +66,19 @@ Chọn kernel trỏ đúng interpreter này trong VS Code/Jupyter. .venv cũ có
 
 <a id="cau-hinh"></a>
 
-## 4. Cấu hình notebook 100 vòng
+## 4. Cấu hình notebook 80 vòng
 
 Nguồn: [configs/notebook_study.json](configs/notebook_study.json).
 
 | Khóa | Giá trị hiện tại | Ý nghĩa |
 |---|---|---|
-| iterations | 100 | Số vòng/generation |
+| iterations | 80 | Số vòng/generation |
 | population | 25 | Số cấu hình UAV trong quần thể |
 | num_uavs | 4 | Số UAV trong mỗi cấu hình |
-| seeds | 30 số cố định | Đã chốt theo lựa chọn người dùng |
-| output | implementation/results/study_100_iterations | Thư mục riêng cho một thiết kế |
+| seeds | 10 số cố định | Đã chốt theo lựa chọn người dùng |
+| output | implementation/results/study_80_iterations | Thư mục riêng cho một thiết kế |
 
-500 × 30 × số seed = số task. Hai seed chỉ là tối thiểu kỹ thuật, không tự bảo đảm độ tin cậy thống kê. Chốt danh sách trước khi xem kết quả.
+200 × 12 × số seed = số task. Hai seed chỉ là tối thiểu kỹ thuật, không tự bảo đảm độ tin cậy thống kê. Chốt danh sách trước khi xem kết quả.
 
 seeds/seeds.csv phục vụ runner FE, không tự điền danh sách seed notebook. Không dùng nhầm hai nguồn.
 
@@ -87,8 +87,8 @@ seeds/seeds.csv phục vụ runner FE, không tự điền danh sách seed noteb
 ## 5. Thực thi sau khi được duyệt
 
 1. Xử lý các mục trong PRE_RUN_REVIEW; lưu phiên bản code/config.
-2. Chốt seed; kiểm tra đúng 500 CSV và output riêng.
-3. Mở notebook, chọn kernel, nạp cấu hình và xem bảng 30 case.
+2. Chốt seed; kiểm tra đúng 200 CSV và output riêng.
+3. Mở notebook, chọn kernel, nạp cấu hình và xem bảng 12 case.
 4. Kiểm tra số task và thông số.
 5. Chỉ khi được duyệt benchmark mới đặt CONFIRM_RUN=True và thực thi ô chạy.
 6. Đủ task và completion rồi mới đọc bảng/ảnh.
@@ -124,13 +124,13 @@ Không xóa output chỉ để vượt lỗi resume. Không coi file tồn tại
 | tables/*.csv và *.md | Đọc phép gộp mô tả |
 | figures/*.png | Hình được các ô phân tích xuất từ artifact |
 
-Một ô bảng phải truy ngược được về trường result/history và phép gộp. Xem [DATA_FORMAT](implementation/docs/DATA_FORMAT.md) và [REPORT_EVIDENCE](implementation/docs/REPORT_EVIDENCE.md). Notebook chưa lưu metadata môi trường đầy đủ như runner FE và chưa có kiểm định cho 30 case.
+Một ô bảng phải truy ngược được về trường result/history và phép gộp. Xem [DATA_FORMAT](implementation/docs/DATA_FORMAT.md) và [REPORT_EVIDENCE](implementation/docs/REPORT_EVIDENCE.md). Notebook chưa lưu metadata môi trường đầy đủ như runner FE và chưa có kiểm định cho 12 case.
 
 <a id="fe"></a>
 
 ## 8. Luồng FE riêng
 
-[benchmark.yaml](configs/benchmark.yaml) và [seeds.csv](seeds/seeds.csv) khai báo dữ liệu/seed. Runner sinh tọa độ mới, mặc định P=30 và max_fe=3030. Mức này không bảo đảm mọi phương pháp có đúng 100 vòng.
+[benchmark.yaml](configs/benchmark.yaml) và [seeds.csv](seeds/seeds.csv) khai báo dữ liệu/seed. Runner sinh tọa độ mới, mặc định P=30 và max_fe=3030. Mức này không bảo đảm mọi phương pháp có đúng 80 vòng.
 
 Ví dụ lệnh để tham khảo, chưa thực hiện trong đợt tài liệu:
 
@@ -140,7 +140,7 @@ python run_benchmark.py --output results/benchmark_fe_01 --workers 1
 python run_benchmark.py --output results/benchmark_fe_01 --workers 1 --resume
 ```
 
-Smoke là kiểm tra nhỏ, không thay nghiên cứu. Xem [EXPERIMENT_DESIGN](implementation/docs/EXPERIMENT_DESIGN.md). Analyzer FE sáu phương pháp không nhận trực tiếp log 30 case notebook.
+Smoke là kiểm tra nhỏ, không thay nghiên cứu. Xem [EXPERIMENT_DESIGN](implementation/docs/EXPERIMENT_DESIGN.md). Analyzer FE sáu phương pháp không nhận trực tiếp log 12 case notebook.
 
 <a id="loi"></a>
 

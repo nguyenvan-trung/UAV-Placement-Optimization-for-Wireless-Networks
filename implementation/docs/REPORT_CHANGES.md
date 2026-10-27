@@ -1,5 +1,6 @@
 # Phạm vi sửa báo cáo
 
+> Historical record: older counts and run states below are superseded. Current design: 200 datasets, 12 cases, 10 seeds, 80 iterations. Main study not started; see [RUN_STATUS](RUN_STATUS.md).
 ## Mục lục
 
 1. [Bố cục phục vụ đọc trên GitHub](#doc-section-01)

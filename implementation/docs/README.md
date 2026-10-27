@@ -17,7 +17,7 @@
 
 Đọc hình từ trên xuống: dữ liệu user tạo bài toán; thuật toán đề xuất vị trí UAV; fitness chấm nhiều lần; task lưu best để tổng hợp sau này. Hình biên soạn theo code, không phải kết quả thực nghiệm. Chương công thức có bảng ký hiệu/đơn vị và nguồn gần từng biểu thức.
 
-Đây là điểm tra cứu chung. Mỗi trang có phạm vi riêng; liên kết dẫn sang phần tiếp theo thay vì yêu cầu người đọc biết lịch sử trao đổi. **Study đã được duyệt và đang chạy: 30 seed, 450.000 task**; xem [RUN_STATUS](RUN_STATUS.md).
+Current design: **200 datasets, 12 cases, 10 seeds, 80 iterations (24,000 tasks)**. The main study has not started. See [RUN_STATUS](RUN_STATUS.md).
 
 <a id="doc-section-01"></a>
 
@@ -27,7 +27,7 @@
 2. [GLOSSARY](GLOSSARY.md): từ viết tắt, ký hiệu và đơn vị.
 3. [REPORT](REPORT.md): công thức dùng chung và giới hạn mô hình.
 4. [formulas](formulas.md): ánh xạ công thức sang mã.
-5. [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md): thiết kế 30 trường hợp và cách đọc đầu ra.
+5. [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md): thiết kế 12 trường hợp và cách đọc đầu ra.
 6. [SOURCES](SOURCES.md): nguồn công thức và các giả định riêng của nhóm.
 7. [REPORT_EVIDENCE](REPORT_EVIDENCE.md): điều kiện để đưa số liệu vào báo cáo.
 
@@ -47,7 +47,7 @@ Muốn chỉ đọc phương pháp thì không cần cài Python hoặc thực t
 | [DWH_WOA_PSO](DWH_WOA_PSO.md) | Mỗi cá thể trộn đề xuất WOA và PSO ra sao? |
 | [ABLATION](ABLATION.md) | Bật/tắt thành phần để đo đóng góp thế nào? |
 
-Các chương DW giải thích cơ chế. Quy tắc biến thể mới của GA/PSO và các cờ bản lai được tập trung tại NOTEBOOK_STUDY để không trộn với baseline.
+The DW chapters explain algorithm mechanics. Only WOA K/O/L combinations belong to the current study; see NOTEBOOK_STUDY.
 
 <a id="doc-section-03"></a>
 
@@ -56,7 +56,7 @@ Các chương DW giải thích cơ chế. Quy tắc biến thể mới của GA/
 | Tài liệu | Phạm vi |
 |---|---|
 | [REPRODUCE](../../REPRODUCE.md) | Chuẩn bị môi trường; chọn đúng notebook, FE hoặc script CSV |
-| [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md) | 500 CSV, 100 vòng, 30 trường hợp |
+| [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md) | 200 CSV, 80 vòng, 12 trường hợp |
 | [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md) | Luồng FE với kịch bản sinh từ cấu hình |
 | [DATA_FORMAT](DATA_FORMAT.md) | Phân biệt schema CSV đầu vào, notebook, batch cũ và FE |
 | [STATISTICS](STATISTICS.md) | Analyzer sáu thuật toán theo FE và giới hạn suy luận |

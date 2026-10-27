@@ -1,5 +1,6 @@
 # Rà soát trước khi chạy study
 
+> Historical record: older counts and run states below are superseded. Current design: 200 datasets, 12 cases, 10 seeds, 80 iterations. Main study not started; see [RUN_STATUS](RUN_STATUS.md).
 **Cập nhật sau duyệt:** các phát hiện bên dưới là hồ sơ trước sửa. Đã chốt 30 seed, sửa requirements/notebook, bổ sung validator/env/checkpoint; 83 kiểm tra và luồng báo cáo từ 90 task thật đạt. Study chính thức đang chạy; xem [RUN_STATUS](RUN_STATUS.md).
 
 ## Mục lục

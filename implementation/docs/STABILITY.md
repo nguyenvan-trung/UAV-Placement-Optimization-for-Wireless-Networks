@@ -2,7 +2,7 @@
 
 ## Mục lục
 
-1. [Notebook 500 CSV](#doc-section-01)
+1. [Notebook 200 CSV](#doc-section-01)
 2. [Luồng FE và năm bộ sinh](#doc-section-02)
 3. [Analyzer FE](#doc-section-03)
 4. [Điều còn thiếu](#doc-section-04)
@@ -14,11 +14,11 @@ Có hai câu hỏi khác nhau: thuật toán có ổn định giữa các seed t
 
 <a id="doc-section-01"></a>
 
-## Notebook 500 CSV
+## Notebook 200 CSV
 
 [Study notebook](NOTEBOOK_STUDY.md) giữ dữ liệu từng file cố định và lặp seed. Bảng stability tính mean/SD/min/max qua seed trên từng dataset/case; summary lấy trung bình các SD đó. by_scale gộp theo số user. ranking dùng trung vị seed trên từng dataset rồi tính hạng.
 
-Notebook không tự gán nhãn single_cluster/uniform cho 500 CSV từ tên file. Tên mức user không chứng minh loại phân bố.
+Notebook không tự gán nhãn single_cluster/uniform cho 200 CSV từ tên file. Tên mức user không chứng minh loại phân bố.
 
 <a id="doc-section-02"></a>
 

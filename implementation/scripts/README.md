@@ -8,11 +8,11 @@
 
 [Trang đầu](../../README.md) · [Mục lục](../docs/README.md) · [Chọn luồng chạy](../../REPRODUCE.md)
 
-Các script gọi logic trong src. Bảng này là hướng dẫn tìm tệp, không phải danh sách lệnh đã thực thi. Thiết kế hiện tại dùng [notebook 100 vòng](../docs/NOTEBOOK_STUDY.md); không chạy các script khác chỉ vì muốn mở notebook.
+Các script gọi logic trong src. Bảng này là hướng dẫn tìm tệp, không phải danh sách lệnh đã thực thi. Thiết kế hiện tại dùng [notebook 80 vòng](../docs/NOTEBOOK_STUDY.md); không chạy các script khác chỉ vì muốn mở notebook.
 
 | Script | Đầu vào / vai trò | Đầu ra hoặc tài liệu liên quan |
 |---|---|---|
-| generate_dataset.py | Sinh CSV/hình user khi chủ động đổi bộ dữ liệu | data/stores, data/views; 500 CSV hiện đã có |
+| generate_dataset.py | Sinh CSV/hình user khi chủ động đổi bộ dữ liệu | data/stores, data/views; 200 CSV hiện đã có |
 | run_optimizer.py | Một CSV, chọn thuật toán | Metric và hình theo tùy chọn |
 | run_experiments.py | Nhiều seed trên CSV | So sánh theo cơ chế script này, không thay study mới |
 | run_batch.py | Nhiều CSV, mặc định sáu thuật toán | CSV batch, summary, báo cáo và ảnh |
@@ -38,7 +38,7 @@ Các công cụ dựng/chỉnh tài liệu có thể chứa nội dung lịch s�
 
 Các mode gồm all, representative và custom. representative lấy 10 file đầu theo thứ tự tên; chỉ coi là mỗi mức một file nếu quy tắc đặt tên thực sự bảo đảm điều đó. --limit giới hạn số file. --random-uavs thay số UAV theo dataset, khác study hiện tại cố định 4 UAV.
 
-Batch legacy có các mặc định riêng; truyền rõ tham số thay vì coi mặc định là giao thức study. Nó không xuất đủ lịch sử 101 mốc hoặc 30 case của notebook.
+Batch legacy có các mặc định riêng; truyền rõ tham số thay vì coi mặc định là giao thức study. Nó không xuất đủ lịch sử 81 mốc hoặc 12 case của notebook.
 
 <a id="doc-section-02"></a>
 

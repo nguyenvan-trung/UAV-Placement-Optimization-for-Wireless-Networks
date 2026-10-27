@@ -1,6 +1,6 @@
 # Kết quả được sinh khi thực thi
 
-[Cách đọc bảng, chỉ số và mức hoàn thành](READING_RESULTS.md). Kết quả sẽ được tạo trong `study_100_iterations` khi chạy lại theo yêu cầu.
+[Cách đọc bảng, chỉ số và mức hoàn thành](READING_RESULTS.md). Kết quả sẽ được tạo trong `study_80_iterations` khi chạy lại theo yêu cầu.
 
 ## Mục lục
 
@@ -16,12 +16,12 @@ Thư mục này dành cho đầu ra. Study đã dừng; toàn bộ kết quả, 
 
 ## Notebook hiện tại
 
-Output mặc định: study_100_iterations, chỉ được tạo khi thực thi có xác nhận.
+Output mặc định: study_80_iterations, chỉ được tạo khi thực thi có xác nhận.
 
 | Đường dẫn trong output | Nội dung |
 |---|---|
 | manifest.json | Cấu hình, case, dataset và chữ ký nội dung |
-| tasks/<dataset>/<dataset>_result_<case>_seed<seed>.json.gz | Một task dataset–case–seed, result và 101 mốc history |
+| tasks/<dataset>/<dataset>_result_<case>_seed<seed>.json.gz | Một task dataset–case–seed, result và 81 mốc history |
 | runs.csv | Tổng hợp lượt chạy sau khi đủ task |
 | completion.json | Dấu hoàn thành với expected/actual |
 | tables/*.csv và *.md | Bảng mô tả từ toàn study |
@@ -44,6 +44,6 @@ Sau khi hoàn tất runner, CSV để mở bằng Excel được xuất trong `d
 
 - `<dataset>_result.csv`: một dòng cho mỗi case × seed, gồm các chỉ số cuối cùng.
 - `<dataset>_positions.csv`: tọa độ cuối cùng, một dòng cho mỗi case × seed × UAV.
-- `<dataset>_convergence.csv`: lịch sử chỉ số, một dòng cho mỗi case × seed × vòng (0–100).
+- `<dataset>_convergence.csv`: lịch sử chỉ số, một dòng cho mỗi case × seed × vòng (0–80).
 
 Ví dụ: `datasets/001_UAV_3D_50/001_UAV_3D_50_result.csv`. Các file dùng UTF-8 BOM và tỷ lệ coverage trong [0, 1]. JSON nén trong `tasks/` vẫn là checkpoint nội bộ để tiếp tục chạy và kiểm tra kết quả; CSV là bản xuất để xem và so sánh.

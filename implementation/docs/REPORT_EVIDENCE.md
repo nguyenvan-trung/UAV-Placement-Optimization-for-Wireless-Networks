@@ -2,7 +2,7 @@
 
 ## Mục lục
 
-1. [Bằng chứng cho notebook 100 vòng](#doc-section-01)
+1. [Bằng chứng cho notebook 80 vòng](#doc-section-01)
 
 
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Thuật ngữ](GLOSSARY.md) · [Study notebook](NOTEBOOK_STUDY.md)
@@ -34,7 +34,7 @@ cho một dòng log thực nghiệm.
 
 <a id="doc-section-01"></a>
 
-## Bằng chứng cho notebook 100 vòng
+## Bằng chứng cho notebook 80 vòng
 
 Khi có lần chạy thật, mỗi bảng phải truy ngược đến manifest, tập task JSON dataset–case–seed, trường result/history và phép gộp trong notebook_study.py. Giữ chữ ký source/config/data và danh sách seed. completion.json xác nhận số task theo thiết kế nhưng không tự chứng minh mô hình vật lý hoặc độc lập thống kê.
 

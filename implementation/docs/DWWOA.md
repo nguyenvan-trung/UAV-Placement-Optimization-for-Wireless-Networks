@@ -98,7 +98,7 @@ R' theo từng tọa độ; l điều khiển bước xoắn. Khi l gần 0, h�
 
 ## 5. Giữ best, biến thể và nguồn
 
-Khi F(X') tốt hơn best đã lưu, cập nhật best. Ở chế độ vòng, history khởi tạo cộng 100 mốc vòng cho study. Ở chế độ FE, counter có thể dừng giữa quần thể; không gọi đó là đủ 100 vòng.
+Khi F(X') tốt hơn best đã lưu, cập nhật best. Ở chế độ vòng, history khởi tạo cộng 100 mốc vòng cho study. Ở chế độ FE, counter có thể dừng giữa quần thể; không gọi đó là đủ 80 vòng.
 
 [WOA-1](SOURCES.md#woa) có trang tác giả và DOI. Công thức ở trang này mô tả mã repository, có chỉ rõ khác biệt q; không khẳng định đã kiểm tra toàn văn bài in trong lượt biên tập này.
 

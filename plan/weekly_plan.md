@@ -23,6 +23,6 @@ Các tuần dưới đây là khung công việc, không khẳng định đã th
 
 ## Trạng thái hiện tại
 
-Mã và notebook 30 case đã được bổ sung; seed chưa chốt, study chưa chạy. Cập nhật trạng thái ở [PROJECT_GUIDE](../implementation/docs/PROJECT_GUIDE.md). Kế hoạch không thay log thực thi.
+Mã và notebook 12 case đã được bổ sung; đã chốt 10 seed, study chính chưa chạy. Cập nhật trạng thái ở [PROJECT_GUIDE](../implementation/docs/PROJECT_GUIDE.md). Kế hoạch không thay log thực thi.
 
 Chỉ viết phần kết quả sau khi đủ task. Không đặt mục tiêu “chứng minh I-WOA Top 1”; nhiệm vụ là kiểm tra giả thuyết và báo cả kết quả bất lợi.

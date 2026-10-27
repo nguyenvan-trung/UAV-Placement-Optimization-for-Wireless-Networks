@@ -30,8 +30,8 @@ Sơ đồ do nhóm tài liệu biên soạn từ giao thức hiện có. Các kh
 | Câu hỏi | Cách kiểm tra | Bằng chứng cần có |
 |---|---|---|
 | I-WOA so với các phương pháp khác thế nào? | Sáu thuật toán chính trên cùng dataset/seed | Fitness và C/E/I, FE, thời gian |
-| K/O/L đóng góp gì? | Bật/tắt một thành phần trong từng họ | Chênh lệch ghép cặp |
-| Bản lai cải thiện nhờ bước nào? | Tắt crossover/mutation hoặc lực hút nhánh PSO | Các case bản lai và đối chứng gốc |
+| K/O/L đóng góp gì? | Bật/tắt một thành phần trong họ WOA | Chênh lệch ghép cặp |
+| Bản lai so với thuật toán gốc thế nào? | So bản lai đầy đủ với GA, PSO, WOA | Fitness, FE và thời gian |
 | Có phụ thuộc may rủi seed không? | Lặp seed trên cùng dataset | SD, median, min/max theo dataset |
 | Có phụ thuộc quy mô/phân bố không? | Phân tầng dữ liệu đúng nhãn | Bảng theo quy mô; study phân bố FE riêng |
 | Trọng số có làm đổi hạng không? | Tối ưu lại với cấu hình khác | Nhánh sensitivity, không chỉ chấm lại nghiệm |
@@ -44,16 +44,16 @@ K/O/L lần lượt là K-Means, Opposition-Based Learning và Lévy Flight. Gi�
 
 | Tổ hợp | K | O | L | Áp dụng trên |
 |---|:---:|:---:|:---:|---|
-| Gốc | Không | Không | Không | WOA, PSO, GA |
-| K | Có | Không | Không | Cả ba họ |
-| O | Không | Có | Không | Cả ba họ |
-| L | Không | Không | Có | Cả ba họ |
-| KO | Có | Có | Không | Cả ba họ |
-| KL | Có | Không | Có | Cả ba họ |
-| OL | Không | Có | Có | Cả ba họ |
+| Gốc | Không | Không | Không | WOA |
+| K | Có | Không | Không | WOA |
+| O | Không | Có | Không | WOA |
+| L | Không | Không | Có | WOA |
+| KO | Có | Có | Không | WOA |
+| KL | Có | Không | Có | WOA |
+| OL | Không | Có | Có | WOA |
 | KOL | Có | Có | Có | WOA-KOL đặt tên I-WOA |
 
-Bảng tạo 24 case. Cộng H-PSO-GA, H-WOA-PSO và bốn ablation của hai bản lai thành 30 case. Case gốc dùng chung cho nhiều bảng. Bảng tên case và quy tắc chính xác: [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md).
+Study: eight WOA K/O/L combinations plus GA, PSO, H-PSO-GA and H-WOA-PSO = 12 unique cases. See [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md).
 
 Ví dụ logic: để đo K trong bối cảnh đã có O, so KO với O; không so KO với L vì đồng thời đổi nhiều thành phần. Hiệu quả có thể tương tác, nên không cộng các đóng góp riêng để đoán kết quả KOL.
 
@@ -71,7 +71,7 @@ Hàm F=0,6C−0,2E−0,2I ưu tiên coverage theo một lựa chọn trọng s�
 | Theo quy mô | Các chỉ số ở 50–500 user | Phương án nào phù hợp điều kiện nào? |
 | Bằng chứng | Manifest, task, phép gộp, kiểm định phù hợp | Có truy nguồn và suy luận đúng không? |
 
-Best cao nhất trong một run không thay mean/median trên toàn thiết kế. IQR không phải CI. Hạng trung bình là mô tả; notebook chưa có kiểm định cho 30 case. Không kết luận tối ưu toàn cục từ đường hội tụ phẳng.
+Best cao nhất trong một run không thay mean/median trên toàn thiết kế. IQR không phải CI. Hạng trung bình là mô tả; notebook chưa có kiểm định cho 12 case. Không kết luận tối ưu toàn cục từ đường hội tụ phẳng.
 
 <a id="quyet-dinh"></a>
 
@@ -79,15 +79,15 @@ Best cao nhất trong một run không thay mean/median trên toàn thiết kế
 
 | Hạng mục | Trạng thái |
 |---|---|
-| 500 CSV sẵn có, 4 UAV, P=25, 100 vòng | Thiết kế hiện tại |
-| Vòng 35/80 | Đọc từ history của lần chạy 100 vòng |
-| Lưu tọa độ và chỉ số mỗi mốc | Có mã quan sát 101 mốc |
-| Danh sách seed | Đã chốt 30 seed, lưu trước chạy |
+| 200 CSV sẵn có, 4 UAV, P=25, 80 vòng | Thiết kế hiện tại |
+| Vòng 35/80 | Đọc từ history của lần chạy 80 vòng |
+| Lưu tọa độ và chỉ số mỗi mốc | Có mã quan sát 81 mốc |
+| Danh sách seed | Đã chốt 10 seed, lưu trước chạy |
 | Sửa requirements/notebook và củng cố resume | Đã xử lý và kiểm tra |
-| Chạy benchmark 500 file | Đã được duyệt, đang chạy bốn worker |
+| CSV study | Not started; small smoke test passed and its outputs were removed |
 | Kết luận phương án tốt nhất | Chưa có dữ liệu để viết |
 
-Cùng 100 vòng không có nghĩa cùng FE. Dùng lại bộ 500 CSV hiện có không đồng nghĩa dùng bộ sinh ground-user của runner FE. Không ép độ cao user về 0 khi chưa có thiết kế mới.
+Cùng 80 vòng không có nghĩa cùng FE. Dùng lại bộ 200 CSV hiện có không đồng nghĩa dùng bộ sinh ground-user của runner FE. Không ép độ cao user về 0 khi chưa có thiết kế mới.
 
 <a id="tham-khao"></a>
 
@@ -99,7 +99,7 @@ Cùng 100 vòng không có nghĩa cùng FE. Dùng lại bộ 500 CSV hiện có 
 | GA/PSO/WOA | [SOURCES](implementation/docs/SOURCES.md): nguồn nguyên lý và mã triển khai |
 | K-Means/OBL/Lévy | Nguyên lý tham khảo; vị trí chèn và tham số trong code là lựa chọn dự án |
 | F, E, I và trọng số cụ thể | Thiết kế/giả định dự án; không gán cho một bài báo |
-| Thiết kế 30 case và 100 vòng | Giao thức hiện tại của dự án |
+| Thiết kế 12 case và 80 vòng | Giao thức hiện tại của dự án |
 | Kết quả và thứ hạng | Chỉ lấy từ task thật sau chạy; hiện chưa có |
 
 Đọc tiếp [REPORT](implementation/docs/REPORT.md) → chương thuật toán → [REPRODUCE](REPRODUCE.md).

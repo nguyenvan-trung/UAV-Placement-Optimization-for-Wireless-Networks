@@ -2,7 +2,7 @@
 
 Tìm vị trí ba chiều cho các UAV phát sóng để phục vụ một tập người dùng cố định. Người đọc có thể theo dõi dự án theo thứ tự: **bài toán → mô hình → thuật toán → thiết kế thí nghiệm → kết quả có nguồn**.
 
-**Trạng thái:** study đã dừng theo yêu cầu; kết quả, log và file tạm đã được xóa. Giữ nguyên 500 CSV đầu vào và cấu hình 30 trường hợp / 100 vòng / 30 seed. Xem [trạng thái](implementation/docs/RUN_STATUS.md). Chưa có kết quả để xếp hạng toàn study.
+**Trạng thái:** study đã dừng theo yêu cầu; kết quả, log và file tạm đã được xóa. Giữ nguyên 200 CSV đầu vào và cấu hình 12 trường hợp / 80 vòng / 10 seed. Xem [trạng thái](implementation/docs/RUN_STATUS.md). Chưa có kết quả để xếp hạng toàn study.
 
 ## Mục lục
 
@@ -10,7 +10,7 @@ Tìm vị trí ba chiều cho các UAV phát sóng để phục vụ một tập
 1. [Mô hình tổng quan](#tong-quan)
 2. [Đầu vào, đầu ra và một ví dụ](#dau-vao)
 3. [Cách chấm một phương án](#fitness)
-4. [Sáu thuật toán và 30 trường hợp](#thuat-toan)
+4. [Sáu thuật toán và 12 trường hợp](#thuat-toan)
 5. [Ba luồng thực thi](#luong-chay)
 6. [Bản đồ thư mục](#thu-muc)
 7. [Lộ trình đọc tài liệu](#lo-trinh)
@@ -42,7 +42,7 @@ Kiểm tra thư viện mà không chạy optimizer:
 
 ### 2. Kiểm tra dữ liệu và cấu hình
 
-Đầu vào là **500 file có sẵn** tại `data/stores/*_users_connect.csv`. Không cần sinh lại dữ liệu. Xem [hướng dẫn dữ liệu](data/README.md).
+Đầu vào là **200 file có sẵn** tại `data/stores/*_users_connect.csv`. Không cần sinh lại dữ liệu. Xem [hướng dẫn dữ liệu](data/README.md).
 
 ```powershell
 (Get-ChildItem data\stores\*_users_connect.csv -File).Count
@@ -53,15 +53,15 @@ Cấu hình luồng này nằm trong **`configs/notebook_study.json`**:
 
 | Tham số | Hiện tại |
 |---|---|
-| `iterations` | 100 vòng mỗi lượt |
+| `iterations` | 80 vòng mỗi lượt |
 | `population` | 25 phương án bố trí UAV |
 | `num_uavs` | 4 UAV mỗi phương án |
-| `seeds` | 30 seed cố định |
-| `output` | `implementation/results/study_100_iterations` |
+| `seeds` | 10 seed cố định |
+| `output` | `implementation/results/study_80_iterations` |
 
-30 case được định nghĩa trong `implementation/src/notebook_study.py`: ba họ GA/PSO/WOA, mỗi họ có tám tổ hợp bật/tắt K-Means, OBL, Lévy; thêm sáu case hybrid. `benchmark.yaml` và `sensitivity.yaml` thuộc luồng FE riêng, không điều khiển study CSV này.
+12 case được định nghĩa trong `implementation/src/notebook_study.py`: tám tổ hợp WOA bật/tắt K-Means, OBL, Lévy; thêm GA, PSO, H-PSO-GA và H-WOA-PSO. `benchmark.yaml` và `sensitivity.yaml` thuộc luồng FE riêng, không điều khiển study CSV này.
 
-Tổng khối lượng: **500 dataset × 30 case × 30 seed = 450.000 lượt tối ưu**. Một lượt là một tổ hợp dataset–case–seed. Đây là tác vụ dài, có thể mất nhiều ngày tùy máy.
+Tổng khối lượng: **200 dataset × 12 case × 10 seed = 24.000 lượt tối ưu**. Một lượt là một tổ hợp dataset–case–seed. Đây là tác vụ dài, có thể mất nhiều ngày tùy máy.
 
 ### 3. Chạy toàn bộ dữ liệu
 
@@ -76,8 +76,8 @@ Giữ terminal mở và máy hoạt động; tránh sleep. Chỉ chạy một co
 **Theo dõi** ở terminal khác:
 
 ```powershell
-Get-Content implementation\results\study_100_iterations\progress.json
-Get-Content implementation\results\study_100_iterations\logs\worker_00.log -Tail 20
+Get-Content implementation\results\study_80_iterations\progress.json
+Get-Content implementation\results\study_80_iterations\logs\worker_00.log -Tail 20
 ```
 
 `completed/expected` đếm lượt tối ưu, không đếm dataset. `eta_s` là số giây còn lại ước tính, có thể thay đổi; `phase` cho biết đang tối ưu, tổng hợp, hoàn tất hoặc gặp lỗi. File không cập nhật có thể là tiến độ cũ; kiểm tra terminal và log nếu nghi ngờ tiến trình đã dừng.
@@ -90,7 +90,7 @@ Get-Content implementation\results\study_100_iterations\logs\worker_00.log -Tail
 implementation/results/
 ├── README.md
 ├── READING_RESULTS.md
-└── study_100_iterations/             # Chỉ xuất hiện sau khi chạy
+└── study_80_iterations/             # Chỉ xuất hiện sau khi chạy
     ├── manifest.json                # Cấu hình, case, dataset, chữ ký source/input
     ├── progress.json                # Tiến độ cập nhật trong khi chạy
     ├── completion.json              # Chỉ ghi sau khi xuất báo cáo thành công
@@ -124,14 +124,14 @@ implementation/results/
 
 File kết quả đặt theo tên dataset. Hậu tố case và seed phân biệt các lượt chạy; `.json.gz` là JSON nén dùng nội bộ để resume. Các file CSV dành cho người đọc được lưu UTF-8 BOM để mở bằng Excel.
 
-**Thời điểm xuất:** mỗi dataset chạy đủ **30 case × 30 seed = 900 lượt** mới có bộ ba CSV của dataset đó. Bảng toàn study, ảnh và notebook báo cáo được xuất sau khi tất cả worker hoàn tất. Vì vậy lúc đầu có checkpoint nhưng chưa có CSV/ảnh là bình thường. Lệnh chạy trực tiếp in tiến độ/lỗi ra terminal; các file `*.launch.log` hoặc `*.error.log` ở ngoài thư mục study chỉ có nếu chủ động chuyển hướng đầu ra, không tự được tạo bởi lệnh trên.
+**Thời điểm xuất:** mỗi dataset chạy đủ **12 case × 10 seed = 120 lượt** mới có bộ ba CSV của dataset đó. Bảng toàn study, ảnh và notebook báo cáo được xuất sau khi tất cả worker hoàn tất. Vì vậy lúc đầu có checkpoint nhưng chưa có CSV/ảnh là bình thường. Lệnh chạy trực tiếp in tiến độ/lỗi ra terminal; các file `*.launch.log` hoặc `*.error.log` ở ngoài thư mục study chỉ có nếu chủ động chuyển hướng đầu ra, không tự được tạo bởi lệnh trên.
 
 ### 5. Đọc bảng và xem ảnh trong notebook
 
-- Mở `datasets/<dataset>/<dataset>_result.csv` để so sánh các case/seed của một dataset. `positions.csv` lưu tọa độ nghiệm cuối, `convergence.csv` lưu chỉ số vòng 0–100.
+- Mở `datasets/<dataset>/<dataset>_result.csv` để so sánh các case/seed của một dataset. `positions.csv` lưu tọa độ nghiệm cuối, `convergence.csv` lưu chỉ số vòng 0–80.
 - Mở `tables/by_dataset.csv` để xem trung bình và độ lệch chuẩn qua seed; `tables/by_scale.csv` gộp theo số user, nên không có một dòng riêng cho mỗi file đầu vào.
 - Khi hoàn tất, mở `study_results.ipynb`: các bảng và ảnh đã được nhúng sẵn, không cần chạy optimizer lại.
-- Muốn tự tạo lại ảnh từ artifact, mở `implementation/notebooks/full_study_100_iterations.ipynb`, bấm **Select Kernel → Python Environments**, chọn `.venv-uav\Scripts\python.exe`. Chạy ô thiết lập, đọc bảng và vẽ; giữ **`CONFIRM_RUN = False`** nếu chỉ xem kết quả. Notebook và script dùng chung hàm tạo ảnh: script tự xuất PNG vào `figures/`, notebook có thể tạo lại và hiển thị ảnh dưới ô code.
+- Muốn tự tạo lại ảnh từ artifact, mở `implementation/notebooks/full_study_80_iterations.ipynb`, bấm **Select Kernel → Python Environments**, chọn `.venv-uav\Scripts\python.exe`. Chạy ô thiết lập, đọc bảng và vẽ; giữ **`CONFIRM_RUN = False`** nếu chỉ xem kết quả. Notebook và script dùng chung hàm tạo ảnh: script tự xuất PNG vào `figures/`, notebook có thể tạo lại và hiển thị ảnh dưới ô code.
 
 Ý nghĩa cột và thứ tự đọc chi tiết: [READING_RESULTS](implementation/results/READING_RESULTS.md). Khi chưa có kết quả đầy đủ, không dùng số liệu kiểm tra hoặc checkpoint dở để kết luận thứ hạng toàn study.
 
@@ -158,13 +158,13 @@ Sơ đồ do dự án biên soạn từ [runner notebook](implementation/src/not
 
 ## 2. Đầu vào, đầu ra và một ví dụ
 
-**Đầu vào:** một CSV có cột user_id, x_m, y_m, z_m, demand. Tọa độ dùng mét. Bộ hiện có gồm 500 file, 10 mức từ 50 đến 500 user, mỗi mức 50 file. User có độ cao 0–132 m theo rà soát, nên không gọi toàn bộ bộ dữ liệu là user mặt đất.
+**Đầu vào:** một CSV có cột user_id, x_m, y_m, z_m, demand. Tọa độ dùng mét. Bộ hiện có gồm 200 file, 5 mức 100, 200, 300, 400, 500 user, mỗi mức 40 file. User có độ cao 0–132 m theo rà soát, nên không gọi toàn bộ bộ dữ liệu là user mặt đất.
 
 **Một nghiệm:** vector ghép tọa độ N UAV. Với N=4, nghiệm có D=12 số:
 
 `X = [x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4]`.
 
-**Ví dụ minh họa:** dataset 100 user, một ứng viên chứa vị trí của cả bốn UAV. Quần thể P=25 nghĩa là có 25 cấu hình bốn UAV, không phải 25 UAV. Sau 100 vòng, lưu best đã đánh giá và các mốc lịch sử. Đây là diễn giải cấu trúc, không phải số đo của một lần chạy.
+**Ví dụ minh họa:** dataset 100 user, một ứng viên chứa vị trí của cả bốn UAV. Quần thể P=25 nghĩa là có 25 cấu hình bốn UAV, không phải 25 UAV. Sau 80 vòng, lưu best đã đánh giá và các mốc lịch sử. Đây là diễn giải cấu trúc, không phải số đo của một lần chạy.
 
 Định dạng đầy đủ: [DATA_FORMAT](implementation/docs/DATA_FORMAT.md).
 
@@ -184,7 +184,7 @@ E chưa phải năng lượng Joule; I chưa phải công suất nhiễu. Trọn
 
 <a id="thuat-toan"></a>
 
-## 4. Sáu thuật toán và 30 trường hợp
+## 4. Sáu thuật toán và 12 trường hợp
 
 | Thuật toán chính | Ý tưởng | Giải thích chi tiết |
 |---|---|---|
@@ -195,7 +195,7 @@ E chưa phải năng lượng Joule; I chưa phải công suất nhiễu. Trọn
 | H-WOA-PSO | Trộn hai đề xuất trên mỗi cá thể | [DWH_WOA_PSO](implementation/docs/DWH_WOA_PSO.md) |
 | I-WOA | WOA thêm K-Means, OBL và Lévy | [DWI_WOA](implementation/docs/DWI_WOA.md) |
 
-Study mở rộng thành 24 case của ba họ WOA/PSO/GA, hai bản lai đầy đủ và bốn case ablation bản lai: **30 case duy nhất**. Một case có thể xuất hiện trong nhiều bảng nhưng không phải chạy lại. Xem bảng bật/tắt trong [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md).
+Study gồm tám tổ hợp WOA và bốn đối chứng: **12 case duy nhất**. Một case có thể xuất hiện trong nhiều bảng nhưng không phải chạy lại. Xem thiết kế trong [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md).
 
 <a id="luong-chay"></a>
 
@@ -203,7 +203,7 @@ Study mở rộng thành 24 case của ba họ WOA/PSO/GA, hai bản lai đầy 
 
 | Luồng | Đầu vào | Ngân sách và phạm vi |
 |---|---|---|
-| Notebook hiện tại | 500 CSV có sẵn | 30 case, 100 vòng, P=25, N=4 |
+| Notebook hiện tại | 200 CSV có sẵn | 12 case, 80 vòng, P=25, N=4 |
 | Benchmark FE | Dữ liệu sinh từ YAML/manifest | Mặc định 3030 FE, P=30; schema riêng |
 | Script CSV legacy | CSV có sẵn | Một dataset hoặc batch sáu thuật toán theo vòng |
 

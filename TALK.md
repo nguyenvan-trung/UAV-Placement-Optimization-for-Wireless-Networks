@@ -2,7 +2,7 @@
 
 [Trang đầu](README.md) · [Logic nghiên cứu](NOTE.md) · [Nguồn](implementation/docs/SOURCES.md)
 
-Đây là kịch bản để người mới có thể giải thích dự án. Các câu nói về kết quả chỉ được điền sau khi có log. Study 100 vòng hiện chưa chạy.
+Đây là kịch bản để người mới có thể giải thích dự án. Các câu nói về kết quả chỉ được điền sau khi có log. Study 80 vòng hiện chưa chạy.
 
 ## Mục lục
 
@@ -31,7 +31,7 @@
 | Biểu diễn | “4 UAV tạo một vector 12 chiều; mỗi cá thể là cả vector.” | REPORT |
 | Hàm chấm | “Cùng một hàm F dùng cho mọi phương pháp.” | Hình fitness, bảng C/E/I |
 | Phương pháp | “Khác nhau ở cách đề xuất cấu hình, không ở cách đếm user.” | Sáu hình thuật toán |
-| Thiết kế | “30 case, 500 CSV, 100 vòng, cùng seed đã chốt.” | NOTEBOOK_STUDY |
+| Thiết kế | “12 case, 200 CSV, 80 vòng, cùng seed đã chốt.” | NOTEBOOK_STUDY |
 | Kết quả | “Bảng này tổng hợp từ những task nào, bằng phép gộp gì?” | Task/manifest/bảng thật |
 | Giới hạn | “E/I là proxy, chưa chứng minh tối ưu toàn cục hoặc mạng thực.” | REPORT, SOURCES |
 
@@ -82,9 +82,9 @@ Nếu chưa có log, để “chưa có kết quả”, không đặt số mẫu
 
 **Vì sao 4 UAV?** Cấu hình đối chứng cố định; chưa chứng minh đó là số UAV tối ưu.
 
-**Vì sao 100 vòng?** Ngân sách theo vòng đã chọn. Cần xem lịch sử và chi phí để đánh giá, không khẳng định đã hội tụ trước khi chạy.
+**Vì sao 80 vòng?** Ngân sách theo vòng đã chọn. Cần xem lịch sử và chi phí để đánh giá, không khẳng định đã hội tụ trước khi chạy.
 
-**100 vòng có công bằng tuyệt đối không?** Cùng số vòng, chưa chắc cùng FE. OBL/Lévy tăng đánh giá; cần báo cả FE và thời gian.
+**80 vòng có công bằng tuyệt đối không?** Cùng số vòng, chưa chắc cùng FE. OBL/Lévy tăng đánh giá; cần báo cả FE và thời gian.
 
 **K-Means có tìm nghiệm tối ưu không?** Nó tạo một nghiệm mầm theo tâm cụm XY; sau đó thuật toán tiếp tục tìm.
 
@@ -94,7 +94,7 @@ Nếu chưa có log, để “chưa có kết quả”, không đặt số mẫu
 
 **Đường phủ sóng phẳng có phải code sai không?** Chưa đủ kết luận. Coverage là tỷ lệ rời rạc và có thể bão hòa; cần xem C/E/I, dữ liệu và hàm chấm.
 
-**500 file có thay 30 seed không?** Không. File thay bố trí user; seed thay tìm kiếm trên một bố trí.
+**200 file có thay 10 seed không?** Không. File thay bố trí user; seed thay tìm kiếm trên một bố trí.
 
 **Có chứng minh tối ưu toàn cục hoặc đáp ứng mạng thực không?** Không từ study mô phỏng hiện tại. Mô hình thiếu dung lượng, backhaul và điều khiển bay.
 

@@ -21,7 +21,7 @@ Sensitivity hỏi: nếu thay trọng số hoặc định nghĩa coverage thì t
 - [run_benchmark.py](../scripts/run_benchmark.py): mode sensitivity chạy optimizer lại cho từng cấu hình.
 - [analyze_sensitivity.py](../scripts/analyze_sensitivity.py): tổng hợp, tương quan hạng, kiểm định ghép cặp và chẩn đoán.
 
-Ngân sách, instance và seed lấy từ benchmark.yaml. Full study chưa chạy. Luồng notebook 30 case hiện không tự chạy sensitivity; không cộng các thí nghiệm này vào 30 case.
+Ngân sách, instance và seed lấy từ benchmark.yaml. Full study chưa chạy. Luồng notebook 12 case hiện không tự chạy sensitivity; không cộng các thí nghiệm này vào 12 case.
 
 <a id="doc-section-02"></a>
 

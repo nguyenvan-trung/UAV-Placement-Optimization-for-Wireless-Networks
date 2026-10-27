@@ -13,10 +13,10 @@ from src.algorithms.base.enhancements import enhance, opposition
 from src.algorithms.PSO.particle import Particle
 
 
-def test_registry_constructs_all_thirty_cases():
+def test_registry_constructs_all_twelve_cases():
     registry = cases()
-    assert len(registry) == len({r['case'] for r in registry}) == 30
-    for family in ('WOA', 'PSO', 'GA'):
+    assert len(registry) == len({r['case'] for r in registry}) == 12
+    for family in ('WOA',):
         flags = {(c['K'], c['O'], c['L']) for c in registry if c['family'] == family}
         assert len(flags) == 8
     for row in registry:
@@ -69,11 +69,11 @@ def test_iteration_observer_records_initial_and_final_without_extra_fe():
 
 def test_notebook_run_gate_is_off():
     root = Path(__file__).resolve().parents[2]
-    notebook = json.loads((root / 'implementation/notebooks/full_study_100_iterations.ipynb').read_text(encoding='utf-8'))
+    notebook = json.loads((root / 'implementation/notebooks/full_study_80_iterations.ipynb').read_text(encoding='utf-8'))
     code = [c for c in notebook['cells'] if c['cell_type'] == 'code']
     assert any('CONFIRM_RUN = False' in ''.join(c['source']) for c in code)
     config = json.loads((root / 'configs/notebook_study.json').read_text())
-    assert len(config['seeds']) == len(set(config['seeds'])) == 30
+    assert len(config['seeds']) == len(set(config['seeds'])) == 10
 
 
 def valid_artifact():

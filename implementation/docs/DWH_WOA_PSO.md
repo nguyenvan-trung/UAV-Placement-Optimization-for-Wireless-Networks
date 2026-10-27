@@ -91,7 +91,7 @@ Sau đánh giá, thay pbest nếu điểm cải thiện, rồi cập nhật glob
 
 Bỏ lực hút gbest trong vận tốc **không bỏ mọi ảnh hưởng global best**: nhánh WOA vẫn dùng best. Hai đối chứng bổ sung là WOA gốc và PSO gốc; tất cả dùng kết quả case duy nhất trong registry.
 
-Các cờ không phải phép thử tất cả tỷ lệ lambda. Khảo sát lambda là một thiết kế khác, chưa có trong 30 case.
+Các cờ không phải phép thử tất cả tỷ lệ lambda. Khảo sát lambda là một thiết kế khác, chưa có trong 12 case.
 
 <a id="nguon"></a>
 
@@ -100,6 +100,6 @@ Các cờ không phải phép thử tất cả tỷ lệ lambda. Khảo sát lam
 - [hybrid_woa_pso.py](../src/algorithms/hybrid/hybrid_woa_pso.py): nguồn chính xác cho bản lai.
 - [SOURCES — hybrid](SOURCES.md#hybrid): phân biệt nguyên lý kế thừa với kết hợp riêng.
 - [REPORT](REPORT.md): cùng C/E/I/F và ràng buộc.
-- [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md): 100 vòng, seed và bảng đánh giá.
+- [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md): 80 vòng, seed và bảng đánh giá.
 
 Không khẳng định phép trộn luôn cân bằng khám phá/khai thác tốt hơn. Cần kết quả chất lượng, FE/thời gian và ablation trên cùng dataset/seed. Study hiện chưa chạy.

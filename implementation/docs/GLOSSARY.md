@@ -11,7 +11,7 @@
 | Run | Một lần tối ưu một dataset với một thuật toán/biến thể và seed |
 | Task | Đơn vị checkpoint; notebook dùng bộ ba dataset–case–seed |
 | Seed | Số khởi tạo bộ sinh ngẫu nhiên; cần giữ danh sách giống nhau giữa các đối chứng |
-| Data seed | Seed sinh tọa độ trong luồng FE; 500 CSV notebook đã có tọa độ sẵn |
+| Data seed | Seed sinh tọa độ trong luồng FE; 200 CSV notebook đã có tọa độ sẵn |
 | Algorithm seed | Seed cho khởi tạo và tìm kiếm |
 | Tuning / eval | Tập chọn tham số / tập đánh giá; không dùng chung dữ liệu để tự đánh giá |
 | Population P | Số ứng viên; mỗi ứng viên là cả cấu hình N UAV |

@@ -101,7 +101,7 @@ Mã: [hybrid_pso_ga.py](../src/algorithms/hybrid/hybrid_pso_ga.py), [hybrid_woa_
 | E=proxy công suất theo độ cao rồi chuẩn hóa | Giả định dự án, chưa hiệu chuẩn vật lý |
 | Hover 100 W, tăng 50%, ngưỡng 18 dB | Tham số mô phỏng; chưa có nguồn xác nhận chung |
 | D_min=10 m | Ràng buộc mô phỏng, không phải chuẩn an toàn bay |
-| 30 case, 100 vòng và phép gộp | Giao thức nghiên cứu hiện tại; notebook_study.py |
+| 12 case, 80 vòng và phép gộp | Giao thức nghiên cứu hiện tại; notebook_study.py |
 
 Khi báo cáo cần ghi cả nguồn ý tưởng và khác biệt so với nguồn. Không dùng “chuẩn IEEE”, “tỷ lệ vàng”, “đảm bảo toàn cục” thay cho bằng chứng.
 
