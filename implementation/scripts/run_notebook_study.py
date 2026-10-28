@@ -15,7 +15,24 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'implementation'))
 from src.notebook_study import (plan, run_study, study_signature, atomic_json,
-    read_results, validate_task, read_task, task_paths, build_tables, export_dataset_csv)
+    read_results)
+
+
+def read_worker_progress(path, previous):
+    """Progress is advisory: a transient Windows read lock must not kill workers."""
+    for attempt in range(5):
+        try:
+            row = json.loads(path.read_text(encoding='utf-8'))
+            if (type(row['completed']) is not int or type(row['resumed']) is not int
+                    or not 0 <= row['resumed'] <= row['completed']):
+                raise ValueError(f'Invalid worker progress: {path}')
+            return row
+        except (PermissionError, FileNotFoundError, json.JSONDecodeError) as error:
+            if attempt == 4:
+                print(f'Progress temporarily unavailable: {path.name} ({path.parent.name}); '
+                      f'keeping previous snapshot ({type(error).__name__})', flush=True)
+                return previous
+            time.sleep(0.05 * (attempt + 1))
 
 
 def main():
@@ -65,14 +82,15 @@ def main():
                 '--worker-index', str(index)], cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
             children.append(child)
+        snapshots = {index: dict(completed=0, resumed=0) for index in range(args.workers)}
         while True:
             complete = resumed = 0
             for index in range(args.workers):
                 progress = output / 'shards' / f'worker_{index:02d}' / 'progress.json'
                 if progress.exists():
-                    row = json.loads(progress.read_text(encoding='utf-8'))
-                    complete += row['completed']
-                    resumed += row['resumed']
+                    snapshots[index] = read_worker_progress(progress, snapshots[index])
+                complete += snapshots[index]['completed']
+                resumed += snapshots[index]['resumed']
             elapsed = time.perf_counter() - started
             fresh = complete-resumed
             eta = (expected-complete)*elapsed/fresh if fresh else None
@@ -86,22 +104,18 @@ def main():
             if all(code == 0 for code in states):
                 break
             time.sleep(20)
-        print('All workers finished; validating and building tables...', flush=True)
-        atomic_json(output / 'progress.json', dict(completed=expected, expected=expected, phase='aggregating',
+        print('All workers finished; validating saved results...', flush=True)
+        atomic_json(output / 'progress.json', dict(completed=expected, expected=expected, phase='validating',
             elapsed_s=time.perf_counter()-started, coordinator_pid=os.getpid()))
         results, _ = read_results(output)
         if len(results) != expected:
             raise RuntimeError('Completed task count differs from design')
         results.to_csv(output / 'runs.csv', index=False)
-        export_dataset_csv(output)
-        tables = build_tables(output)
-        from src.study_report import build_report
-        build_report(ROOT, output, tables)
         atomic_json(output / 'completion.json', dict(complete=True, expected=expected, actual=len(results),
             elapsed_s=time.perf_counter()-started))
         atomic_json(output / 'progress.json', dict(completed=expected, expected=expected, phase='complete',
             elapsed_s=time.perf_counter()-started))
-        print('STUDY COMPLETE: CSV, Markdown, figures and result notebook saved.', flush=True)
+        print('OPTIMIZATION COMPLETE: results saved. Run export_study_report.py separately.', flush=True)
     except BaseException as error:
         for child in children:
             if child.poll() is None:
@@ -109,7 +123,10 @@ def main():
         for child in children:
             child.wait()
         status_path = output / 'progress.json'
-        status = json.loads(status_path.read_text(encoding='utf-8')) if status_path.exists() else {}
+        try:
+            status = json.loads(status_path.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            status = {}
         status.update(phase='failed', error=str(error), elapsed_s=time.perf_counter()-started)
         atomic_json(status_path, status)
         raise

@@ -320,8 +320,6 @@ def run_study(root, config, *, confirmed=False, shard_index=0, shard_count=1):
                             dataset=path.name, case=case['case'], seed=seed, pid=os.getpid()))
                         if completed % 25 == 0:
                             print(f'{completed}/{expected} tasks (including resumed tasks)', flush=True)
-                export_dataset_csv(output, dataset=path.name,
-                    destination=output.parents[1] if shard_count > 1 else output)
         results, _ = read_results(output)
         if len(results) != expected or results.duplicated(['dataset', 'case', 'seed']).any():
             raise RuntimeError('Result count mismatch or duplicate tasks')
@@ -364,7 +362,8 @@ def build_tables(output):
         coverage=('coverage', 'mean'), energy=('energy', 'mean'), interference=('interference', 'mean'),
         wall_s=('wall_s', 'mean'), fe=('fe', 'mean')).reset_index()
     # Read one task at a time: never materialize millions of position dictionaries.
-    trajectories, checkpoints = {}, {}
+    trajectories, checkpoints, stages = {}, {}, {}
+    milestones = sorted({0, iterations // 4, iterations // 2, 3 * iterations // 4, iterations})
     fields = ['fitness', 'coverage', 'energy', 'interference', 'fe', 'elapsed_s']
     for path in task_paths(output):
         artifact = read_task(path)
@@ -373,10 +372,18 @@ def build_tables(output):
         if [r['iteration'] for r in rows] != list(range(iterations + 1)):
             raise ValueError('Incomplete task history')
         trajectories.setdefault(name, []).append(np.array([r['fitness'] for r in rows]))
-        for iteration in sorted({0, 35, 80, iterations}):
+        for iteration in milestones:
             key = (name, iteration)
             total, count = checkpoints.get(key, (np.zeros(len(fields)), 0))
             checkpoints[key] = (total + np.array([rows[iteration][f] for f in fields]), count + 1)
+        for start, end in zip(milestones, milestones[1:]):
+            before, after = rows[start], rows[end]
+            key = (artifact['result']['users'], name, start, end)
+            delta = np.array([after['elapsed_s'] - before['elapsed_s'],
+                after['fitness'] - before['fitness'], after['fe'] - before['fe'],
+                after['fitness'], after['coverage'], after['energy'], after['interference']])
+            total, count = stages.get(key, (np.zeros(7), 0))
+            stages[key] = (total + delta, count + 1)
     tables['checkpoints'] = pd.DataFrame([
         dict(case=name, iteration=iteration, **dict(zip(fields, total / count)))
         for (name, iteration), (total, count) in sorted(checkpoints.items())])
@@ -386,6 +393,20 @@ def build_tables(output):
         convergence.extend(dict(case=name, iteration=i, median=median[i], q25=q25[i], q75=q75[i])
             for i in range(iterations + 1))
     tables['convergence'] = pd.DataFrame(convergence)
+    stage_fields = ['stage_time_s', 'fitness_gain', 'stage_fe', 'fitness_end',
+                    'coverage_end', 'energy_end', 'interference_end']
+    tables['stages_by_scale'] = pd.DataFrame([
+        dict(users=users, case=name, start_iteration=start, end_iteration=end,
+             runs=count, **dict(zip(stage_fields, total / count)))
+        for (users, name, start, end), (total, count) in sorted(stages.items())])
+    tables['stages'] = tables['stages_by_scale'].groupby(
+        ['case', 'start_iteration', 'end_iteration'])[stage_fields].mean().reset_index()
+    tables['quality_by_scale'] = df.groupby(['users', 'case']).agg(
+        fitness_mean=('fitness', 'mean'), fitness_median=('fitness', 'median'),
+        fitness_sd=('fitness', 'std'), coverage_mean=('coverage', 'mean'),
+        coverage_sd=('coverage', 'std'), time_mean_s=('wall_s', 'mean'),
+        time_median_s=('wall_s', 'median'), time_sd_s=('wall_s', 'std'),
+        fe_mean=('fe', 'mean')).reset_index()
     tables['stability'] = df.groupby(['dataset', 'case']).fitness.agg(
         mean='mean', sd='std', minimum='min', maximum='max', seeds='size').reset_index()
     paired = df.pivot(index=['dataset', 'seed'], columns='case', values='fitness')
@@ -405,6 +426,20 @@ def build_tables(output):
     instance_medians = df.groupby(['dataset', 'case']).fitness.median().unstack('case')
     ranks = instance_medians.rank(axis=1, ascending=False, method='average').mean().rename('mean_rank')
     tables['ranking'] = summary.join(ranks).sort_values('mean_rank').reset_index()
+    tables['stability_summary'] = tables['stability'].groupby('case').agg(
+        seed_sd_mean=('sd', 'mean'), seed_sd_max=('sd', 'max')).reset_index()
+    hybrid_pairs = [('H-PSO-GA', 'PSO'), ('H-PSO-GA', 'GA'),
+                    ('H-WOA-PSO', 'WOA'), ('H-WOA-PSO', 'PSO'), ('I-WOA', 'WOA')]
+    comparisons = []
+    times = df.pivot(index=['dataset', 'seed'], columns='case', values='wall_s')
+    for candidate, baseline in hybrid_pairs:
+        difference = paired[candidate] - paired[baseline]
+        comparisons.append(dict(candidate=candidate, baseline=baseline,
+            fitness_gain_mean=difference.mean(), fitness_gain_median=difference.median(),
+            win_fraction=(difference > 1e-12).mean(),
+            tie_fraction=(difference.abs() <= 1e-12).mean(),
+            time_difference_s=(times[candidate] - times[baseline]).mean()))
+    tables['paired_comparison'] = pd.DataFrame(comparisons)
     folder = output / 'tables'
     folder.mkdir(exist_ok=True)
     for name, table in tables.items():

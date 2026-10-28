@@ -27,3 +27,11 @@ Hướng dẫn đầy đủ và bảng case: [NOTEBOOK_STUDY](../docs/NOTEBOOK_S
 comparison_experiment.ipynb là notebook so sánh trước đó, không phải điểm vào study 12 case. Không giả định nó đọc được schema mới. Không chạy script tạo kết quả cũ chỉ để mở notebook mới.
 
 Tọa độ và số liệu trong bảng/ảnh phải lấy từ task thật. Các ô phân tích của notebook mới đọc lại artifact, không gọi optimizer để vẽ lại.
+# Vị trí báo cáo tự động
+
+Study CSV xuất notebook tại `<study>/study_results.ipynb` và ảnh bảng/đồ thị tại
+`<study>/picture/*.jpg` trong thư mục này. Ví dụ:
+`study_80_iterations/study_results.ipynb`.
+CSV, checkpoint và dữ liệu kết quả vẫn ở `../results/<study>/`.
+Notebook có bảng và ảnh nhúng sẵn; nếu chạy lại ô đọc bảng/ảnh, dùng thư mục
+chứa notebook làm thư mục làm việc. Không cần chạy lại optimizer.

@@ -63,13 +63,47 @@ Cấu hình luồng này nằm trong **`configs/notebook_study.json`**:
 
 Tổng khối lượng: **200 dataset × 12 case × 10 seed = 24.000 lượt tối ưu**. Một lượt là một tổ hợp dataset–case–seed. Đây là tác vụ dài, có thể mất nhiều ngày tùy máy.
 
-### 3. Chạy toàn bộ dữ liệu
+### 3. Hai bước: chạy tối ưu và xuất báo cáo
 
-Chỉ chạy lệnh này khi muốn bắt đầu hoặc tiếp tục study:
+Chạy từ thư mục gốc repository trong PowerShell. Hai lệnh dưới dùng Python
+đã kiểm tra trên máy hiện tại; máy khác cần thay đường dẫn interpreter.
+
+**Lệnh 1 — chạy tối ưu và lưu kết quả:** chỉ dùng khi bắt đầu study mới hoặc
+resume với code/config/data và số worker khớp manifest.
 
 ```powershell
-& ".\.venv-uav\Scripts\python.exe" -B implementation\scripts\run_notebook_study.py --workers 4
+& "D:\Downloads\Aquaroda\python.exe" -B .\implementation\scripts\run_notebook_study.py --config .\configs\notebook_study.json --workers 4
 ```
+
+Runner chỉ tối ưu và lưu artifact/`runs.csv`; không tự tạo bảng, ảnh hoặc báo cáo.
+Hoàn tất sẽ hiện `OPTIMIZATION COMPLETE`.
+
+**Lệnh 2 — tạo bảng, ảnh và báo cáo từ kết quả đã lưu:**
+
+```powershell
+& "D:\Downloads\Aquaroda\python.exe" -B .\implementation\scripts\export_study_report.py --output .\implementation\results\study_80_iterations
+```
+
+`--output` chỉ thư mục kết quả cần đọc. Script đọc `manifest.json` và artifact
+task gốc trong `tasks/` hoặc `shards/worker_*/tasks/`, không chỉ đọc `runs.csv`.
+Script kiểm tra artifact hợp lệ và đủ bộ dataset–case–seed theo manifest trước
+khi tổng hợp; thiếu hoặc trùng task sẽ báo lỗi.
+
+Lệnh 2 tạo lại `runs.csv`, CSV phân tích theo dataset, bảng CSV/Markdown trong
+`tables/`, và `RESULTS.md` tại thư mục kết quả. Ảnh JPEG nằm trong
+`implementation/notebooks/study_80_iterations/picture/`; notebook báo cáo nằm
+tại `implementation/notebooks/study_80_iterations/study_results.ipynb`.
+Các file xuất trùng tên có thể bị ghi đè. Hoàn tất sẽ ghi
+`report_completion.json` và hiện `REPORT COMPLETE`.
+
+Bước này không chạy optimizer, không sửa checkpoint/manifest hoặc trạng thái
+tối ưu trong `progress.json`/`completion.json`. Không yêu cầu chữ ký code hiện
+tại trùng lần chạy cũ vì chỉ phân tích artifact đã lưu. Chỉ chạy sau khi
+optimizer dừng và chỉ chạy một lệnh xuất báo cáo tại một thời điểm.
+
+Với bộ 24.000 task cũ đã chạy xong, chỉ cần lệnh 2. Nếu lệnh 1 báo khác chữ ký,
+không sửa manifest để ép resume; lần tối ưu mới cần output riêng trong config.
+
 
 Giữ terminal mở và máy hoạt động; tránh sleep. Chỉ chạy một coordinator cho cùng thư mục output. Có thể giảm `--workers` để giảm tải trước lần chạy mới; khi tiếp tục một study phải giữ nguyên số worker, dữ liệu, code, cấu hình và môi trường.
 
@@ -93,7 +127,8 @@ implementation/results/
 └── study_80_iterations/             # Chỉ xuất hiện sau khi chạy
     ├── manifest.json                # Cấu hình, case, dataset, chữ ký source/input
     ├── progress.json                # Tiến độ cập nhật trong khi chạy
-    ├── completion.json              # Chỉ ghi sau khi xuất báo cáo thành công
+    ├── completion.json              # Xác nhận tối ưu hoàn tất (runner mới)
+    ├── report_completion.json       # Xác nhận xuất báo cáo hoàn tất
     ├── runs.csv                     # Tất cả lượt chạy, sau khi đủ task
     ├── RESULTS.md                   # Báo cáo tổng hợp
     ├── study_results.ipynb           # Bảng và 13 ảnh nhúng

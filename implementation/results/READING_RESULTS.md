@@ -1,5 +1,13 @@
 # Cách đọc kết quả
 
+## Vị trí đầu ra hiện hành
+
+Dữ liệu, checkpoint, CSV/Markdown và `RESULTS.md` nằm trong `implementation/results/<study>/`.
+Notebook báo cáo nằm tại `implementation/notebooks/<study>/study_results.ipynb`;
+toàn bộ ảnh bảng và đồ thị JPG nằm trong `implementation/notebooks/<study>/picture/`.
+Các tên `study_results.ipynb` và `picture/` bên dưới được hiểu theo vị trí notebook này.
+Chạy lại các ô đọc bảng/ảnh từ thư mục chứa notebook; không chạy optimizer để xem báo cáo.
+
 **Hiện tại:** toàn bộ kết quả đã được xóa theo yêu cầu. Các đường dẫn dưới đây mô tả cấu trúc đầu ra khi chạy lại, không phải các file đang tồn tại.
 
 ## Đọc đúng thư mục
@@ -24,9 +32,24 @@ Mỗi dataset cần đủ **12 case × 10 seed = 120 lượt** mới xuất bộ
 1. `study_80_iterations/datasets/<dataset>/<dataset>_result.csv`: một dòng cho mỗi case × seed. Dùng để xem kết quả gốc của dataset.
 2. `tables/by_dataset.csv`: fitness trung bình và độ lệch chuẩn qua seed, cùng các chỉ số trung bình, riêng cho mỗi dataset × case.
 3. `tables/by_scale.csv`: tổng hợp theo **số người dùng × case**, không phải một dòng cho mỗi file dữ liệu. Nhiều dataset có cùng số user được gộp lại.
-4. `tables/main.csv`: so sánh sáu phương pháp chính; `tables/GA.csv`, `PSO.csv`, `WOA.csv`: so sánh tám tổ hợp Có/Không của mỗi họ.
+4. `tables/main.csv`: so sánh sáu phương pháp chính; `tables/WOA.csv`: so sánh tám tổ hợp bật/tắt K-Means, OBL và Lévy của WOA.
 5. `tables/design.csv`: bảng thành phần K/O/L và hybrid. `contributions.csv`: tác động ghép cặp của các thành phần. `stability.csv`: độ dao động qua seed trên từng dataset. `ranking.csv`: xếp hạng mô tả qua dataset.
-6. `study_results.ipynb`: báo cáo có bảng và 13 ảnh nhúng. Mở trực tiếp sau khi study hoàn tất. `figures/` chứa PNG riêng.
+6. `study_results.ipynb`: báo cáo có bảng và ảnh JPG nhúng. Mở trực tiếp sau khi study hoàn tất. `picture/` chứa ảnh riêng, tên tiếng Việt không dấu; tiêu đề và nội dung trong ảnh bằng tiếng Anh.
+
+## Bảng và ảnh so sánh bổ sung
+
+- `checkpoints.csv`: chỉ số tích lũy tại vòng 0, 20, 40, 60, 80 với study 80 vòng. Mốc 0 bao gồm khởi tạo. Với 100 vòng, dùng mốc 0, 25, 50, 75, 100.
+- `stages.csv`: thời gian, FE và mức tăng fitness riêng từng khoảng giữa hai mốc, cùng chất lượng ở cuối khoảng. Không tính lại thời gian khởi tạo vào giai đoạn đầu.
+- `stages_by_scale.csv`: các chỉ số giai đoạn theo số user và case.
+- `quality_by_scale.csv`: trung bình, trung vị, SD của fitness/thời gian, trung bình và SD coverage, FE trung bình theo quy mô. SD ở bảng này gộp biến thiên giữa dataset và seed.
+- `stability_summary.csv`: trung bình và lớn nhất của SD qua seed trong từng dataset; dùng để phân biệt với SD gộp theo quy mô.
+- `paired_comparison.csv`: chênh lệch fitness, thời gian, tỷ lệ thắng/hòa của hybrid so với các thuật toán thành phần và I-WOA so với WOA, ghép cặp cùng dataset và seed.
+
+Ảnh bảng gồm `bangsosanhthuattoan`, `bangsosanhcaitienwoa`, `bangthietkethuattoan`, `bangxephang`, `bangchatluongvasonguoi`, `bangthoigianvavongchay`, `bangsosanhgiaidoan`, `banggiaidoanvasonguoi`, `bangdoondinh`, `bangdonggopcaitien`, `bangsosanhhybrid`. Tên có hậu tố phần/trang và đuôi `.jpg`; tối đa 24 dòng mỗi trang, bảng rộng chia phần và lặp cột định danh.
+
+Đồ thị gồm `dothihoitu_chinh.jpg`, `dothihoitu_woa.jpg`, `dothisosanhvasonguoi_chinh.jpg`, `dothisosanhvasonguoi_woa.jpg`, `dothigiaidoan_chinh.jpg`, `dothigiaidoan_woa.jpg`, `dothidoondinh.jpg`, `vitribotriuav3d.jpg`. Hình bố trí vẫn là một lượt I-WOA minh họa, không phải kết quả tốt nhất.
+
+CSV chi tiết từng dataset và từng vòng giữ nguyên, không xuất mỗi dòng thành ảnh. Các bảng bổ sung vẫn là thống kê mô tả, không phải kiểm định ý nghĩa thống kê. Thời gian quan sát chịu ảnh hưởng môi trường và chạy đồng thời; không tự suy ra thời gian chạy toàn study bằng cách cộng thời gian task.
 
 Các bảng tổng kết trên nằm trong thư mục `tables/` của từng bộ kết quả. Bảng trong `pipeline_check/tables/` chỉ dùng số liệu kiểm tra, dù tên file giống bảng study chính.
 
