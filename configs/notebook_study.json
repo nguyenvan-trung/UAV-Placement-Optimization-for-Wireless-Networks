@@ -1,7 +1,19 @@
 {
-  "iterations": 100,
+  "iterations": 80,
   "population": 25,
   "num_uavs": 4,
-  "seeds": [],
-  "output": "implementation/results/study_100_iterations"
+  "seeds": [
+    1051920946,
+    1966284724,
+    2999622824,
+    820048098,
+    3063055571,
+    3635841073,
+    628462375,
+    3078361998,
+    1420914352,
+    1930276554
+  ],
+  "output": "implementation/results/study_80_iterations",
+  "expected_datasets": 200
 }

@@ -1,59 +1,291 @@
 # Tối ưu vị trí UAV cho mạng không dây
 
-Dự án mô phỏng việc đặt trạm phát sóng UAV trong không gian ba chiều để phục vụ user có tọa độ cho trước. GA, PSO, WOA, hai thuật toán lai và I-WOA tìm tọa độ UAV theo cùng hàm đánh giá phủ sóng, công suất chuẩn hóa và chồng lấn kết nối.
+Tìm vị trí ba chiều cho các UAV phát sóng để phục vụ một tập người dùng cố định. Người đọc có thể theo dõi dự án theo thứ tự: **bài toán → mô hình → thuật toán → thiết kế thí nghiệm → kết quả có nguồn**.
 
-**Trạng thái ngày 25/10/2026:** đã có mã thuật toán, bộ 500 CSV, runner FE và notebook thiết kế 30 trường hợp chạy 100 vòng. Notebook chưa chạy thí nghiệm; danh sách seed chưa chốt. Chưa có kết quả mới để kết luận thuật toán nào tốt nhất. Đầu ra smoke và batch dở trong `implementation/results/` đã được dọn.
+**Trạng thái:** study đã dừng theo yêu cầu; kết quả, log và file tạm đã được xóa. Giữ nguyên 200 CSV đầu vào và cấu hình 12 trường hợp / 80 vòng / 10 seed. Xem [trạng thái](implementation/docs/RUN_STATUS.md). Chưa có kết quả để xếp hạng toàn study.
 
-## Bắt đầu đọc
+## Mục lục
 
-| Bạn cần hiểu gì?                       | Đọc ở đâu?                                                  |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Toàn bộ tài liệu liên kết thế nào      | [Mục lục và lộ trình đọc](implementation/docs/README.md)    |
-| Bài toán, kiến trúc và luồng dữ liệu   | [Hướng dẫn người mới](implementation/docs/PROJECT_GUIDE.md) |
-| UE, seed, FE, ablation, fitness        | [Thuật ngữ](implementation/docs/GLOSSARY.md)                |
-| Mô hình và giới hạn kết luận           | [Báo cáo phương pháp](implementation/docs/REPORT.md)        |
-| Thiết kế 30 trường hợp, 100 vòng       | [Hướng dẫn notebook](implementation/docs/NOTEBOOK_STUDY.md) |
-| Chuẩn bị môi trường và chọn luồng chạy | [Hướng dẫn tái lập](REPRODUCE.md)                           |
-| Trình bày và trả lời câu hỏi           | [Kịch bản thuyết trình](TALK.md)                            |
+0. [Cài đặt, chạy và đọc kết quả](#bat-dau)
+1. [Mô hình tổng quan](#tong-quan)
+2. [Đầu vào, đầu ra và một ví dụ](#dau-vao)
+3. [Cách chấm một phương án](#fitness)
+4. [Sáu thuật toán và 12 trường hợp](#thuat-toan)
+5. [Ba luồng thực thi](#luong-chay)
+6. [Bản đồ thư mục](#thu-muc)
+7. [Lộ trình đọc tài liệu](#lo-trinh)
+8. [Nguồn và trạng thái kiểm chứng](#nguon)
 
-Người mới nên đọc README này → PROJECT_GUIDE → GLOSSARY → REPORT → NOTEBOOK_STUDY. Sau đó chọn tài liệu thuật toán hoặc thống kê trong mục lục.
+<a id="bat-dau"></a>
 
-## Bài toán được giải
+## Cài đặt, chạy và đọc kết quả
 
-Với N UAV, một nghiệm chứa 3N số: `[x1, y1, z1, ..., xN, yN, zN]`. Với 4 UAV, đó là vector 12 chiều. User là đầu vào cố định trong một dataset; UAV là vị trí thuật toán tìm.
+Các lệnh dưới đây dùng **PowerShell trên Windows**, chạy tại thư mục gốc repository, nơi có `configs/`, `data/` và `implementation/`. Cần Python **3.10 trở lên**; dùng bản Python cho Windows, không chọn nhầm Python của MSYS2. Việc cài môi trường không khởi chạy thí nghiệm.
 
-Hàm mục tiêu mặc định cần cực đại hóa: `F = 0,6C − 0,2E − 0,2I`.
+### 1. Cài môi trường
 
-- C: tỷ lệ user được ít nhất một UAV phủ theo ngưỡng SNR.
-- E: proxy công suất trung bình chuẩn hóa; không phải năng lượng Joule.
-- I: tỷ lệ user được từ hai UAV trở lên phủ theo cùng ngưỡng; không phải công suất nhiễu hoặc diện tích giao nhau.
+Tạo môi trường mới để tránh dùng nhầm `.venv` cũ:
 
-Trọng số và ngưỡng là lựa chọn mô phỏng. Mô hình chưa mô tả đầy đủ dung lượng, backhaul hoặc điều khiển bay. Xem [REPORT](implementation/docs/REPORT.md).
+```powershell
+py -3 -m venv .venv-uav
+& ".\.venv-uav\Scripts\python.exe" -m pip install --upgrade pip
+& ".\.venv-uav\Scripts\python.exe" -m pip install -r implementation\requirements.txt ipykernel nbformat
+```
 
-## Ba luồng chạy
+Nếu không có lệnh `py`, thay `py -3` bằng đường dẫn đến Python đã cài. Không cần activate môi trường vì các lệnh gọi trực tiếp interpreter.
 
-| Luồng                  | Đầu vào                                | Ngân sách                     | Mục đích                                   |
-| ---------------------- | -------------------------------------- | ----------------------------- | ------------------------------------------ |
-| Notebook               | 500 CSV có sẵn                         | 100 vòng, quần thể 25, 4 UAV  | 30 trường hợp, bảng và ảnh cùng chỗ        |
-| Benchmark FE           | Kịch bản sinh từ YAML và seed manifest | Mặc định 3030 FE, quần thể 30 | Đối chứng cùng FE, ablation và sensitivity |
-| Script đơn lẻ/batch cũ | CSV có sẵn                             | Số vòng qua CLI               | Một dataset hoặc batch sáu thuật toán      |
+Kiểm tra thư viện mà không chạy optimizer:
 
-Không gộp kết quả ba luồng như cùng thí nghiệm. Cùng 100 vòng không có nghĩa cùng FE. Analyzer FE không nhận trực tiếp schema notebook.
+```powershell
+& ".\.venv-uav\Scripts\python.exe" -B -c "import numpy, pandas, scipy, sklearn, matplotlib, ipykernel, nbformat, tabulate, threadpoolctl; print('Environment OK')"
+```
 
-## Cấu trúc thư mục
+### 2. Kiểm tra dữ liệu và cấu hình
 
-| Thư mục                                                | Vai trò                                                          |
-| ------------------------------------------------------ | ---------------------------------------------------------------- |
-| `configs/`                                             | Cấu hình notebook và benchmark FE                                |
-| `data/stores/`, `data/views/`                          | CSV user và hình đầu vào                                         |
-| `implementation/src/`                                  | Mô hình, thuật toán, bộ chạy, tổng hợp                           |
-| `implementation/notebooks/`, `implementation/scripts/` | Giao diện notebook và điểm vào CLI                               |
-| `implementation/docs/`                                 | Tài liệu phương pháp và thiết kế                                 |
-| `implementation/tests/`                                | Kiểm tra mã, không phải kết quả nghiên cứu                       |
-| `implementation/results/`                              | Đầu ra khi chạy thực nghiệm                                      |
-| `documents/`, `plan/`                                  | Danh mục tham khảo và kế hoạch                                   |
-| `figures/`, `reports/`, `tmp_audit/`                   | Minh họa, kiểm toán hoặc kiểm tra; xác minh nguồn trước khi dùng |
+Đầu vào là **200 file có sẵn** tại `data/stores/*_users_connect.csv`. Không cần sinh lại dữ liệu. Xem [hướng dẫn dữ liệu](data/README.md).
 
-Đọc tài liệu không cần chạy mã. Khi có yêu cầu thực thi, theo [REPRODUCE](REPRODUCE.md). Notebook mặc định `CONFIRM_RUN = False`, seed để trống. Không điền kết luận bằng số liệu lịch sử thiếu log.
+```powershell
+(Get-ChildItem data\stores\*_users_connect.csv -File).Count
+Get-Content configs\notebook_study.json
+```
 
-Nhóm thực hiện: Nguyễn Văn Trung, Hoàng Văn Trường, Nguyễn Minh Hiếu.
+Cấu hình luồng này nằm trong **`configs/notebook_study.json`**:
+
+| Tham số | Hiện tại |
+|---|---|
+| `iterations` | 80 vòng mỗi lượt |
+| `population` | 25 phương án bố trí UAV |
+| `num_uavs` | 4 UAV mỗi phương án |
+| `seeds` | 10 seed cố định |
+| `output` | `implementation/results/study_80_iterations` |
+
+12 case được định nghĩa trong `implementation/src/notebook_study.py`: tám tổ hợp WOA bật/tắt K-Means, OBL, Lévy; thêm GA, PSO, H-PSO-GA và H-WOA-PSO. `benchmark.yaml` và `sensitivity.yaml` thuộc luồng FE riêng, không điều khiển study CSV này.
+
+Tổng khối lượng: **200 dataset × 12 case × 10 seed = 24.000 lượt tối ưu**. Một lượt là một tổ hợp dataset–case–seed. Đây là tác vụ dài, có thể mất nhiều ngày tùy máy.
+
+### 3. Hai bước: chạy tối ưu và xuất báo cáo
+
+Chạy từ thư mục gốc repository trong PowerShell. Hai lệnh dưới dùng Python
+đã kiểm tra trên máy hiện tại; máy khác cần thay đường dẫn interpreter.
+
+**Lệnh 1 — chạy tối ưu và lưu kết quả:** chỉ dùng khi bắt đầu study mới hoặc
+resume với code/config/data và số worker khớp manifest.
+
+```powershell
+& "D:\Downloads\Aquaroda\python.exe" -B .\implementation\scripts\run_notebook_study.py --config .\configs\notebook_study.json --workers 4
+```
+
+Runner chỉ tối ưu và lưu artifact/`runs.csv`; không tự tạo bảng, ảnh hoặc báo cáo.
+Hoàn tất sẽ hiện `OPTIMIZATION COMPLETE`.
+
+**Lệnh 2 — tạo bảng, ảnh và báo cáo từ kết quả đã lưu:**
+
+```powershell
+& "D:\Downloads\Aquaroda\python.exe" -B .\implementation\scripts\export_study_report.py --output .\implementation\results\study_80_iterations
+```
+
+`--output` chỉ thư mục kết quả cần đọc. Script đọc `manifest.json` và artifact
+task gốc trong `tasks/` hoặc `shards/worker_*/tasks/`, không chỉ đọc `runs.csv`.
+Script kiểm tra artifact hợp lệ và đủ bộ dataset–case–seed theo manifest trước
+khi tổng hợp; thiếu hoặc trùng task sẽ báo lỗi.
+
+Lệnh 2 tạo lại `runs.csv`, CSV phân tích theo dataset, bảng CSV/Markdown trong
+`tables/`, và `RESULTS.md` tại thư mục kết quả. Ảnh JPEG nằm trong
+`implementation/notebooks/study_80_iterations/picture/`; notebook báo cáo nằm
+tại `implementation/notebooks/study_80_iterations/study_results.ipynb`.
+Các file xuất trùng tên có thể bị ghi đè. Hoàn tất sẽ ghi
+`report_completion.json` và hiện `REPORT COMPLETE`.
+
+Bước này không chạy optimizer, không sửa checkpoint/manifest hoặc trạng thái
+tối ưu trong `progress.json`/`completion.json`. Không yêu cầu chữ ký code hiện
+tại trùng lần chạy cũ vì chỉ phân tích artifact đã lưu. Chỉ chạy sau khi
+optimizer dừng và chỉ chạy một lệnh xuất báo cáo tại một thời điểm.
+
+Với bộ 24.000 task cũ đã chạy xong, chỉ cần lệnh 2. Nếu lệnh 1 báo khác chữ ký,
+không sửa manifest để ép resume; lần tối ưu mới cần output riêng trong config.
+
+
+Giữ terminal mở và máy hoạt động; tránh sleep. Chỉ chạy một coordinator cho cùng thư mục output. Có thể giảm `--workers` để giảm tải trước lần chạy mới; khi tiếp tục một study phải giữ nguyên số worker, dữ liệu, code, cấu hình và môi trường.
+
+**Theo dõi** ở terminal khác:
+
+```powershell
+Get-Content implementation\results\study_80_iterations\progress.json
+Get-Content implementation\results\study_80_iterations\logs\worker_00.log -Tail 20
+```
+
+`completed/expected` đếm lượt tối ưu, không đếm dataset. `eta_s` là số giây còn lại ước tính, có thể thay đổi; `phase` cho biết đang tối ưu, tổng hợp, hoàn tất hoặc gặp lỗi. File không cập nhật có thể là tiến độ cũ; kiểm tra terminal và log nếu nghi ngờ tiến trình đã dừng.
+
+**Dừng:** nhấn `Ctrl+C` trong terminal chạy chính. Checkpoint đã ghi được giữ lại. Chạy lại cùng lệnh để tiếp tục sau khi xác nhận các tiến trình cũ đã dừng; các task hợp lệ được kiểm tra rồi bỏ qua. Nếu bị tắt cưỡng bức, có thể còn `.coordinator`/`.running`; chỉ gỡ khóa sau khi xác minh không còn coordinator/worker. Đổi code/config/data hoặc số worker thì dùng output mới. Nếu đã xóa checkpoint, lần chạy sau bắt đầu từ đầu.
+
+### 4. Cấu trúc file kết quả
+
+```text
+implementation/results/
+├── README.md
+├── READING_RESULTS.md
+└── study_80_iterations/             # Chỉ xuất hiện sau khi chạy
+    ├── manifest.json                # Cấu hình, case, dataset, chữ ký source/input
+    ├── progress.json                # Tiến độ cập nhật trong khi chạy
+    ├── completion.json              # Xác nhận tối ưu hoàn tất (runner mới)
+    ├── report_completion.json       # Xác nhận xuất báo cáo hoàn tất
+    ├── runs.csv                     # Tất cả lượt chạy, sau khi đủ task
+    ├── RESULTS.md                   # Báo cáo tổng hợp
+    ├── study_results.ipynb           # Bảng và 13 ảnh nhúng
+    ├── datasets/                    # CSV để mở trong Excel
+    │   ├── 001_UAV_3D_50/
+    │   │   ├── 001_UAV_3D_50_result.csv
+    │   │   ├── 001_UAV_3D_50_positions.csv
+    │   │   └── 001_UAV_3D_50_convergence.csv
+    │   └── ...                      # Các dataset khác
+    ├── tables/                      # Bảng CSV và Markdown (.md)
+    │   ├── design.csv               # Bảng bật/tắt các thành phần
+    │   ├── by_dataset.csv           # Trung bình/SD qua seed trên từng dataset
+    │   ├── by_scale.csv             # Gộp theo số user và case
+    │   ├── main.csv                 # Sáu phương pháp chính
+    │   ├── GA.csv / PSO.csv / WOA.csv
+    │   ├── ranking.csv
+    │   └── ...                      # Hội tụ, độ ổn định, đóng góp, hybrid
+    ├── figures/                     # 13 PNG: hội tụ, quy mô, bố trí UAV 3D
+    ├── logs/                        # worker_00.log đến worker_03.log
+    └── shards/                      # Checkpoint nội bộ để tiếp tục
+        └── worker_00/               # Tương tự worker_01, 02, 03
+            ├── manifest.json
+            ├── env.json
+            ├── progress.json
+            └── tasks/001_UAV_3D_50/
+                └── 001_UAV_3D_50_result_GA_seed1051920946.json.gz
+```
+
+File kết quả đặt theo tên dataset. Hậu tố case và seed phân biệt các lượt chạy; `.json.gz` là JSON nén dùng nội bộ để resume. Các file CSV dành cho người đọc được lưu UTF-8 BOM để mở bằng Excel.
+
+**Thời điểm xuất:** mỗi dataset chạy đủ **12 case × 10 seed = 120 lượt** mới có bộ ba CSV của dataset đó. Bảng toàn study, ảnh và notebook báo cáo được xuất sau khi tất cả worker hoàn tất. Vì vậy lúc đầu có checkpoint nhưng chưa có CSV/ảnh là bình thường. Lệnh chạy trực tiếp in tiến độ/lỗi ra terminal; các file `*.launch.log` hoặc `*.error.log` ở ngoài thư mục study chỉ có nếu chủ động chuyển hướng đầu ra, không tự được tạo bởi lệnh trên.
+
+### 5. Đọc bảng và xem ảnh trong notebook
+
+- Mở `datasets/<dataset>/<dataset>_result.csv` để so sánh các case/seed của một dataset. `positions.csv` lưu tọa độ nghiệm cuối, `convergence.csv` lưu chỉ số vòng 0–80.
+- Mở `tables/by_dataset.csv` để xem trung bình và độ lệch chuẩn qua seed; `tables/by_scale.csv` gộp theo số user, nên không có một dòng riêng cho mỗi file đầu vào.
+- Khi hoàn tất, mở `study_results.ipynb`: các bảng và ảnh đã được nhúng sẵn, không cần chạy optimizer lại.
+- Muốn tự tạo lại ảnh từ artifact, mở `implementation/notebooks/full_study_80_iterations.ipynb`, bấm **Select Kernel → Python Environments**, chọn `.venv-uav\Scripts\python.exe`. Chạy ô thiết lập, đọc bảng và vẽ; giữ **`CONFIRM_RUN = False`** nếu chỉ xem kết quả. Notebook và script dùng chung hàm tạo ảnh: script tự xuất PNG vào `figures/`, notebook có thể tạo lại và hiển thị ảnh dưới ô code.
+
+Ý nghĩa cột và thứ tự đọc chi tiết: [READING_RESULTS](implementation/results/READING_RESULTS.md). Khi chưa có kết quả đầy đủ, không dùng số liệu kiểm tra hoặc checkpoint dở để kết luận thứ hạng toàn study.
+
+<a id="tong-quan"></a>
+
+## 1. Mô hình tổng quan
+
+![Mô hình tổng quan: dữ liệu user, bài toán, thuật toán, fitness, lưu task và tổng hợp](implementation/docs/assets/overview.svg)
+
+**Cách đọc sơ đồ:** bắt đầu từ tọa độ user; tạo bài toán đặt UAV; thuật toán liên tục đề xuất cấu hình và nhận điểm fitness; cuối cùng lưu lịch sử để tổng hợp. Khối “đánh giá” được gọi nhiều lần trong tìm kiếm, không phải chỉ một lần sau khi thuật toán kết thúc.
+
+| Khối | Giải thích |
+|---|---|
+| Dữ liệu user | Cùng một CSV được dùng cho mọi case và seed; thuật toán không di chuyển user |
+| Bài toán | Xác định nghiệm hợp lệ và dùng chung cách chấm |
+| Thuật toán | Khác nhau ở cách tạo/cập nhật ứng viên |
+| Fitness | Cùng mô hình để đối chứng có ý nghĩa |
+| Task | Một bộ dataset–case–seed; là đơn vị lưu/tiếp tục |
+| Báo cáo | Đọc artifact; không lấy ảnh minh họa làm số đo thuật toán |
+
+Sơ đồ do dự án biên soạn từ [runner notebook](implementation/src/notebook_study.py) và [bài toán](implementation/src/problem/objective.py), không phải hình lấy từ bài báo.
+
+<a id="dau-vao"></a>
+
+## 2. Đầu vào, đầu ra và một ví dụ
+
+**Đầu vào:** một CSV có cột user_id, x_m, y_m, z_m, demand. Tọa độ dùng mét. Bộ hiện có gồm 200 file, 5 mức 100, 200, 300, 400, 500 user, mỗi mức 40 file. User có độ cao 0–132 m theo rà soát, nên không gọi toàn bộ bộ dữ liệu là user mặt đất.
+
+**Một nghiệm:** vector ghép tọa độ N UAV. Với N=4, nghiệm có D=12 số:
+
+`X = [x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4]`.
+
+**Ví dụ minh họa:** dataset 100 user, một ứng viên chứa vị trí của cả bốn UAV. Quần thể P=25 nghĩa là có 25 cấu hình bốn UAV, không phải 25 UAV. Sau 80 vòng, lưu best đã đánh giá và các mốc lịch sử. Đây là diễn giải cấu trúc, không phải số đo của một lần chạy.
+
+Định dạng đầy đủ: [DATA_FORMAT](implementation/docs/DATA_FORMAT.md).
+
+<a id="fitness"></a>
+
+## 3. Cách chấm một phương án
+
+`F = 0,6 × C − 0,2 × E − 0,2 × I`, cực đại hóa.
+
+| Thành phần | Định nghĩa dễ đọc | Chiều mong muốn |
+|---|---|---|
+| C | Tỷ lệ user được ít nhất một UAV phủ theo ngưỡng SNR | Cao |
+| E | Proxy công suất trung bình chuẩn hóa theo độ cao | Thấp |
+| I | Tỷ lệ user có từ hai liên kết SNR đạt ngưỡng | Thấp |
+
+E chưa phải năng lượng Joule; I chưa phải công suất nhiễu. Trọng số là lựa chọn thiết kế, không phải tỷ lệ chuẩn của ngành. Công thức có bảng ký hiệu, đơn vị và nguồn tại [REPORT](implementation/docs/REPORT.md); bảng truy nguồn tại [SOURCES](implementation/docs/SOURCES.md).
+
+<a id="thuat-toan"></a>
+
+## 4. Sáu thuật toán và 12 trường hợp
+
+| Thuật toán chính | Ý tưởng | Giải thích chi tiết |
+|---|---|---|
+| GA | Chọn cha mẹ, lai ghép, đột biến và giữ elite | [DWGA](implementation/docs/DWGA.md) |
+| PSO | Di chuyển theo vận tốc, pbest và gbest | [DWPSO](implementation/docs/DWPSO.md) |
+| WOA | Bao vây, khám phá hoặc xoắn ốc quanh best | [DWWOA](implementation/docs/DWWOA.md) |
+| H-PSO-GA | Bước PSO rồi crossover/mutation | [DWH_PSO_GA](implementation/docs/DWH_PSO_GA.md) |
+| H-WOA-PSO | Trộn hai đề xuất trên mỗi cá thể | [DWH_WOA_PSO](implementation/docs/DWH_WOA_PSO.md) |
+| I-WOA | WOA thêm K-Means, OBL và Lévy | [DWI_WOA](implementation/docs/DWI_WOA.md) |
+
+Study gồm tám tổ hợp WOA và bốn đối chứng: **12 case duy nhất**. Một case có thể xuất hiện trong nhiều bảng nhưng không phải chạy lại. Xem thiết kế trong [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md).
+
+<a id="luong-chay"></a>
+
+## 5. Ba luồng thực thi
+
+| Luồng | Đầu vào | Ngân sách và phạm vi |
+|---|---|---|
+| Notebook hiện tại | 200 CSV có sẵn | 12 case, 80 vòng, P=25, N=4 |
+| Benchmark FE | Dữ liệu sinh từ YAML/manifest | Mặc định 3030 FE, P=30; schema riêng |
+| Script CSV legacy | CSV có sẵn | Một dataset hoặc batch sáu thuật toán theo vòng |
+
+FE là một lần đánh giá fitness. Cùng vòng không bảo đảm cùng FE, đặc biệt khi có OBL/Lévy. Không gộp ba luồng như cùng giao thức. Hướng dẫn môi trường và thực thi: [REPRODUCE](REPRODUCE.md).
+
+<a id="thu-muc"></a>
+
+## 6. Bản đồ thư mục
+
+| Đường dẫn từ gốc repository | Chứa gì? |
+|---|---|
+| configs/ | Cấu hình notebook và FE |
+| data/stores/ | Tọa độ user đầu vào |
+| data/views/ | Ảnh quan sát input |
+| implementation/src/ | Mô hình và thuật toán |
+| implementation/notebooks/ | Notebook study và trình bày |
+| implementation/scripts/ | Điểm vào CLI/analyzer |
+| implementation/docs/ | Phương pháp, thiết kế, nguồn và hướng dẫn |
+| implementation/docs/assets/ | Sơ đồ SVG nhúng vào Markdown |
+| implementation/tests/ | Kiểm tra mã |
+| implementation/results/ | Đầu ra khi được thực thi |
+| documents/ | Danh mục tài liệu học thuật |
+| plan/ | Kế hoạch/phân công |
+| reports/ | Ghi chú hạ tầng benchmark FE; không phải kết quả study CSV |
+
+<a id="lo-trinh"></a>
+
+## 7. Lộ trình đọc tài liệu
+
+| Thứ tự | Tài liệu | Sau khi đọc cần hiểu |
+|---|---|---|
+| 1 | README hiện tại | Dự án làm gì và đang ở đâu |
+| 2 | [NOTE](NOTE.md) | Câu hỏi nghiên cứu, logic thiết kế |
+| 3 | [REPORT](implementation/docs/REPORT.md) | Cách tính điểm và giới hạn |
+| 4 | Các chương thuật toán ở mục 4 | Vì sao mỗi phương pháp tạo ứng viên khác nhau |
+| 5 | [NOTEBOOK_STUDY](implementation/docs/NOTEBOOK_STUDY.md) | Đối chứng và các bảng sẽ được tạo |
+| 6 | [REPRODUCE](REPRODUCE.md) | Cách chuẩn bị và thực thi khi được duyệt |
+| 7 | [TALK](TALK.md) | Cách kể lại toàn bộ dự án và trả lời phản biện |
+
+[Mục lục toàn bộ tài liệu](implementation/docs/README.md) có các nhánh chuyên sâu về thuật ngữ, thống kê, độ nhạy và bằng chứng.
+
+<a id="nguon"></a>
+
+## 8. Nguồn và trạng thái kiểm chứng
+
+[SOURCES](implementation/docs/SOURCES.md) tách nguồn học thuật, lựa chọn riêng của nhóm và mã triển khai. Mỗi chương công thức dẫn về phần tương ứng; không quy toàn bộ phương pháp cho một bài báo.
+
+Study đã dừng và kết quả chạy thử đã được dọn sạch. Không có coordinator chạy nền. Notebook giữ ô chạy tắt; chỉ khởi chạy khi được yêu cầu. Đọc tài liệu không cần thực thi Python.
+
+Nhóm: Nguyễn Văn Trung, Hoàng Văn Trường, Nguyễn Minh Hiếu.

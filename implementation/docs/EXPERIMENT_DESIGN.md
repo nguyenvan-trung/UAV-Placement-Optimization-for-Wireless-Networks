@@ -1,15 +1,25 @@
 # Thiết kế đối chứng FE
 
+## Mục lục
+
+1. [Phạm vi và các tệp liên quan](#doc-section-01)
+2. [Cơ chế đếm và dừng](#doc-section-02)
+
+
 [Mục lục](README.md) · [Người mới](PROJECT_GUIDE.md) · [Thuật ngữ](GLOSSARY.md) · [Study notebook](NOTEBOOK_STUDY.md)
 
 
-Mục đích: mô tả hành vi chế độ FE; hạ tầng bổ sung ngày 24/10/2026. Đây là giao thức riêng, không phải notebook 100 vòng.
+Mục đích: mô tả hành vi chế độ FE; hạ tầng bổ sung ngày 24/10/2026. Đây là giao thức riêng, không phải notebook 80 vòng.
+
+<a id="doc-section-01"></a>
 
 ## Phạm vi và các tệp liên quan
 
-[benchmark.yaml](../../configs/benchmark.yaml) khai báo quần thể 30, max_fe=3030, các mức UE/phân bố và số instance/run. [run_benchmark.py](../scripts/run_benchmark.py) sinh dữ liệu từ manifest rồi gọi optimizer. Tọa độ không lấy trực tiếp từ 500 CSV. Các giá trị trong YAML là thiết kế, chưa phải kết quả đã đo.
+[benchmark.yaml](../../configs/benchmark.yaml) khai báo quần thể 30, max_fe=3030, các mức UE/phân bố và số instance/run. [run_benchmark.py](../scripts/run_benchmark.py) sinh dữ liệu từ manifest rồi gọi optimizer. Tọa độ không lấy trực tiếp từ 200 CSV. Các giá trị trong YAML là thiết kế, chưa phải kết quả đã đo.
 
-Notebook hiện tại dùng 500 CSV, quần thể 25 và 100 vòng, xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md). Hai luồng có schema và phạm vi thời gian khác nhau. Cách chạy khi có yêu cầu: [REPRODUCE](../../REPRODUCE.md); cách đọc log: [DATA_FORMAT](DATA_FORMAT.md).
+Notebook hiện tại dùng 200 CSV, quần thể 25 và 80 vòng, xem [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md). Hai luồng có schema và phạm vi thời gian khác nhau. Cách chạy khi có yêu cầu: [REPRODUCE](../../REPRODUCE.md); cách đọc log: [DATA_FORMAT](DATA_FORMAT.md).
+
+<a id="doc-section-02"></a>
 
 ## Cơ chế đếm và dừng
 

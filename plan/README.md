@@ -2,7 +2,7 @@
 
 [Trang đầu](../README.md) · [Mục lục kỹ thuật](../implementation/docs/README.md)
 
-Đây là kế hoạch tổ chức công việc, không phải log hoàn thành. Thiết kế hiện tại là notebook 30 trường hợp, 100 vòng trên 500 CSV; chưa chạy study và chưa chốt seed. Thiết kế hai giai đoạn 35/80 vòng trước đây đã được thay trong luồng notebook.
+Đây là kế hoạch tổ chức công việc, không phải log hoàn thành. Thiết kế hiện tại là notebook 12 trường hợp, 80 vòng trên 200 CSV; chưa chạy study và đã chốt 10 seed. Thiết kế hai giai đoạn 35/80 vòng trước đây đã được thay trong luồng notebook.
 
 - [weekly_plan](weekly_plan.md): lộ trình theo giai đoạn và sản phẩm cần có.
 - [team_assignment](team_assignment.md): phân công và review.

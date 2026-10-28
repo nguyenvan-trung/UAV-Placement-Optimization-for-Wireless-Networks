@@ -1,8 +1,18 @@
 # Độ nhạy theo trọng số và tiêu chí phủ sóng
 
+## Mục lục
+
+1. [Hạ tầng hiện có](#doc-section-01)
+2. [Quy tắc so sánh](#doc-section-02)
+3. [Đầu ra analyzer](#doc-section-03)
+4. [Giới hạn kết luận](#doc-section-04)
+
+
 [Mục lục](README.md) · [Mô hình](REPORT.md) · [Thiết kế FE](EXPERIMENT_DESIGN.md)
 
 Sensitivity hỏi: nếu thay trọng số hoặc định nghĩa coverage thì thứ hạng, chất lượng và đánh đổi có thay đổi không? Nó khác [ablation](ABLATION.md), nơi giữ mô hình và đổi thành phần thuật toán.
+
+<a id="doc-section-01"></a>
 
 ## Hạ tầng hiện có
 
@@ -11,7 +21,9 @@ Sensitivity hỏi: nếu thay trọng số hoặc định nghĩa coverage thì t
 - [run_benchmark.py](../scripts/run_benchmark.py): mode sensitivity chạy optimizer lại cho từng cấu hình.
 - [analyze_sensitivity.py](../scripts/analyze_sensitivity.py): tổng hợp, tương quan hạng, kiểm định ghép cặp và chẩn đoán.
 
-Ngân sách, instance và seed lấy từ benchmark.yaml. Full study chưa chạy. Luồng notebook 30 case hiện không tự chạy sensitivity; không cộng các thí nghiệm này vào 30 case.
+Ngân sách, instance và seed lấy từ benchmark.yaml. Full study chưa chạy. Luồng notebook 12 case hiện không tự chạy sensitivity; không cộng các thí nghiệm này vào 12 case.
+
+<a id="doc-section-02"></a>
 
 ## Quy tắc so sánh
 
@@ -20,6 +32,8 @@ Cần tối ưu lại từng cấu hình với cùng FE và seed; chấm lại m
 SINR phụ dùng công suất tuyến tính mW với giả định các UAV phát đồng thời, đồng kênh. Nếu vẫn giữ I trong mục tiêu, nhiễu được phản ánh cả trong C lẫn I; đây là lựa chọn của nhánh phụ, không thay baseline SNR.
 
 Evaluator riêng không tự bảo đảm khả thi; runner áp dụng cùng ràng buộc bài toán.
+
+<a id="doc-section-03"></a>
 
 ## Đầu ra analyzer
 
@@ -33,6 +47,8 @@ Evaluator riêng không tự bảo đảm khả thi; runner áp dụng cùng rà
 | tradeoff_C_E / tradeoff_C_I | Các điểm trung vị, chưa phải mặt Pareto toàn miền |
 
 Script kiểm tra đủ cấu hình/thuật toán/cặp seed/FE, các cờ feasible/reoptimized và công thức fitness. Các cờ không tự chứng minh nguồn gốc; cần log và manifest. Ngưỡng bão hòa/gần hằng số trong YAML là cấu hình chẩn đoán, không phải kết quả.
+
+<a id="doc-section-04"></a>
 
 ## Giới hạn kết luận
 

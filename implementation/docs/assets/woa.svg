@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="880" viewBox="0 0 1000 880" role="img" aria-labelledby="title desc">
+<title id="title">WOA — BA NHÁNH TẠO ỨNG VIÊN</title>
+<desc id="desc">1. KHỞI TẠO QUẦN THỂ VÀ BEST: Tạo P cấu hình UAV, chấm fitness và giữ best. 2. TẠO HỆ SỐ NGẪU NHIÊN: Tính a, A, C, l và p theo tiến độ tìm kiếm. 3. CHỌN MỘT TRONG BA NHÁNH: p ≥ 0,5: xoắn ốc; p &lt; 0,5: bao vây hoặc theo cá thể ngẫu nhiên. 4. CLIP BIÊN, CHẤM ĐIỂM, GIỮ BEST: Nhánh dùng độ lớn norm(A)/√D để chọn bao vây hoặc khám phá. 5. LẶP CHO MỖI CÁ THỂ / MỖI VÒNG: Lưu best sau mỗi vòng; dừng theo giao thức iterations hoặc FE.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#64748b"/></marker></defs>
+<rect width="1000" height="880" rx="18" fill="#f1f5f9"/>
+<rect width="1000" height="112" rx="18" fill="#0f2942"/>
+<text x="42" y="47" fill="#fff" font-family="Arial, sans-serif" font-size="25" font-weight="700">WOA — BA NHÁNH TẠO ỨNG VIÊN</text>
+<text x="42" y="81" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="18">Sơ đồ đọc theo thứ tự; lựa chọn nhánh nằm ở bước 3</text>
+<rect x="42" y="140" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="175" r="20" fill="#0e7490"/>
+<text x="79" y="182" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">1</text>
+<text x="116" y="179" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">KHỞI TẠO QUẦN THỂ VÀ BEST</text>
+<text x="64" y="218" fill="#334155" font-family="Arial, sans-serif" font-size="18">Tạo P cấu hình UAV, chấm fitness và giữ best.</text>
+<path d="M484 248 V273" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="283" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="318" r="20" fill="#0e7490"/>
+<text x="79" y="325" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">2</text>
+<text x="116" y="322" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">TẠO HỆ SỐ NGẪU NHIÊN</text>
+<text x="64" y="361" fill="#334155" font-family="Arial, sans-serif" font-size="18">Tính a, A, C, l và p theo tiến độ tìm kiếm.</text>
+<path d="M484 391 V416" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="426" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="461" r="20" fill="#0e7490"/>
+<text x="79" y="468" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">3</text>
+<text x="116" y="465" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">CHỌN MỘT TRONG BA NHÁNH</text>
+<text x="64" y="504" fill="#334155" font-family="Arial, sans-serif" font-size="18">p ≥ 0,5: xoắn ốc; p &lt; 0,5: bao vây hoặc theo cá thể ngẫu nhiên.</text>
+<path d="M484 534 V559" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="569" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="604" r="20" fill="#0e7490"/>
+<text x="79" y="611" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">4</text>
+<text x="116" y="608" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">CLIP BIÊN, CHẤM ĐIỂM, GIỮ BEST</text>
+<text x="64" y="647" fill="#334155" font-family="Arial, sans-serif" font-size="18">Nhánh dùng độ lớn norm(A)/√D để chọn bao vây hoặc khám phá.</text>
+<path d="M484 677 V702" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="42" y="712" width="885" height="103" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<circle cx="79" cy="747" r="20" fill="#0e7490"/>
+<text x="79" y="754" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="20">5</text>
+<text x="116" y="751" fill="#0f2942" font-family="Arial, sans-serif" font-size="21" font-weight="700">LẶP CHO MỖI CÁ THỂ / MỖI VÒNG</text>
+<text x="64" y="790" fill="#334155" font-family="Arial, sans-serif" font-size="18">Lưu best sau mỗi vòng; dừng theo giao thức iterations hoặc FE.</text>
+<path d="M930 762 H965 V333 H934" fill="none" stroke="#0e7490" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+</svg>

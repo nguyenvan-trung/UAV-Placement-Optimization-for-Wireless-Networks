@@ -1,106 +1,105 @@
-# 🐋 DWWOA: TÀI LIỆU KỸ THUẬT & CÔNG THỨC THUẬT TOÁN BẦY CÁ VOI (WOA GỐC)
+# WOA: bao vây, khám phá và xoắn ốc
 
-[Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Mô hình chung](REPORT.md) · [Biến thể và study 100 vòng](NOTEBOOK_STUDY.md)
+[Mục lục](README.md) · [Mô hình chung](REPORT.md) · [Nguồn WOA](SOURCES.md#woa)
 
-Trang này giải thích cơ chế baseline/bản đầy đủ. Các cờ K/O/L mới của GA/PSO và ablation bản lai được mô tả tại NOTEBOOK_STUDY; không suy ra hiệu quả thực nghiệm từ tên toán tử. Đọc mô hình và thuật ngữ trước, rồi xem thiết kế study sau chương này.
+WOA tạo ứng viên mới bằng ba nhánh toán học. “Cá voi” là tên cá thể trong không gian nghiệm, không phải một UAV riêng lẻ.
 
+## Mục lục
 
-> Tài liệu phương pháp; các kết luận thực nghiệm cũ đã được rút. Không có bảng xếp hạng mới khi chưa có log FE. Mô hình chung: [REPORT.md](REPORT.md).
+1. [Mô hình hoạt động](#mo-hinh)
+2. [Ký hiệu và hệ số](#he-so)
+3. [Chọn nhánh theo code](#chon-nhanh)
+4. [Ba công thức cập nhật](#cap-nhat)
+5. [Giữ best, biến thể và nguồn](#nguon)
 
-> **Mục đích:** Hướng dẫn chi tiết công thức toán học, cấu trúc mã nguồn và kịch bản trả lời phản biện dành cho thuật toán **Whale Optimization Algorithm (WOA)** trong bài toán tối ưu hóa vị trí 3D trạm phát sóng UAV.
+<a id="mo-hinh"></a>
 
----
+## 1. Mô hình hoạt động
 
-## 1. 💡 Ý TƯỞNG CỐT LÕI & CẢM HỨNG TỰ NHIÊN
-- **Cảm hứng sinh học:** WOA do Seyedali Mirjalili và Andrew Lewis đề xuất năm 2016, mô phỏng chiến thuật săn mồi bằng lưới bọt khí độc đáo (Bubble-net hunting strategy) của loài **cá voi lưng gù (Humpback whale)**.
-- **Hành vi săn mồi:** Đàn cá voi lặn sâu xuống dưới đàn cá nhỏ hoặc nhuyễn thể, vừa bơi vòng xoắn ốc hướng lên mặt nước vừa nhả ra những cột bọt khí hình tròn bao vây con mồi và dồn ép chúng vào tâm bẫy để nuốt trọn.
-- **Chiến lược tìm kiếm:** Được chia thành 3 cơ chế toán học rõ rệt:
-  1. **Bao vây con mồi (Encircling Prey):** Thu hẹp dần bán kính bao quanh vị trí tốt nhất.
-  2. **Tấn công xoắn ốc lưới bọt (Spiral Bubble-net Attack):** Mô phỏng đường bơi xoắn ốc 3D tiến về phía con mồi.
-  3. **Thám hiểm tìm mồi toàn cục (Search for Prey):** Bơi ngẫu nhiên theo một cá thể bất kỳ trong bầy để mở rộng không gian tìm kiếm.
+![WOA: tạo hệ số, chọn một trong ba nhánh, clip, đánh giá và lặp](assets/woa.svg)
 
----
+**Giải thích:** mỗi cá thể rút hệ số, chọn nhánh và tạo một vị trí mới; chấm vị trí này rồi cập nhật best. Best được giữ qua lịch sử, không chỉ lấy max quần thể hiện tại ở mỗi thời điểm.
 
-## 2. 🎯 BIỂU DIỄN CÁ VOI TRONG BÀI TOÁN UAV (WHALE STATE)
-Mỗi con cá voi $i$ đại diện cho một phương án phối hợp 4 UAV trong không gian 3 chiều:
+Hình theo [optimizer.py](../src/algorithms/WOA/optimizer.py). Nhánh ngẫu nhiên không chứng minh đã khám phá hết không gian.
 
-$$\mathbf{X}_i(t) = [x_1, y_1, z_1, \; x_2, y_2, z_2, \; x_3, y_3, z_3, \; x_4, y_4, z_4]^T \in \mathbb{R}^{12}$$
+<a id="he-so"></a>
 
-- Con mồi mục tiêu $\mathbf{X}^*(t)$ chính là cấu hình 4 UAV đạt giá trị hàm mục tiêu Fitness cao nhất trong bầy tại vòng lặp $t$:
-  $$\mathbf{X}^*(t) = \arg\max_{i=1,\dots,PopSize} \text{Fitness}(\mathbf{X}_i(t))$$
+## 2. Ký hiệu và hệ số
 
----
+| Ký hiệu | Ý nghĩa |
+|---|---|
+| X, X* | Vị trí hiện tại, best đã lưu; vector mét |
+| X_rand | Vị trí của cá thể chọn ngẫu nhiên trong quần thể |
+| D | Số chiều nghiệm; 12 khi có 4 UAV |
+| A, C | Vector hệ số tìm kiếm; C ở đây không phải coverage |
+| p, l | Số ngẫu nhiên: p trong [0,1], l trong [−1,1] |
+| b_s | Hệ số xoắn ốc; mặc định 1; khác b trong mô hình LoS |
+| odot | Nhân từng phần tử |
 
-## 3. 📐 CÔNG THỨC TOÁN HỌC CỐT LÕI
+Để tránh nhầm coverage, bên dưới ký hiệu hệ số WOA là C_w.
 
-Trong các điều kiện dưới, ký hiệu |A| là cách viết tắt của độ lớn mà code dùng để chọn nhánh: norm(A)/sqrt(D), không phải kiểm tra riêng từng tọa độ. Best được giữ qua các vòng, không chỉ là max của quần thể hiện tại. Công thức lịch theo t áp dụng chế độ vòng lặp; ở chế độ FE, progress dùng FE đã tiêu thụ/max_fe. Xem [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md).
+$$
+a(t)=2-2\frac{t}{\max(1,T-1)}.
+$$
 
-### 3.1. Các hệ số điều khiển thích nghi ($a, \mathbf{A}, \mathbf{C}, l, p$)
-Tại mỗi vòng lặp $t$ ($t = 0, \dots, MaxIter - 1$):
-- **Hệ số $a$:** Giảm tuyến tính từ 2 về 0 để chuyển dịch dần từ giai đoạn Thám hiểm (Exploration) sang Khai thác (Exploitation):
-  $$a = 2.0 - 2.0 \cdot \left(\frac{t}{MaxIter - 1}\right)$$
-- **Vector hệ số $\mathbf{A}$:** 
-  $$\mathbf{A} = 2 a \cdot \mathbf{r}_1 - a, \quad \mathbf{r}_1 \sim \mathcal{U}(0, 1)^D$$
-  *(Biên độ dao động của $A$ nằm trong đoạn $[-a, a]$. Khi $|A| < 1$, cá voi tập trung khai thác; khi $|A| \ge 1$, cá voi thám hiểm toàn cục)*.
-- **Vector hệ số dao động $\mathbf{C}$:**
-  $$\mathbf{C} = 2 \cdot \mathbf{r}_2, \quad \mathbf{r}_2 \sim \mathcal{U}(0, 1)^D$$
-  *(Cung cấp trọng số ngẫu nhiên cho con mồi, tăng cường tính đa dạng)*.
-- **Biến xoắn ốc $l$:** Một số thực ngẫu nhiên $l \sim \mathcal{U}(-1, 1)$.
-- **Xác suất lựa chọn cơ chế $p$:** Số thực ngẫu nhiên $p \sim \mathcal{U}(0, 1)$.
+$$
+A=2a\,r_1-a,\qquad C_w=2r_2.
+$$
 
----
+r_1 và r_2 là vector ngẫu nhiên độc lập; p và l được rút cho mỗi lần cập nhật. T là tổng vòng. FE mode thay phân số t bằng tiến độ FE, xem [EXPERIMENT_DESIGN](EXPERIMENT_DESIGN.md).
 
-### 3.2. Cơ chế 1: Bao vây con mồi (Encircling Prey)
-Được kích hoạt khi **$p < 0.5$** và **$|A| < 1$** (khoảng cách thu hẹp về con mồi tốt nhất $\mathbf{X}^*$):
+**Nguồn:** công thức chính xác theo [coefficient_update.py](../src/algorithms/WOA/coefficient_update.py); nguyên lý tham khảo [WOA-1](SOURCES.md#woa).
 
-$$\mathbf{D} = \left| \mathbf{C} \odot \mathbf{X}^*(t) - \mathbf{X}_i(t) \right|$$
-$$\mathbf{X}_i(t+1) = \mathbf{X}^*(t) - \mathbf{A} \odot \mathbf{D}$$
+<a id="chon-nhanh"></a>
 
----
+## 3. Chọn nhánh theo code
 
-### 3.3. Cơ chế 2: Bơi xoắn ốc lưới bọt khí (Spiral Bubble-net Attacking)
-Được kích hoạt khi **$p \ge 0.5$**. Cá voi bơi theo quỹ đạo xoắn ốc logarithmic hướng về con mồi:
+Đặt q=norm(A)/sqrt(D).
 
-$$\mathbf{D}' = \left| \mathbf{X}^*(t) - \mathbf{X}_i(t) \right|$$
-$$\mathbf{X}_i(t+1) = \mathbf{D}' \odot e^{b l} \cos(2\pi l) + \mathbf{X}^*(t)$$
+| Điều kiện | Nhánh |
+|---|---|
+| p≥0,5 | Xoắn ốc quanh X* |
+| p<0,5 và q<1 | Bao vây X* |
+| p<0,5 và q≥1 | Theo cá thể ngẫu nhiên X_rand |
 
-- **Ý nghĩa tham số:**
-  - $b = 1.0$: Hằng số định hình độ cong của đường xoắn ốc logarithmic.
-  - $l \in [-1, 1]$: Xác định khoảng cách tương đối giữa cá voi và con mồi trên quỹ đạo xoắn. Khi $l \to 0$, hệ số tiến tới một; bước cộng vẫn chứa D', nên không bảo đảm vị trí tiến sát con mồi.
+q là độ lớn vector chuẩn hóa, không phải kiểm tra trị tuyệt đối riêng từng thành phần A. Đây là chi tiết triển khai cần nêu khi đối chiếu bài gốc.
 
----
+<a id="cap-nhat"></a>
 
-### 3.4. Cơ chế 3: Thám hiểm tìm mồi toàn cục (Search for Prey)
-Được kích hoạt khi **$p < 0.5$** và **$|A| \ge 1$**. Thay vì hướng về con đầu đàn $\mathbf{X}^*$, cá voi sẽ bơi dạt ra xa theo một con cá voi ngẫu nhiên $\mathbf{X}_{\text{rand}}$ trong quần thể:
+## 4. Ba công thức cập nhật
 
-$$\mathbf{D} = \left| \mathbf{C} \odot \mathbf{X}_{\text{rand}} - \mathbf{X}_i(t) \right|$$
-$$\mathbf{X}_i(t+1) = \mathbf{X}_{\text{rand}} - \mathbf{A} \odot \mathbf{D}$$
+### 4.1. Bao vây
 
----
+$$
+R=|C_w\odot X^*-X|,\qquad X'=X^*-A\odot R.
+$$
 
-## 4. 🗺️ BẢN ĐỒ MÃ NGUỒN (CODE MAPPING)
+R là vector khoảng cách có trọng số, đơn vị mét. Dấu giá trị tuyệt đối áp dụng từng tọa độ; A/C_w không có đơn vị.
 
-| Thành phần thuật toán | File mã nguồn tương ứng | Hàm / Class chính |
-| :--- | :--- | :--- |
-| Cấu trúc cá thể cá voi | [`whale.py`](../src/algorithms/WOA/whale.py) | `class Whale` |
-| Khởi tạo bầy cá voi | [`initialization.py`](../src/algorithms/WOA/initialization.py) | `initialize_whales()` |
-| Cập nhật hệ số $a, A, C, l$ | [`coefficient_update.py`](../src/algorithms/WOA/coefficient_update.py) | `update_coefficients()` |
-| Bao vây con mồi | [`encircling.py`](../src/algorithms/WOA/encircling.py) | `encircle_prey()` |
-| Bơi xoắn ốc bọt khí | [`spiral_update.py`](../src/algorithms/WOA/spiral_update.py) | `spiral_update()` |
-| Thám hiểm tìm mồi | [`exploration.py`](../src/algorithms/WOA/exploration.py) | `search_for_prey()` |
-| Xử lý giới hạn biên | [`boundary_handler.py`](../src/algorithms/WOA/boundary_handler.py) | `handle_boundaries()` |
-| Bộ điều khiển tối ưu hóa | [`optimizer.py`](../src/algorithms/WOA/optimizer.py) | `class WOAOptimizer.optimize()` |
+### 4.2. Khám phá theo cá thể ngẫu nhiên
 
----
+$$
+R=|C_w\odot X_{\mathrm{rand}}-X|,\qquad X'=X_{\mathrm{rand}}-A\odot R.
+$$
 
-## 5. Trạng thái thực nghiệm và diễn giải
+Đổi điểm tham chiếu từ best sang cá thể ngẫu nhiên. Không gọi đây là tìm kiếm toàn bộ không gian theo nghĩa vét cạn.
 
-Các số liệu và phần trả lời phản biện dựa trên kết quả cũ đã được rút khỏi tài liệu. Chưa có log benchmark theo FE để xác nhận thứ hạng hoặc quy nguyên nhân cho từng cơ chế. Không kết luận thuật toán này vượt thuật toán khác từ mô tả toán tử. Xem [báo cáo tổng hợp](REPORT.md), [ablation](ABLATION.md), [độ nhạy](SENSITIVITY.md) và [thống kê](STATISTICS.md).
+### 4.3. Xoắn ốc
 
-## 7. Tài liệu tham khảo dự kiến — cần sinh viên tự xác minh
+$$
+R'=|X^*-X|,\qquad X'=R'\exp(b_s l)\cos(2\pi l)+X^*.
+$$
 
-Danh mục kế thừa từ bản cũ; thông tin thư mục và mức độ phù hợp cần sinh viên tự đọc xác minh. Không coi các chú giải bên dưới là bằng chứng đã kiểm chứng hoặc nguồn của toàn bộ Fitness. Xem quy tắc trích dẫn trong [REPORT.md](REPORT.md).
-1. **Mirjalili, S., & Lewis, A. (2016).** "The Whale Optimization Algorithm". *Advances in Engineering Software*, vol. 95, pp. 51–67. DOI: [`10.1016/j.advengsoft.2016.01.008`](https://doi.org/10.1016/j.advengsoft.2016.01.008). *(Bài báo gốc đề xuất thuật toán WOA và cơ chế săn mồi lưới bọt khí xoắn ốc)*.
-2. **Mohammed, H., et al. (2020).** "A comprehensive survey on Whale Optimization Algorithm: Variants, applications, and hybridizations". *Neurocomputing*, vol. 410, pp. 397–433. DOI: [`10.1016/j.neucom.2020.04.110`](https://doi.org/10.1016/j.neucom.2020.04.110). *(Khảo sát hạn chế kẹt cực trị địa phương của WOA)*.
-3. **Gharsallah, A., et al. (2021).** "Whale optimization algorithm for 3D deployment of UAV base stations in wireless communication systems". *Applied Soft Computing*, vol. 103, p. 107147. *(Ứng dụng WOA trong tối ưu hóa vị trí 3D UAV)*.
+R' theo từng tọa độ; l điều khiển bước xoắn. Khi l gần 0, hệ số tiến gần 1, nên không bảo đảm X' tiến sát X* nếu R' còn lớn.
 
+**Nguồn các biểu thức:** [encircling.py](../src/algorithms/WOA/encircling.py), [exploration.py](../src/algorithms/WOA/exploration.py), [spiral_update.py](../src/algorithms/WOA/spiral_update.py); nguồn nguyên lý WOA-1. Sau nhánh, clip miền rồi gọi fitness chung.
+
+<a id="nguon"></a>
+
+## 5. Giữ best, biến thể và nguồn
+
+Khi F(X') tốt hơn best đã lưu, cập nhật best. Ở chế độ vòng, history khởi tạo cộng 100 mốc vòng cho study. Ở chế độ FE, counter có thể dừng giữa quần thể; không gọi đó là đủ 80 vòng.
+
+[WOA-1](SOURCES.md#woa) có trang tác giả và DOI. Công thức ở trang này mô tả mã repository, có chỉ rõ khác biệt q; không khẳng định đã kiểm tra toàn văn bài in trong lượt biên tập này.
+
+WOA gốc không bật K/O/L. Các case WOA cải tiến dùng IWOAOptimizer với cờ tương ứng; xem [I-WOA](DWI_WOA.md) và [NOTEBOOK_STUDY](NOTEBOOK_STUDY.md). Chưa có kết quả để kết luận vượt GA hoặc PSO.

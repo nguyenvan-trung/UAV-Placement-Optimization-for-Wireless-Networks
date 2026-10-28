@@ -1,14 +1,26 @@
 # Độ ổn định theo seed, quy mô và phân bố user
 
+## Mục lục
+
+1. [Notebook 200 CSV](#doc-section-01)
+2. [Luồng FE và năm bộ sinh](#doc-section-02)
+3. [Analyzer FE](#doc-section-03)
+4. [Điều còn thiếu](#doc-section-04)
+
+
 [Mục lục](README.md) · [Thuật ngữ](GLOSSARY.md) · [Schema](DATA_FORMAT.md)
 
 Có hai câu hỏi khác nhau: thuật toán có ổn định giữa các seed trên cùng dataset không, và kết quả có thay đổi khi dataset/phân bố thay đổi không? Không gộp cả hai thành một độ lệch chuẩn rồi gọi đó là ổn định thuật toán.
 
-## Notebook 500 CSV
+<a id="doc-section-01"></a>
+
+## Notebook 200 CSV
 
 [Study notebook](NOTEBOOK_STUDY.md) giữ dữ liệu từng file cố định và lặp seed. Bảng stability tính mean/SD/min/max qua seed trên từng dataset/case; summary lấy trung bình các SD đó. by_scale gộp theo số user. ranking dùng trung vị seed trên từng dataset rồi tính hạng.
 
-Notebook không tự gán nhãn single_cluster/uniform cho 500 CSV từ tên file. Tên mức user không chứng minh loại phân bố.
+Notebook không tự gán nhãn single_cluster/uniform cho 200 CSV từ tên file. Tên mức user không chứng minh loại phân bố.
+
+<a id="doc-section-02"></a>
 
 ## Luồng FE và năm bộ sinh
 
@@ -24,6 +36,8 @@ Notebook không tự gán nhãn single_cluster/uniform cho 500 CSV từ tên fil
 
 Bộ sinh FE dùng user mặt đất z=0, demand=1. Các CSV minh họa trong figures và ảnh scenario chỉ trình bày hình học; không phải output tối ưu hoặc bằng chứng tổng quát hóa.
 
+<a id="doc-section-03"></a>
+
 ## Analyzer FE
 
 [analyze_stability.py](../scripts/analyze_stability.py) đọc log FE sáu thuật toán, chỉ lấy purpose=eval, kiểm tra cặp seed/FE, khả thi và số UE. Các bảng gồm tổng hợp, hạng theo quy mô/phân bố và trường hợp I-WOA không đứng đầu.
@@ -31,6 +45,8 @@ Bộ sinh FE dùng user mặt đất z=0, demand=1. Các CSV minh họa trong fi
 Tên output thực: `stability_summary.csv`, `ranks_by_ue_count.csv`, `ranks_by_distribution.csv`, `iwoa_not_first.csv`. File cuối liệt kê I-WOA có fitness thấp hơn best cùng cặp; hòa không tính là thua.
 
 Analyzer không tự chứng minh đủ manifest. Runner và người phân tích cần đối chiếu thiết kế. Không đưa runs.csv notebook vào analyzer FE trực tiếp.
+
+<a id="doc-section-04"></a>
 
 ## Điều còn thiếu
 

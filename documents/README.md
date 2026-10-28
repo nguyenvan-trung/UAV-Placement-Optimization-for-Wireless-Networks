@@ -1,6 +1,19 @@
 # Danh mục tài liệu tham khảo cần đọc và xác minh
 
-[Trang đầu](../README.md) · [Mục lục kỹ thuật](../implementation/docs/README.md) · [Mô hình thực sự triển khai](../implementation/docs/REPORT.md)
+## Mục lục
+
+1. [📑 Danh mục các nhóm tài liệu](#doc-section-01)
+2. [📡 1. Mô hình Kênh truyền Vô tuyến & Tối ưu hóa vị trí UAV 3D (Foundation)](#doc-section-02)
+3. [🐋 2. Thuật toán Bầy cá voi (WOA) & Cải tiến (I-WOA) (Core Contribution)](#doc-section-03)
+4. [🦅 3. Tối ưu hóa bầy đàn (PSO) & Thuật toán bầy đàn (Benchmark)](#doc-section-04)
+5. [🧬 4. Thuật toán Di truyền (GA - Genetic Algorithms)](#doc-section-05)
+6. [🔀 5. Các kỹ thuật lai ghép Metaheuristic (Hybrid Methods)](#doc-section-06)
+7. [🔍 Hướng dẫn tải tài liệu nhanh:](#doc-section-07)
+
+
+[Trang đầu](../README.md) · [Mục lục kỹ thuật](../implementation/docs/README.md) · [Mô hình thực sự triển khai](../implementation/docs/REPORT.md) · [Nguồn theo công thức](../implementation/docs/SOURCES.md)
+
+SOURCES chỉ rõ phần đã đối chiếu, giới hạn truy cập toàn văn và công thức riêng. Danh mục mở rộng dưới đây không thay bảng truy nguồn cho từng phương trình.
 
 Danh mục kế thừa phục vụ tìm nguồn, chưa phải xác nhận đã kiểm tra toàn văn/DOI của mọi mục. Các chú giải chỉ nêu hướng liên hệ cần đối chiếu; không dùng một bài báo như chứng cứ cho toàn bộ fitness, trọng số hoặc thứ hạng dự án. Lượt chỉnh tài liệu này không tải/đọc lại bài báo bên ngoài.
 
@@ -10,6 +23,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 > **Hướng dẫn tải:** Bạn có thể copy tên bài báo hoặc mã DOI dán vào [Google Scholar](https://scholar.google.com/), [IEEE Xplore](https://ieeexplore.ieee.org/), hoặc [ResearchGate](https://www.researchgate.net/) để tải file PDF toàn văn.
 
 ---
+
+<a id="doc-section-01"></a>
 
 ## 📑 Danh mục các nhóm tài liệu
 
@@ -22,6 +37,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 ---
 
 <a id="foundation"></a>
+
+<a id="doc-section-02"></a>
 
 ## 📡 1. Mô hình Kênh truyền Vô tuyến & Tối ưu hóa vị trí UAV 3D (Foundation)
 
@@ -54,6 +71,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 
 <a id="woa"></a>
 
+<a id="doc-section-03"></a>
+
 ## 🐋 2. Thuật toán Bầy cá voi (WOA) & Cải tiến (I-WOA) (Core Contribution)
 
 ### [2.1] The Whale Optimization Algorithm (Bài báo gốc của WOA)
@@ -84,6 +103,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 
 <a id="pso"></a>
 
+<a id="doc-section-04"></a>
+
 ## 🦅 3. Tối ưu hóa bầy đàn (PSO) & Thuật toán bầy đàn (Benchmark)
 
 ### [3.1] Particle Swarm Optimization (Bài báo phát minh PSO)
@@ -102,6 +123,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 
 <a id="ga"></a>
 
+<a id="doc-section-05"></a>
+
 ## 🧬 4. Thuật toán Di truyền (GA - Genetic Algorithms)
 
 ### [4.1] Adaptation in Natural and Artificial Systems
@@ -119,6 +142,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 
 <a id="hybrid"></a>
 
+<a id="doc-section-06"></a>
+
 ## 🔀 5. Các kỹ thuật lai ghép Metaheuristic (Hybrid Methods)
 
 ### [5.1] Hybridizing Particle Swarm Optimization with Genetic Algorithm
@@ -132,6 +157,8 @@ Khi dùng một nguồn, ghi rõ công thức/trang được kế thừa, phần
 - **Hướng đối chiếu:** Ý tưởng kết hợp WOA và PSO; phiên bản triển khai riêng được mô tả trong [DWH_WOA_PSO](../implementation/docs/DWH_WOA_PSO.md). Không có kết luận thứ hạng mới khi chưa có log study.
 
 ---
+
+<a id="doc-section-07"></a>
 
 ## 🔍 Hướng dẫn tải tài liệu nhanh:
 1. Mở trang tìm kiếm [Google Scholar](https://scholar.google.com/).
