@@ -217,7 +217,7 @@ Việc chọn 3,5 GHz đặt bài toán trong bối cảnh Sub-6 GHz, nhưng kh�
 
 ### 2.1.2. Mô hình xác suất tầm nhìn thẳng LoS/NLoS của Al-Hourani
 
-Gọi UAV $i$ có tọa độ $\mathbf q_i=(x_i,y_i,z_i)$ và UE $j$ có tọa độ $\mathbf u_j=(u_j,v_j,h_j)$. Khoảng cách hình học được tính bằng:
+Gọi UAV $i$ có tọa độ $\mathbf{q}_i=(x_i,y_i,z_i)$ và UE $j$ có tọa độ $\mathbf{u}_j=(u_j,v_j,h_j)$. Khoảng cách hình học được tính bằng:
 
 $$
 d_{ij}=\max\left(10^{-3},\sqrt{(x_i-u_j)^2+(y_i-v_j)^2+(z_i-h_j)^2}\right).
@@ -226,7 +226,7 @@ $$
 Code đặt sàn khoảng cách $10^{-3}$ m để tránh phép logarithm hoặc phép chia tại khoảng cách bằng không. Góc ngẩng dùng đơn vị độ:
 
 $$
-\theta_{ij}=\frac{180}{\pi}\arcsin\left[\operatorname{clip}\left(\frac{z_i-h_j}{d_{ij}},0,1\right)\right].
+\theta_{ij}=\frac{180}{\pi}\arcsin\left[\mathrm{clip}\left(\frac{z_i-h_j}{d_{ij}},0,1\right)\right].
 $$
 
 Xác suất LoS và NLoS có dạng:
@@ -256,7 +256,7 @@ L_{ij}^{\mathrm{NLoS}}=L_{\mathrm{FS},ij}+\eta_{\mathrm{NLoS}},
 $$
 
 $$
-\overline L_{ij}=p_{ij}^{\mathrm{LoS}}L_{ij}^{\mathrm{LoS}}
+\overline{L}_{ij}=p_{ij}^{\mathrm{LoS}}L_{ij}^{\mathrm{LoS}}
 +(1-p_{ij}^{\mathrm{LoS}})L_{ij}^{\mathrm{NLoS}}.
 $$
 
@@ -286,14 +286,14 @@ Mô hình chưa xét bản đồ tòa nhà, shadowing ngẫu nhiên, fading nhan
 Với công suất phát cố định và không có tăng ích anten riêng trong mô hình, công suất thu trên liên kết $i,j$ là:
 
 $$
-P_{\mathrm{rx},ij}[\mathrm{dBm}]=P_{\mathrm{tx}}[\mathrm{dBm}]-\overline L_{ij}[\mathrm{dB}],
+P_{\mathrm{rx},ij}[\mathrm{dBm}]=P_{\mathrm{tx}}[\mathrm{dBm}]-\overline{L}_{ij}[\mathrm{dB}],
 $$
 
 $$
 \mathrm{SNR}_{ij}[\mathrm{dB}]=P_{\mathrm{rx},ij}[\mathrm{dBm}]-P_{\mathrm{noise}}[\mathrm{dBm}].
 $$
 
-Ví dụ $\overline L_{ij}=110$ dB thì $P_{\mathrm{rx},ij}=-80$ dBm và SNR bằng 24 dB, vượt ngưỡng 18 dB. Với các giá trị cấu hình, điều kiện SNR đạt ngưỡng tương đương $\overline L_{ij}\le116$ dB, hoặc $P_{\mathrm{rx},ij}\ge-86$ dBm. Hằng số ngưỡng công suất khác nếu có trong repository không thay thế điều kiện này: luồng fitness đang sử dụng SNR 18 dB.
+Ví dụ $\overline{L}_{ij}=110$ dB thì $P_{\mathrm{rx},ij}=-80$ dBm và SNR bằng 24 dB, vượt ngưỡng 18 dB. Với các giá trị cấu hình, điều kiện SNR đạt ngưỡng tương đương $\overline{L}_{ij}\le116$ dB, hoặc $P_{\mathrm{rx},ij}\ge-86$ dBm. Hằng số ngưỡng công suất khác nếu có trong repository không thay thế điều kiện này: luồng fitness đang sử dụng SNR 18 dB.
 
 Để phân biệt về mặt khái niệm, nếu xét UAV phục vụ $i$ và tập UAV đồng kênh còn lại, SINR phải được tính trên công suất tuyến tính:
 
@@ -311,13 +311,13 @@ Biểu thức SINR này chỉ giải thích hướng mở rộng, **không đư�
 Đặt ma trận khả năng kết nối $A\in\{0,1\}^{N\times M}$:
 
 $$
-A_{ij}=\mathbf1[\mathrm{SNR}_{ij}\ge\gamma],\qquad
+A_{ij}=\mathbf{1}[\mathrm{SNR}_{ij}\ge\gamma],\qquad
 n_j=\sum_{i=1}^{N}A_{ij}.
 $$
 
 UE có $n_j=0$ chưa được phủ; $n_j\ge1$ được phủ; $n_j\ge2$ được tính vào tỷ lệ chồng lấn. Cách đếm này xử lý đồng thời mọi UAV và không đếm lặp một UE trong chỉ số coverage.
 
-Code hiện tại **không xây dựng phép gán độc quyền một UE cho đúng một UAV**, không cân bằng tải, không đặt giới hạn số UE phục vụ trên mỗi UAV và không phân bổ băng thông. Vì vậy, thuật ngữ association trong phạm vi này được hiểu là kiểm tra các liên kết đủ điều kiện phủ, chưa phải bộ điều phối truy nhập. Có thể dùng $i_j^*=\arg\max_i\mathrm{SNR}_{ij}$ để thiết kế cơ chế chọn UAV về sau, nhưng không trình bày cơ chế này như tính năng đã có.
+Code hiện tại **không xây dựng phép gán độc quyền một UE cho đúng một UAV**, không cân bằng tải, không đặt giới hạn số UE phục vụ trên mỗi UAV và không phân bổ băng thông. Vì vậy, thuật ngữ association trong phạm vi này được hiểu là kiểm tra các liên kết đủ điều kiện phủ, chưa phải bộ điều phối truy nhập. Có thể dùng $i_j^{\ast}=\arg\max_i\mathrm{SNR}_{ij}$ để thiết kế cơ chế chọn UAV về sau, nhưng không trình bày cơ chế này như tính năng đã có.
 
 K-Means cũng không gán cứng UE vào UAV trong quá trình chấm điểm: nhãn cụm chỉ hỗ trợ tạo nghiệm ban đầu. Khi tối ưu diễn ra, mọi UAV vẫn được xét với mọi UE qua ma trận SNR.
 
@@ -336,9 +336,9 @@ Với một tập UE cố định, cần tìm cấu hình đội UAV có fitness
 | $M$ | Số UE trong một dataset | 100, 200, 300, 400 hoặc 500 |
 | $N$ | Số UAV | 4 |
 | $D$ | Số chiều nghiệm | $3N=12$ |
-| $\mathbf u_j$ | Vị trí UE $j$ | Mét, cố định trong task |
-| $\mathbf q_i$ | Vị trí UAV $i$ | Mét, biến tối ưu |
-| $X$ | Vector của toàn bộ đội UAV | $\mathbb R^{12}$ |
+| $\mathbf{u}_j$ | Vị trí UE $j$ | Mét, cố định trong task |
+| $\mathbf{q}_i$ | Vị trí UAV $i$ | Mét, biến tối ưu |
+| $X$ | Vector của toàn bộ đội UAV | $\mathbb{R}^{12}$ |
 | $P$ | Kích thước quần thể | 25 cấu hình đội UAV |
 | $T$ | Số vòng lặp chính | 80 |
 | $C,E,I$ | Coverage, công suất chuẩn hóa, chồng lấn | Không đơn vị |
@@ -375,7 +375,7 @@ Vị trí UAV có tính hoán vị: đổi nhãn hai UAV có thể cho cùng ch�
 **Độ phủ sóng** được định nghĩa là tỷ lệ UE có ít nhất một liên kết đạt ngưỡng:
 
 $$
-C(X)=\frac1M\sum_{j=1}^{M}\mathbf1[n_j\ge1].
+C(X)=\frac1M\sum_{j=1}^{M}\mathbf{1}[n_j\ge1].
 $$
 
 Chỉ số này thuộc $[0,1]$; lớn hơn là tốt hơn. Đây là tỷ lệ người dùng được phủ, không phải tỷ lệ diện tích được phủ. Dataset có phân bố UE khác nhau có thể cho coverage khác nhau dù diện tích hình học của các vùng tín hiệu giống nhau.
@@ -383,13 +383,13 @@ Chỉ số này thuộc $[0,1]$; lớn hơn là tốt hơn. Đây là tỷ lệ 
 **Chỉ số năng lượng** thực tế là đại diện công suất theo độ cao. Với mỗi UAV:
 
 $$
-\rho_i=\operatorname{clip}\left(\frac{z_i-50}{300-50+10^{-6}},0,1\right),
+\rho_i=\mathrm{clip}\left(\frac{z_i-50}{300-50+10^{-6}},0,1\right),
 \quad P_{\mathrm{hover},i}=100(1+0,5\rho_i),
 $$
 
 $$
 E(X)=\frac{\frac1N\sum_i[P_{\mathrm{hover},i}+1]}{100\times1,5+1}
-=\frac{\operatorname{mean}_i[P_{\mathrm{hover},i}+1]}{151}.
+=\frac{\mathrm{mean}_i[P_{\mathrm{hover},i}+1]}{151}.
 $$
 
 Giá trị $E$ không có đơn vị; trong miền độ cao đã chọn, nằm xấp xỉ từ $101/151\approx0,668874$ đến 1. Công suất giả lập gồm hover cơ sở 100 W, tăng tối đa khoảng 50% theo độ cao, và công suất phát 1 W. Không có tích phân theo thời gian, quãng đường bay hoặc trạng thái pin. Vì vậy không diễn giải $E=0,69$ thành 0,69 joule, cũng không khẳng định mức giảm này trực tiếp kéo dài thời gian bay một tỷ lệ tương ứng.
@@ -397,7 +397,7 @@ Giá trị $E$ không có đơn vị; trong miền độ cao đã chọn, nằm 
 **Chỉ số can nhiễu** trong code là tỷ lệ UE có từ hai UAV đủ mạnh:
 
 $$
-I(X)=\frac1M\sum_{j=1}^{M}\mathbf1[n_j\ge2].
+I(X)=\frac1M\sum_{j=1}^{M}\mathbf{1}[n_j\ge2].
 $$
 
 Mẫu số vẫn là toàn bộ UE, không chỉ UE đã được phủ; luôn có $I\le C$. Chỉ số không đo tổng công suất nhiễu, không phân biệt mức tín hiệu vượt ngưỡng bao nhiêu và không tính SINR. Hai hoặc bốn UAV cùng phủ một UE đều làm UE đó đóng góp một đơn vị vào tử số. Trong báo cáo, tên chính xác là **tỷ lệ chồng lấn liên kết đạt ngưỡng**, có thể gọi tắt là proxy nhiễu khi đã giải thích.
@@ -415,7 +415,7 @@ $$
 $$
 
 $$
-\|\mathbf q_i-\mathbf q_k\|_2\ge10\ \text{m},\qquad i<k.
+\|\mathbf{q}_i-\mathbf{q}_k\|_2\ge10\ \text{m},\qquad i<k.
 $$
 
 Thuật toán chặn tọa độ vào miền hộp trước khi chấm điểm. Sau đó, cấu hình vi phạm khoảng cách tối thiểu bị coi là không khả thi. Khoảng cách này được tính trong 3D, nên hai UAV trùng vị trí ngang vẫn có thể thỏa ràng buộc nếu chênh cao đủ lớn.
@@ -471,11 +471,11 @@ trong đó $\Pi_\Omega$ là phép clip theo từng tọa độ. Code không sử
 
 **Nguyên lý và vai trò.**
 
-K-Means được dùng để tìm $N=4$ tâm cụm trên tọa độ ngang của UE. Gọi $\mathcal C_i$ là tập UE trong cụm $i$ và $\boldsymbol\mu_i\in\mathbb R^2$ là tâm cụm, tiêu chuẩn phân cụm là:
+K-Means được dùng để tìm $N=4$ tâm cụm trên tọa độ ngang của UE. Gọi $\mathcal{C}_i$ là tập UE trong cụm $i$ và $\boldsymbol\mu_i\in\mathbb{R}^2$ là tâm cụm, tiêu chuẩn phân cụm là:
 
 $$
-\min_{\{\mathcal C_i\},\{\boldsymbol\mu_i\}}
-\sum_{i=1}^{N}\sum_{j\in\mathcal C_i}
+\min_{\{\mathcal{C}_i\},\{\boldsymbol\mu_i\}}
+\sum_{i=1}^{N}\sum_{j\in\mathcal{C}_i}
 \|(u_j,v_j)-\boldsymbol\mu_i\|_2^2.
 $$
 
@@ -505,7 +505,7 @@ Y^{(1)}=\alpha\odot X^{(1)}+(1-\alpha)\odot X^{(2)},\quad
 Y^{(2)}=(1-\alpha)\odot X^{(1)}+\alpha\odot X^{(2)}.
 $$
 
-Đột biến Gaussian thực hiện $Y_d\leftarrow Y_d+\epsilon_d$ với xác suất 0,1 cho mỗi gene, trong đó $\epsilon_d\sim\mathcal N(0,[0,1(U_d-L_d)]^2)$. Tọa độ con được clip về miền. Xác suất lai ghép của baseline là 0,9 và số elite là 2. Study thay giá trị mặc định kích thước quần thể/số thế hệ bằng $P=25$, $T=80$.
+Đột biến Gaussian thực hiện $Y_d\leftarrow Y_d+\epsilon_d$ với xác suất 0,1 cho mỗi gene, trong đó $\epsilon_d\sim\mathcal{N}(0,[0,1(U_d-L_d)]^2)$. Tọa độ con được clip về miền. Xác suất lai ghép của baseline là 0,9 và số elite là 2. Study thay giá trị mặc định kích thước quần thể/số thế hệ bằng $P=25$, $T=80$.
 
 GA cung cấp đối chứng tiến hóa có toán tử tái tổ hợp và đột biến, khác với cơ chế dẫn hướng theo best của WOA/PSO. Mọi đánh giá con thực sự đều được tính vào FE, kể cả trường hợp quần thể lẻ tạo dư một con. Nguồn triển khai: [thư mục GA](implementation/src/algorithms/GA/); nền tảng GA mã thực được liệt kê trong [SOURCES.md](implementation/docs/SOURCES.md#ga).
 
@@ -552,22 +552,22 @@ Tại vòng $t=0,\ldots,T-1$:
 
 $$
 a_t=2\left(1-\frac{t}{\max(1,T-1)}\right),\quad
-\mathbf A=2a_t\mathbf r_1-a_t,\quad\mathbf B=2\mathbf r_2.
+\mathbf{A}=2a_t\mathbf{r}_1-a_t,\quad\mathbf{B}=2\mathbf{r}_2.
 $$
 
-Ký hiệu $\mathbf B$ ở đây tương ứng vector `C` trong code, được đổi tên để không nhầm với coverage $C(X)$. Với xác suất chọn nhánh $p<0,5$, nếu $\|\mathbf A\|_2/\sqrt D<1$ thì:
+Ký hiệu $\mathbf{B}$ ở đây tương ứng vector `C` trong code, được đổi tên để không nhầm với coverage $C(X)$. Với xác suất chọn nhánh $p<0,5$, nếu $\|\mathbf{A}\|_2/\sqrt D<1$ thì:
 
 $$
-X'=X^*-\mathbf A\odot|\mathbf B\odot X^*-X|.
+X'=X^{\ast}-\mathbf{A}\odot|\mathbf{B}\odot X^{\ast}-X|.
 $$
 
-Nếu chuẩn trên lớn hơn hoặc bằng 1, thay $X^*$ bằng một cá thể ngẫu nhiên $X_r$. Với nhánh $p\ge0,5$, cập nhật xoắn ốc:
+Nếu chuẩn trên lớn hơn hoặc bằng 1, thay $X^{\ast}$ bằng một cá thể ngẫu nhiên $X_r$. Với nhánh $p\ge0,5$, cập nhật xoắn ốc:
 
 $$
-X'=|X^*-X|\exp(bl)\cos(2\pi l)+X^*,\quad b=1,\quad l\sim U[-1,1].
+X'=|X^{\ast}-X|\exp(bl)\cos(2\pi l)+X^{\ast},\quad b=1,\quad l\sim U[-1,1].
 $$
 
-Trong các công thức, trị tuyệt đối và tích $\odot$ được áp dụng theo tọa độ. Điều kiện chọn nhánh bằng chuẩn RMS của vector $\mathbf A$ là quy tắc của implementation; không mô tả nhầm thành kiểm tra $|A_d|<1$ riêng cho từng chiều. “WOA nguyên bản” trong báo cáo nghĩa là baseline không bật K/O/L của repository, không khẳng định mọi chi tiết hoàn toàn trùng mã gốc của tác giả.
+Trong các công thức, trị tuyệt đối và tích $\odot$ được áp dụng theo tọa độ. Điều kiện chọn nhánh bằng chuẩn RMS của vector $\mathbf{A}$ là quy tắc của implementation; không mô tả nhầm thành kiểm tra $|A_d|<1$ riêng cho từng chiều. “WOA nguyên bản” trong báo cáo nghĩa là baseline không bật K/O/L của repository, không khẳng định mọi chi tiết hoàn toàn trùng mã gốc của tác giả.
 
 WOA cập nhật vị trí từng cá thể và giữ bản sao best toàn cục khi có cải thiện. Cá thể thường có thể chuyển tới nghiệm kém hơn, nhưng best đã lưu không giảm. Điều này tạo nền tảng để bổ sung K-Means, OBL và Lévy ở Chương 3.
 
@@ -626,7 +626,7 @@ Chiến lược này tránh đồng nhất “gần tâm người dùng” với
 
 ## 3.2. Biểu diễn nghiệm và không gian tìm kiếm của bài toán
 
-I-WOA sử dụng nguyên biểu diễn $X\in\mathbb R^{12}$ ở mục 2.3.2. Mỗi hàng của quần thể kích thước $25\times12$ là một đội bốn UAV. Khi đánh giá, vector được giải mã thành ma trận $4\times3$; sau đó kết hợp với ma trận $M\times3$ của UE để tính $4M$ liên kết.
+I-WOA sử dụng nguyên biểu diễn $X\in\mathbb{R}^{12}$ ở mục 2.3.2. Mỗi hàng của quần thể kích thước $25\times12$ là một đội bốn UAV. Khi đánh giá, vector được giải mã thành ma trận $4\times3$; sau đó kết hợp với ma trận $M\times3$ của UE để tính $4M$ liên kết.
 
 Tất cả toán tử K/O/L và WOA làm việc trên cùng một miền $[L,U]$. Ví dụ các chiều độ cao có biên 50–300 m, trong khi chiều ngang có biên 0–1.000 m. Sử dụng cùng miền và cùng mô hình đánh giá bảo đảm các biến thể đang giải cùng một bài toán; không được vô tình thay độ cao, trọng số hoặc ngưỡng SNR riêng cho thuật toán đề xuất.
 
@@ -643,7 +643,7 @@ Theo góc nhìn tối ưu, vector được cập nhật trong không gian liên 
 Thuật toán lấy hai cột `x_m`, `y_m`, bỏ qua `z_m` trong phép phân cụm, và tìm bốn tâm cụm. Số lần khởi tạo K-Means được đặt là 10; seed theo task làm phép khởi tạo phân cụm có thể tái lập trong cùng môi trường thư viện. Kết quả phân cụm được chuyển thành bốn vị trí UAV sơ bộ:
 
 $$
-\mathbf q_i^{K}=(\mu_{i,x},\mu_{i,y},100),\qquad i=1,\ldots,4.
+\mathbf{q}_i^{K}=(\mu_{i,x},\mu_{i,y},100),\qquad i=1,\ldots,4.
 $$
 
 Độ cao mầm 100 m xuất phát từ mặc định `DEFAULT_MIN_ALTITUDE_M + 50.0` trong hàm tạo nghiệm, không phải nghiệm độ cao tối ưu của mô hình LoS. Nghiệm này được làm phẳng thành vector 12 chiều và clip theo miền bài toán.
@@ -717,7 +717,7 @@ $$
 $$
 
 $$
-u_d\sim\mathcal N(0,\sigma_u^2),\quad v_d\sim\mathcal N(0,1),\quad
+u_d\sim\mathcal{N}(0,\sigma_u^2),\quad v_d\sim\mathcal{N}(0,1),\quad
 s_d=\frac{u_d}{|v_d|^{1/\beta}}.
 $$
 
@@ -725,13 +725,13 @@ Sau khi có ứng viên WOA $Y$, đặt:
 
 $$
 \delta_d=\begin{cases}
-Y_d-X_d^*,&|Y_d-X_d^*|>10^{-3},\\
+Y_d-X_d^{\ast},&|Y_d-X_d^{\ast}|>10^{-3},\\
 0,1(U_d-L_d),&\text{ngược lại},
 \end{cases}
 $$
 
 $$
-Y_d^{L}=\operatorname{clip}(Y_d+0,05s_d\delta_d,L_d,U_d).
+Y_d^{L}=\mathrm{clip}(Y_d+0,05s_d\delta_d,L_d,U_d).
 $$
 
 Với xác suất 0,3 trên mỗi cá thể ở mỗi vòng, đề xuất Lévy được đánh giá và chỉ thay ứng viên WOA nếu fitness tốt hơn. Số đánh giá tăng ngay cả khi đề xuất bị loại. Không có điều kiện đo “đã kẹt cực trị” trước khi kích hoạt; mô tả nó như toán tử phát hiện đình trệ tự thích nghi sẽ sai với code.
@@ -818,7 +818,7 @@ Trình tự thực hiện tổng thể được đặt ở mục 3.1.1 trước 
 Đặt $Q$ là số vòng lặp K-Means trên một lần khởi tạo và $R=10$ là số lần khởi tạo. Chi phí phân cụm xấp xỉ $O(RQMN)$ trong hai chiều. Một phép chấm cấu hình cần $O(NM)$ để tính ma trận kênh và $O(N^2)$ để kiểm tra khoảng cách UAV. Nếu $B$ là FE thực tế:
 
 $$
-\operatorname{Time}=O\left(RQMN+B(NM+N^2)+TPD+T_{\mathrm{sort}}\right).
+\mathrm{Time}=O\left(RQMN+B(NM+N^2)+TPD+T_{\mathrm{sort}}\right).
 $$
 
 Sắp xếp OBL tốn $O(P\log P)$ mỗi lần, bên cạnh chi phí chấm điểm. Khi N cố định bằng 4 và M lớn hơn đáng kể, tính kênh thường là thành phần quan trọng; tuy vậy thời gian ghi lịch sử và I/O cũng có thể đáng kể trong runner.
@@ -826,7 +826,7 @@ Sắp xếp OBL tốn $O(P\log P)$ mỗi lần, bên cạnh chi phí chấm đi�
 Với cấu hình đầy đủ, kỳ vọng FE theo xác suất kích hoạt, bỏ qua mọi thay đổi giao thức, là:
 
 $$
-\mathbb E[B]=P+P+TP+0,3TP+0,2TP=3.050.
+\mathbb{E}[B]=P+P+TP+0,3TP+0,2TP=3.050.
 $$
 
 Hai hạng đầu lần lượt là đánh giá ban đầu và OBL khởi tạo. **3.050 là kỳ vọng lý thuyết, không phải FE đo được**; trung bình quan sát trong study là 3.092. WOA baseline dùng $P+TP=2.025$ FE. Không được dùng cùng 80 vòng để tuyên bố hai thuật toán đã dùng cùng ngân sách tìm kiếm.
@@ -1107,7 +1107,7 @@ Phần này là **phân tích bổ sung sau khi quan sát kết quả**, tính t
 Đơn vị ghép cặp là **dataset**, không dùng 2.000 lần chạy như 2.000 dataset độc lập. Trước hết tính:
 
 $$
-S_{d,a}=\operatorname{median}_{s=1,\ldots,10}F_{d,a,s},
+S_{d,a}=\mathrm{median}_{s=1,\ldots,10}F_{d,a,s},
 $$
 
 trong đó $d$ là dataset và $a$ là case. Ma trận thống kê có 200 hàng × 12 cột. Cách gộp này phù hợp với cơ sở xếp hạng trong `ranking.csv`, nhưng khác `fitness_mean` của bảng chính. Việc coi các dataset là khối độc lập vẫn là giả định chưa được xác nhận đầy đủ từ nguồn dữ liệu; các seed lặp không khắc phục được sự phụ thuộc giữa kịch bản nếu có.
